@@ -19,7 +19,7 @@ error() {
 
 info "Checking requirements..."
 
-for cmd in docker minikube kubectl terraform; do
+for cmd in docker minikube kubectl terraform helm; do
     command -v "$cmd" >/dev/null 2>&1 || error "'$cmd' is not installed"
 done
 
@@ -99,7 +99,12 @@ info "Waiting for web deployment to be ready..."
 kubectl rollout status deployment/web -n sync --timeout=120s
 
 info "Exposing the web application on port 3000..."
-kubectl port-forward svc/web -n sync 3000:3000
+kubectl port-forward svc/web -n sync 3000:3000 &
+WEB_CLIENT_PID=$!
 
 info "Exposing the server application on port 8080..."
 kubectl port-forward svc/server -n sync 8080:8080
+SERVER_PID=$!
+
+trap 'kill $WEB_CLIENT_PID $SERVER_PID' EXIT
+wait $WEB_CLIENT_PID $SERVER_PID
