@@ -1,17 +1,22 @@
-import { Logo } from '@/components/ui/logo';
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+import { TwoColumnFullPageLayout } from '@/components/layout/TwoColumnLayout';
 
 interface OnboardingLayoutProps {
   children?: React.ReactNode;
 }
 
 export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="absolute top-4 left-4">
-        <Logo />
-      </div>
+  const t = useTranslations('pages.onboarding.brand');
 
+  return (
+    <TwoColumnFullPageLayout
+      brandTitle={t('title')}
+      brandDescription={t('description')}
+    >
       {children}
-    </div>
+    </TwoColumnFullPageLayout>
   );
 }

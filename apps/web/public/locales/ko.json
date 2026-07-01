@@ -446,6 +446,14 @@
         "projects": "프로젝트"
       }
     },
+    "auth": {
+      "brand": {
+        "title": "배움을 기록하고, 함께 성장하세요",
+        "description": "sync에서 프로젝트와 학습 여정을 공유하고 동료들과 연결되세요."
+      },
+      "terms": "계속 진행하면 {appName}의 <terms>이용약관</terms> 및 <privacy>개인정보처리방침</privacy>에 동의하는 것으로 간주됩니다.",
+      "or": "또는"
+    },
     "login": {
       "title": "로그인",
       "description": "계정에 로그인하세요",
@@ -514,6 +522,10 @@
       }
     },
     "onboarding": {
+      "brand": {
+        "title": "거의 다 왔어요",
+        "description": "몇 가지만 더 알려주시면 sync를 시작할 준비가 끝나요."
+      },
       "steps": {
         "welcome": {
           "title": "sync에 오신 것을 환영합니다!",
@@ -933,6 +945,9 @@
     }
   },
   "components": {
+    "oauth": {
+      "GOOGLE": "Google로 계속하기"
+    },
     "post": {
       "type": {
         "SHORT": "TIL",

@@ -7,6 +7,8 @@ const ROUTES = {
   NEW_PROJECT_POST: (handle: string) => ROUTES.PROJECT(handle) + '/posts/new',
   PROJECT_MEMBERS: (handle: string) => ROUTES.PROJECT(handle) + '/members',
   PROJECT_SETTINGS: (handle: string) => ROUTES.PROJECT(handle) + '/settings',
+  TERMS: () => '/terms',
+  PRIVACY: () => '/privacy',
 };
 
 export default ROUTES;
