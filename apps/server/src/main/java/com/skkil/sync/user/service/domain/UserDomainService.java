@@ -3,7 +3,6 @@ package com.skkil.sync.user.service.domain;
 import com.skkil.sync.user.exception.UserNotFoundException;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.repository.UserRepository;
-import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +22,5 @@ public class UserDomainService {
   @Transactional(readOnly = true)
   public User getUserByHandle(String handle) {
     return userRepository.findByHandle(handle).orElseThrow(() -> new UserNotFoundException(handle));
-  }
-
-  @Transactional(readOnly = true)
-  public Optional<User> findUserByEmail(String email) {
-    return userRepository.findByEmail(email);
   }
 }
