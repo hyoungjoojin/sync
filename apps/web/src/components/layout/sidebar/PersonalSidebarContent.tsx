@@ -1,12 +1,12 @@
 'use client';
 
 import {
+  BookmarkSimpleIcon,
   CompassIcon,
   HouseIcon,
   NotePencilIcon,
   PlusIcon,
 } from '@phosphor-icons/react';
-import { BookmarkSimpleIcon } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';

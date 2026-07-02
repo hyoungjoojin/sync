@@ -19,7 +19,7 @@ import {
 
 import { OnboardingStepContentProps, OnboardingStepContentRef } from '../page';
 
-const MAXIMUM_HANDLE_LENGTH = 15;
+const MAXIMUM_HANDLE_LENGTH = 255;
 const MINIMUM_HANDLE_LENGTH = 6;
 
 export const ChooseHandle = forwardRef<
@@ -68,7 +68,9 @@ export const ChooseHandle = forwardRef<
     },
     {
       query: {
-        enabled: debouncedHandle.length >= MINIMUM_HANDLE_LENGTH,
+        enabled:
+          debouncedHandle.length >= MINIMUM_HANDLE_LENGTH &&
+          debouncedHandle.length <= MAXIMUM_HANDLE_LENGTH,
       },
     },
   );
