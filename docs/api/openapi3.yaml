@@ -400,7 +400,8 @@ paths:
                     :{\"id\":1,\"slug\":\"test-slug\",\"type\":\"SHORT\",\"author\"\
                     :{\"name\":\"User\",\"handle\":\"user-handle\"},\"project\":{\"\
                     handle\":\"project-handle\",\"name\":\"Project\"},\"content\"\
-                    :\"Post Content\",\"createdAt\":\"1970-01-01T00:00:00Z\"}}]}}"
+                    :\"Post Content\",\"resolved\":false,\"createdAt\":\"1970-01-01T00:00:00Z\"\
+                    }}]}}"
     post:
       tags:
       - post
@@ -500,7 +501,8 @@ paths:
                     :{\"handle\":\"project-handle\",\"name\":\"Project Name\"},\"\
                     content\":{\"json\":\"Post Content\",\"media\":[{\"id\":1,\"url\"\
                     :\"https://example.com/media.png\"}]},\"likeCount\":1,\"commentCount\"\
-                    :1,\"bookmarked\":true,\"createdAt\":\"1970-01-01T00:00:00Z\"}"
+                    :1,\"bookmarked\":true,\"resolved\":false,\"createdAt\":\"1970-01-01T00:00:00Z\"\
+                    }"
   /posts/{postId}/bookmarks:
     post:
       tags:
@@ -933,6 +935,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: type
+        in: query
+        description: 게시글 타입
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: "200"
@@ -948,7 +956,8 @@ paths:
                     :{\"id\":1,\"slug\":\"test-slug\",\"type\":\"SHORT\",\"author\"\
                     :{\"name\":\"User\",\"handle\":\"user-handle\"},\"project\":{\"\
                     handle\":\"project-handle\",\"name\":\"Project\"},\"content\"\
-                    :\"Post Content\",\"createdAt\":\"1970-01-01T00:00:00Z\"}}]}}"
+                    :\"Post Content\",\"resolved\":false,\"createdAt\":\"1970-01-01T00:00:00Z\"\
+                    }}]}}"
   /projects/{handle}/teammates:
     get:
       tags:
@@ -1183,7 +1192,8 @@ paths:
                     :{\"id\":1,\"slug\":\"test-slug\",\"type\":\"SHORT\",\"author\"\
                     :{\"name\":\"User\",\"handle\":\"user-handle\"},\"project\":{\"\
                     handle\":\"project-handle\",\"name\":\"Project\"},\"content\"\
-                    :\"Post Content\",\"createdAt\":\"1970-01-01T00:00:00Z\"}}]}}"
+                    :\"Post Content\",\"resolved\":false,\"createdAt\":\"1970-01-01T00:00:00Z\"\
+                    }}]}}"
 components:
   schemas:
     GetProjectsResponse:
@@ -1297,6 +1307,100 @@ components:
         email:
           type: string
           description: Email
+    GetPostResponse:
+      title: GetPostResponse
+      required:
+      - author
+      - bookmarked
+      - commentCount
+      - content
+      - createdAt
+      - id
+      - likeCount
+      - resolved
+      - slug
+      - type
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: Creation Timestamp
+        bookmarked:
+          type: boolean
+          description: Whether the current user bookmarked this post
+        author:
+          required:
+          - handle
+          - name
+          type: object
+          properties:
+            name:
+              type: string
+              description: Author Name
+            handle:
+              type: string
+              description: Author Handle
+          description: Author Information
+        project:
+          required:
+          - handle
+          - name
+          type: object
+          properties:
+            name:
+              type: string
+              description: Project Name
+            handle:
+              type: string
+              description: Project Handle
+          description: Project Information
+        likeCount:
+          type: number
+          description: Number of Likes
+        id:
+          type: number
+          description: Post ID
+        type:
+          type: string
+          description: Post Type
+          enum:
+          - SHORT
+          - LONG
+          - QUESTION
+        content:
+          required:
+          - json
+          - media
+          type: object
+          properties:
+            json:
+              type: string
+              description: Post Content JSON
+            media:
+              type: array
+              description: Media attached to the post
+              items:
+                required:
+                - id
+                - url
+                type: object
+                properties:
+                  id:
+                    type: number
+                    description: Media ID
+                  url:
+                    type: string
+                    description: Media URL
+          description: Post Content
+        slug:
+          type: string
+          description: Post Slug
+        resolved:
+          type: boolean
+          description: Whether the question post has been resolved
+        commentCount:
+          type: number
+          description: Number of Comments
     GetProjectHandleAvailabilityResponse:
       title: GetProjectHandleAvailabilityResponse
       required:
@@ -1725,109 +1829,6 @@ components:
         content:
           type: string
           description: Comment content
-    GetPostsResponse:
-      title: GetPostsResponse
-      type: object
-      properties:
-        posts:
-          required:
-          - nodes
-          - pageInfo
-          type: object
-          properties:
-            nodes:
-              type: array
-              description: Nodes
-              items:
-                required:
-                - content
-                - cursor
-                type: object
-                properties:
-                  cursor:
-                    type: string
-                    description: Node Cursor
-                  content:
-                    required:
-                    - author
-                    - content
-                    - createdAt
-                    - id
-                    - slug
-                    - type
-                    type: object
-                    properties:
-                      createdAt:
-                        type: string
-                        description: Creation Timestamp
-                      author:
-                        required:
-                        - handle
-                        - name
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                            description: Author Name
-                          handle:
-                            type: string
-                            description: Author Handle
-                        description: Author Information
-                      project:
-                        required:
-                        - handle
-                        - name
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                            description: Project Name
-                          handle:
-                            type: string
-                            description: Project Handle
-                        description: Project Information
-                      id:
-                        type: number
-                        description: Post ID
-                      type:
-                        type: string
-                        description: Post Type
-                        enum:
-                        - SHORT
-                        - LONG
-                        - QUESTION
-                      content:
-                        type: string
-                        description: Post Content
-                      slug:
-                        type: string
-                        description: Post Slug
-                    description: Node Content
-            pageInfo:
-              required:
-              - hasNextPage
-              - hasPreviousPage
-              - size
-              type: object
-              properties:
-                size:
-                  type: number
-                  description: Page Size
-                hasNextPage:
-                  type: boolean
-                  description: Has Next Page
-                hasPreviousPage:
-                  type: boolean
-                  description: Has Previous Page
-                endCursor:
-                  type: string
-                  description: End Cursor
-                  nullable: true
-                startCursor:
-                  type: string
-                  description: Start Cursor
-                  nullable: true
-              description: Page Info
     GetPostReportsResponse:
       title: GetPostReportsResponse
       type: object
@@ -2259,96 +2260,113 @@ components:
           type: string
           description: 신고 상세 설명
           nullable: true
-    GetPostResponse:
-      title: GetPostResponse
-      required:
-      - author
-      - bookmarked
-      - commentCount
-      - content
-      - createdAt
-      - id
-      - likeCount
-      - slug
-      - type
+    GetPostsResponse:
+      title: GetPostsResponse
       type: object
       properties:
-        createdAt:
-          type: string
-          description: Creation Timestamp
-        bookmarked:
-          type: boolean
-          description: Whether the current user bookmarked this post
-        author:
+        posts:
           required:
-          - handle
-          - name
+          - nodes
+          - pageInfo
           type: object
           properties:
-            name:
-              type: string
-              description: Author Name
-            handle:
-              type: string
-              description: Author Handle
-          description: Author Information
-        project:
-          required:
-          - handle
-          - name
-          type: object
-          properties:
-            name:
-              type: string
-              description: Project Name
-            handle:
-              type: string
-              description: Project Handle
-          description: Project Information
-        likeCount:
-          type: number
-          description: Number of Likes
-        id:
-          type: number
-          description: Post ID
-        type:
-          type: string
-          description: Post Type
-          enum:
-          - SHORT
-          - LONG
-          - QUESTION
-        content:
-          required:
-          - json
-          - media
-          type: object
-          properties:
-            json:
-              type: string
-              description: Post Content JSON
-            media:
+            nodes:
               type: array
-              description: Media attached to the post
+              description: Nodes
               items:
                 required:
-                - id
-                - url
+                - content
+                - cursor
                 type: object
                 properties:
-                  id:
-                    type: number
-                    description: Media ID
-                  url:
+                  cursor:
                     type: string
-                    description: Media URL
-          description: Post Content
-        slug:
-          type: string
-          description: Post Slug
-        commentCount:
-          type: number
-          description: Number of Comments
+                    description: Node Cursor
+                  content:
+                    required:
+                    - author
+                    - content
+                    - createdAt
+                    - id
+                    - resolved
+                    - slug
+                    - type
+                    type: object
+                    properties:
+                      createdAt:
+                        type: string
+                        description: Creation Timestamp
+                      author:
+                        required:
+                        - handle
+                        - name
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: Author Name
+                          handle:
+                            type: string
+                            description: Author Handle
+                        description: Author Information
+                      project:
+                        required:
+                        - handle
+                        - name
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: Project Name
+                          handle:
+                            type: string
+                            description: Project Handle
+                        description: Project Information
+                      id:
+                        type: number
+                        description: Post ID
+                      type:
+                        type: string
+                        description: Post Type
+                        enum:
+                        - SHORT
+                        - LONG
+                        - QUESTION
+                      content:
+                        type: string
+                        description: Post Content
+                      slug:
+                        type: string
+                        description: Post Slug
+                      resolved:
+                        type: boolean
+                        description: Whether the question post has been resolved
+                    description: Node Content
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                endCursor:
+                  type: string
+                  description: End Cursor
+                  nullable: true
+                startCursor:
+                  type: string
+                  description: Start Cursor
+                  nullable: true
+              description: Page Info
     SearchPostsResponse:
       title: SearchPostsResponse
       required:

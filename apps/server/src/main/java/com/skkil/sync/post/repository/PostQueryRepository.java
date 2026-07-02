@@ -120,7 +120,8 @@ public class PostQueryRepository {
         POSTS.UPDATED_AT.as("updatedAt"),
         POSTS.LIKE_COUNT.as("likeCount"),
         DSL.value(0L).as("commentCount"),
-        bookmarked.as("bookmarked"));
+        bookmarked.as("bookmarked"),
+        POSTS.RESOLVED.as("resolved"));
   }
 
   private Condition visibleCondition() {

@@ -27,6 +27,7 @@ public class GetPostsResponseSnippets {
             author,
             project,
             "Post Content",
+            false,
             DateTimeTestUtils.defaultTestOffsetDateTime());
 
     return new GetPostsResponse(CursorPaginationResponseSnippets.of(List.of(post)));
@@ -46,6 +47,9 @@ public class GetPostsResponseSnippets {
                 .description("Post Type")
                 .attributes(RestDocsUtils.getEnumAttributes(PostType.class)),
             fieldWithPath(".content").type(JsonFieldType.STRING).description("Post Content"),
+            fieldWithPath(".resolved")
+                .type(JsonFieldType.BOOLEAN)
+                .description("Whether the question post has been resolved"),
             fieldWithPath(".project")
                 .type(JsonFieldType.OBJECT)
                 .description("Project Information")

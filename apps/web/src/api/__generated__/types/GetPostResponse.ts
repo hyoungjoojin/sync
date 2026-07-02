@@ -28,6 +28,8 @@ export interface GetPostResponse {
   content: GetPostResponseContent;
   /** Post Slug */
   slug: string;
+  /** Whether the question post has been resolved */
+  resolved: boolean;
   /** Number of Comments */
   commentCount: number;
 }

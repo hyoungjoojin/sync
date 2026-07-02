@@ -18,4 +18,5 @@ public record PostDto(
     OffsetDateTime updatedAt,
     Long likeCount,
     Long commentCount,
-    Boolean bookmarked) {}
+    Boolean bookmarked,
+    Boolean resolved) {}

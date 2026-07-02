@@ -127,6 +127,7 @@ CREATE TABLE posts (
     post_type VARCHAR(50) NOT NULL,
     content TEXT,
     like_count BIGINT NOT NULL DEFAULT 0,
+    resolved BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY(author_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE
     SET
