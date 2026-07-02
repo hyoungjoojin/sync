@@ -521,6 +521,56 @@
         }
       }
     },
+    "about": {
+      "nav": {
+        "login": "로그인",
+        "register": "가입하기"
+      },
+      "hero": {
+        "badge": "sync 소개",
+        "title": "배움을 기록하고, 함께 성장하세요",
+        "description": "sync는 기술팀을 위한 지식 플랫폼입니다. TIL과 블로그, 질문을 기록하고 프로젝트를 통해 동료들과 함께 성장하세요.",
+        "actions": {
+          "register": "무료로 시작하기",
+          "login": "로그인"
+        }
+      },
+      "features": {
+        "title": "sync로 할 수 있는 것",
+        "items": {
+          "record": {
+            "title": "기록",
+            "description": "TIL, 블로그, 질문 등 다양한 형태로 학습 과정을 기록하세요."
+          },
+          "collaborate": {
+            "title": "협업",
+            "description": "프로젝트를 만들고 팀원과 함께 진행 상황을 공유하세요."
+          },
+          "grow": {
+            "title": "성장",
+            "description": "동료들의 피드백과 경험을 통해 함께 성장하세요."
+          }
+        }
+      },
+      "footer": {
+        "description": "기술팀을 위한 지식 플랫폼",
+        "product": {
+          "title": "제품",
+          "home": "홈",
+          "explore": "탐색"
+        },
+        "account": {
+          "title": "계정",
+          "login": "로그인",
+          "register": "회원가입"
+        },
+        "legal": {
+          "title": "법적 고지",
+          "terms": "이용약관",
+          "privacy": "개인정보처리방침"
+        }
+      }
+    },
     "onboarding": {
       "brand": {
         "title": "거의 다 왔어요",

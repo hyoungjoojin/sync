@@ -1,4 +1,11 @@
 const ROUTES = {
+  HOME: () => '/',
+  ABOUT: () => '/about',
+  TERMS: () => '/terms',
+  PRIVACY: () => '/privacy',
+  EXPLORE: () => '/explore',
+  LOGIN: () => '/auth/login',
+  REGISTER: () => '/auth/register',
   POST: (slug: string) => `/posts/${slug}`,
   NEW_POST: () => `/posts/new`,
   PROJECT: (handle: string) => `/projects/${handle}`,
@@ -7,8 +14,6 @@ const ROUTES = {
   NEW_PROJECT_POST: (handle: string) => ROUTES.PROJECT(handle) + '/posts/new',
   PROJECT_MEMBERS: (handle: string) => ROUTES.PROJECT(handle) + '/members',
   PROJECT_SETTINGS: (handle: string) => ROUTES.PROJECT(handle) + '/settings',
-  TERMS: () => '/terms',
-  PRIVACY: () => '/privacy',
 };
 
 export default ROUTES;

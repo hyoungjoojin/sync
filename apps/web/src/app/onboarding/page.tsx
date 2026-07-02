@@ -2,14 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useRef, useState } from 'react';
 
 import {
   getGetAuthenticatedUserQueryKey,
   useUpdateProfile,
 } from '@/api/__generated__/profile/profile';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { useSession } from '@/lib/auth/client';
 
 import { ChooseHandle } from './_components/ChooseHandle';
@@ -46,11 +45,7 @@ export default function Onboarding() {
   const t = useTranslations('pages.onboarding');
 
   const router = useRouter();
-  const {
-    data: session,
-    isPending: isSessionPending,
-    refetch: refetchSession,
-  } = useSession();
+  const { refetch: refetchSession } = useSession();
 
   const contentRef = useRef<OnboardingStepContentRef | null>(null);
 
@@ -81,22 +76,6 @@ export default function Onboarding() {
     },
     [],
   );
-
-  useEffect(() => {
-    if (isSessionPending) {
-      return;
-    }
-
-    if (!session) {
-      router.push('/auth/login');
-    } else if (session && session.user.isOnboarded) {
-      router.push('/');
-    }
-  }, [session, isSessionPending, router]);
-
-  if (isSessionPending) {
-    return <Spinner />;
-  }
 
   const previousButtonClickHandler = () => {
     setStep(stepIndex - 1);
