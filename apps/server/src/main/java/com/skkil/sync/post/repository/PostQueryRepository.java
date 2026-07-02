@@ -7,6 +7,7 @@ import static com.skkil.sync.jooq.tables.Users.USERS;
 
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
 import com.skkil.sync.post.dto.data.PostDto;
+import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.post.model.PostVisibility;
 import java.util.List;
 import java.util.Map;
@@ -62,10 +63,14 @@ public class PostQueryRepository {
     };
   }
 
-  public CursorPaginationDataFetcher<PostDto> getPostsByProject(String handle) {
+  public CursorPaginationDataFetcher<PostDto> getPostsByProject(String handle, PostType type) {
     return (condition, orderFields, size) -> {
-      CursorPaginationDataFetcher<PostDto> base = getPosts();
-      return base.fetch(condition.and(PROJECTS.HANDLE.eq(handle)), orderFields, size);
+      Condition projectCondition = condition.and(PROJECTS.HANDLE.eq(handle));
+      if (type != null) {
+        projectCondition = projectCondition.and(POSTS.POST_TYPE.eq(type.name()));
+      }
+
+      return getPosts().fetch(projectCondition, orderFields, size);
     };
   }
 
