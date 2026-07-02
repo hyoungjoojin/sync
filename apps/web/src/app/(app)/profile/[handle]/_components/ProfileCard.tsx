@@ -18,6 +18,7 @@ import {
   useUpdateProfile,
 } from '@/api/__generated__/profile/profile';
 import { uploadFileToS3 } from '@/api/s3';
+import { ContactFields } from '@/components/feature/profile/contacts';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -46,7 +47,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { ContactFields } from '@/features/profile/util/contacts';
 import { useFollowUserMutation } from '@/features/user/api/follow-user';
 import { useUnfollowUserMutation } from '@/features/user/api/unfollow-user';
 import { useSession } from '@/lib/auth/client';

@@ -34,6 +34,8 @@ export * from './GetFeedResponseItemsNodesItemContent';
 export * from './GetFeedResponseItemsNodesItemContentAuthor';
 export * from './GetFeedResponseItemsNodesItemContentProject';
 export * from './GetFeedResponseItemsPageInfo';
+export * from './GetHandleAvailabilityParams';
+export * from './GetHandleAvailabilityResponse';
 export * from './GetPostActivitiesParams';
 export * from './GetPostActivitiesResponse';
 export * from './GetPostActivitiesResponseActivitiesItem';

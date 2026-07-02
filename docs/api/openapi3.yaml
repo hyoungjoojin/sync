@@ -296,6 +296,30 @@ paths:
                         } ]
                       }
                     }
+  /handles/availability:
+    get:
+      tags:
+      - user
+      summary: Get Handle Availability
+      description: 사용자 핸들의 사용 가능 여부를 확인합니다.
+      operationId: GetHandleAvailability
+      parameters:
+      - name: handle
+        in: query
+        description: 확인할 핸들
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetHandleAvailabilityResponse"
+              examples:
+                GetHandleAvailability:
+                  value: "{\"available\":true}"
   /media:
     post:
       tags:
@@ -1459,6 +1483,15 @@ components:
           type: string
           description: 프로젝트 설명
           nullable: true
+    GetHandleAvailabilityResponse:
+      title: GetHandleAvailabilityResponse
+      required:
+      - available
+      type: object
+      properties:
+        available:
+          type: boolean
+          description: 핸들 사용 가능 여부
     CreatePostResponse:
       title: CreatePostResponse
       required:

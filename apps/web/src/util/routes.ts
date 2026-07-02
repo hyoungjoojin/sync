@@ -6,6 +6,7 @@ const ROUTES = {
   EXPLORE: () => '/explore',
   LOGIN: () => '/auth/login',
   REGISTER: () => '/auth/register',
+  ONBOARDING: () => '/onboarding',
   POST: (slug: string) => `/posts/${slug}`,
   NEW_POST: () => `/posts/new`,
   PROJECT: (handle: string) => `/projects/${handle}`,
