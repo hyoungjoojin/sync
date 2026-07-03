@@ -38,7 +38,6 @@ import type {
   GetProjectsResponse,
   SearchMyProjectsParams,
   SearchProjectsParams,
-  SearchProjectsResponse,
   UpdateProjectRequest,
 } from '../types';
 
@@ -2104,7 +2103,7 @@ export const useCancelProjectInvitation = <
  * @summary Search Projects
  */
 export type searchProjectsResponse200 = {
-  data: SearchProjectsResponse;
+  data: GetProjectsResponse;
   status: 200;
 };
 
@@ -2270,7 +2269,7 @@ export function useSearchProjects<
  * @summary Search My Projects
  */
 export type searchMyProjectsResponse200 = {
-  data: SearchProjectsResponse;
+  data: GetProjectsResponse;
   status: 200;
 };
 

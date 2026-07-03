@@ -11,7 +11,6 @@ import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectTeammatesResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
-import com.skkil.sync.project.dto.response.SearchProjectsResponse;
 import com.skkil.sync.project.service.ProjectService;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -74,13 +73,13 @@ public class ProjectController {
 
   @GetMapping("/search/projects")
   @ResponseStatus(HttpStatus.OK)
-  public SearchProjectsResponse searchProjects(@RequestParam(required = true) String query) {
+  public GetProjectsResponse searchProjects(@RequestParam(required = true) String query) {
     return projectService.searchProjects(query);
   }
 
   @GetMapping("/search/projects/my")
   @ResponseStatus(HttpStatus.OK)
-  public SearchProjectsResponse searchMyProjects(
+  public GetProjectsResponse searchMyProjects(
       @AuthenticationPrincipal @NotNull AuthenticatedUser user,
       @RequestParam(required = true) String query) {
     return projectService.searchMyProjects(user.userId(), query);

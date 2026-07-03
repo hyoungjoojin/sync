@@ -11,7 +11,6 @@ import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectTeammatesResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
-import com.skkil.sync.project.dto.response.SearchProjectsResponse;
 import com.skkil.sync.project.exception.ProjectNotFoundException;
 import com.skkil.sync.project.exception.TeammateNotFoundException;
 import com.skkil.sync.project.mapper.ProjectMapper;
@@ -147,23 +146,23 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public SearchProjectsResponse searchMyProjects(Long userId, String query) {
+  public GetProjectsResponse searchMyProjects(Long userId, String query) {
     var projects =
         projectRepository.searchMyProjects(userId, query).stream()
-            .map(projectMapper::toSearchProjectsResponseProject)
+            .map(projectMapper::toGetProjectsResponseProject)
             .toList();
 
-    return new SearchProjectsResponse(projects);
+    return new GetProjectsResponse(projects);
   }
 
   @Transactional(readOnly = true)
-  public SearchProjectsResponse searchProjects(String query) {
+  public GetProjectsResponse searchProjects(String query) {
     var projects =
         projectRepository.searchProjects(query).stream()
-            .map(projectMapper::toSearchProjectsResponseProject)
+            .map(projectMapper::toGetProjectsResponseProject)
             .toList();
 
-    return new SearchProjectsResponse(projects);
+    return new GetProjectsResponse(projects);
   }
 
   @Transactional

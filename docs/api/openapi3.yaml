@@ -1270,7 +1270,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SearchProjectsResponse"
+                $ref: "#/components/schemas/GetProjectsResponse"
               examples:
                 SearchProjects:
                   value: "{\"projects\":[{\"id\":1,\"handle\":\"spring-boot-project\"\
@@ -1347,7 +1347,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SearchProjectsResponse"
+                $ref: "#/components/schemas/GetProjectsResponse"
               examples:
                 SearchMyProjects:
                   value: "{\"projects\":[{\"id\":1,\"handle\":\"spring-boot-project\"\
@@ -2996,31 +2996,6 @@ components:
         content:
           type: string
           description: Content
-    SearchProjectsResponse:
-      title: SearchProjectsResponse
-      required:
-      - projects
-      type: object
-      properties:
-        projects:
-          type: array
-          description: 프로젝트 목록
-          items:
-            required:
-            - handle
-            - id
-            - name
-            type: object
-            properties:
-              name:
-                type: string
-                description: 프로젝트 이름
-              handle:
-                type: string
-                description: 프로젝트 핸들
-              id:
-                type: number
-                description: 프로젝트 ID
     GetProfileResponse:
       title: GetProfileResponse
       required:

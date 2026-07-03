@@ -28,7 +28,6 @@ import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectTeammatesResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
-import com.skkil.sync.project.dto.response.SearchProjectsResponse;
 import com.skkil.sync.project.service.ProjectService;
 import com.skkil.sync.project.snippets.AddTeammateRequestSnippets;
 import com.skkil.sync.project.snippets.CreateProjectRequestSnippets;
@@ -37,7 +36,6 @@ import com.skkil.sync.project.snippets.GetProjectHandleAvailabilityResponseSnipp
 import com.skkil.sync.project.snippets.GetProjectResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectTeammatesResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectsResponseSnippets;
-import com.skkil.sync.project.snippets.SearchProjectsResponseSnippets;
 import com.skkil.sync.project.snippets.UpdateProjectRequestSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
@@ -209,7 +207,7 @@ class ProjectControllerTests {
   @DisplayName("[searchProjects] API 문서화 테스트")
   void searchProjects() throws Exception {
     String query = "Spring";
-    SearchProjectsResponse response = SearchProjectsResponseSnippets.getSearchProjectsResponse();
+    GetProjectsResponse response = GetProjectsResponseSnippets.getGetProjectsResponse();
 
     when(projectService.searchProjects(query)).thenReturn(response);
 
@@ -223,12 +221,12 @@ class ProjectControllerTests {
                     .tag("project")
                     .summary("Search Projects")
                     .description("검색어로 프로젝트를 검색합니다.")
-                    .responseSchema(schema(SearchProjectsResponse.class.getSimpleName())),
+                    .responseSchema(schema(GetProjectsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 queryParameters(parameterWithName("query").description("프로젝트 검색어")),
-                SearchProjectsResponseSnippets.getSearchProjectsResponseFields()));
+                GetProjectsResponseSnippets.getGetProjectsResponseFields()));
   }
 
   @Test
@@ -236,7 +234,7 @@ class ProjectControllerTests {
   @WithAuthenticatedUser
   void searchMyProjects() throws Exception {
     String query = "Spring";
-    SearchProjectsResponse response = SearchProjectsResponseSnippets.getSearchProjectsResponse();
+    GetProjectsResponse response = GetProjectsResponseSnippets.getGetProjectsResponse();
 
     when(projectService.searchMyProjects(anyLong(), eq(query))).thenReturn(response);
 
@@ -250,12 +248,12 @@ class ProjectControllerTests {
                     .tag("project")
                     .summary("Search My Projects")
                     .description("내 프로젝트를 검색어로 검색합니다.")
-                    .responseSchema(schema(SearchProjectsResponse.class.getSimpleName())),
+                    .responseSchema(schema(GetProjectsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 queryParameters(parameterWithName("query").description("프로젝트 검색어")),
-                SearchProjectsResponseSnippets.getSearchProjectsResponseFields()));
+                GetProjectsResponseSnippets.getGetProjectsResponseFields()));
   }
 
   @Test

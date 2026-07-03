@@ -111,8 +111,6 @@ export * from './SearchPostsParams';
 export * from './SearchPostsResponse';
 export * from './SearchPostsResponsePostsItem';
 export * from './SearchProjectsParams';
-export * from './SearchProjectsResponse';
-export * from './SearchProjectsResponseProjectsItem';
 export * from './SearchTagsParams';
 export * from './SearchTagsResponse';
 export * from './SearchTagsResponseTagsItem';
