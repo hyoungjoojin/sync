@@ -4,15 +4,18 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
@@ -20,6 +23,9 @@ import type {
 import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
 import type {
+  GetConnectionsResponse,
+  GetFollowersParams,
+  GetFollowingParams,
   GetHandleAvailabilityParams,
   GetHandleAvailabilityResponse,
   SearchUsersParams,
@@ -382,6 +388,565 @@ export function useSearchUsers<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getSearchUsersQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 사용자를 팔로우합니다.
+ * @summary Follow User
+ */
+export type followUserResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type followUserResponseSuccess = followUserResponse200 & {
+  headers: Headers;
+};
+export type followUserResponse = followUserResponseSuccess;
+
+export const getFollowUserUrl = (followeeId: string) => {
+  return `/users/follow/${followeeId}`;
+};
+
+export const followUser = async (
+  followeeId: string,
+  options?: RequestInit,
+): Promise<followUserResponse> => {
+  return api<followUserResponse>(getFollowUserUrl(followeeId), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getFollowUserMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof followUser>>,
+    TError,
+    { followeeId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof followUser>>,
+  TError,
+  { followeeId: string },
+  TContext
+> => {
+  const mutationKey = ['followUser'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof followUser>>,
+    { followeeId: string }
+  > = (props) => {
+    const { followeeId } = props ?? {};
+
+    return followUser(followeeId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FollowUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof followUser>>
+>;
+
+export type FollowUserMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Follow User
+ */
+export const useFollowUser = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof followUser>>,
+      TError,
+      { followeeId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof followUser>>,
+  TError,
+  { followeeId: string },
+  TContext
+> => {
+  return useMutation(getFollowUserMutationOptions(options), queryClient);
+};
+/**
+ * 사용자 팔로우를 취소합니다.
+ * @summary Unfollow User
+ */
+export type unfollowUserResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type unfollowUserResponseSuccess = unfollowUserResponse204 & {
+  headers: Headers;
+};
+export type unfollowUserResponse = unfollowUserResponseSuccess;
+
+export const getUnfollowUserUrl = (followeeId: string) => {
+  return `/users/unfollow/${followeeId}`;
+};
+
+export const unfollowUser = async (
+  followeeId: string,
+  options?: RequestInit,
+): Promise<unfollowUserResponse> => {
+  return api<unfollowUserResponse>(getUnfollowUserUrl(followeeId), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getUnfollowUserMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unfollowUser>>,
+    TError,
+    { followeeId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unfollowUser>>,
+  TError,
+  { followeeId: string },
+  TContext
+> => {
+  const mutationKey = ['unfollowUser'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unfollowUser>>,
+    { followeeId: string }
+  > = (props) => {
+    const { followeeId } = props ?? {};
+
+    return unfollowUser(followeeId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnfollowUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unfollowUser>>
+>;
+
+export type UnfollowUserMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unfollow User
+ */
+export const useUnfollowUser = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof unfollowUser>>,
+      TError,
+      { followeeId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof unfollowUser>>,
+  TError,
+  { followeeId: string },
+  TContext
+> => {
+  return useMutation(getUnfollowUserMutationOptions(options), queryClient);
+};
+/**
+ * 사용자를 팔로우하는 사용자 목록을 조회합니다.
+ * @summary Get Followers
+ */
+export type getFollowersResponse200 = {
+  data: GetConnectionsResponse;
+  status: 200;
+};
+
+export type getFollowersResponseSuccess = getFollowersResponse200 & {
+  headers: Headers;
+};
+export type getFollowersResponse = getFollowersResponseSuccess;
+
+export const getGetFollowersUrl = (
+  userId: string,
+  params?: GetFollowersParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/users/${userId}/followers?${stringifiedParams}`
+    : `/users/${userId}/followers`;
+};
+
+export const getFollowers = async (
+  userId: string,
+  params?: GetFollowersParams,
+  options?: RequestInit,
+): Promise<getFollowersResponse> => {
+  return api<getFollowersResponse>(getGetFollowersUrl(userId, params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetFollowersQueryKey = (
+  userId: string,
+  params?: GetFollowersParams,
+) => {
+  return [`/users/${userId}/followers`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetFollowersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetFollowersQueryKey(userId, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowers>>> = ({
+    signal,
+  }) => getFollowers(userId, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!userId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getFollowers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetFollowersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getFollowers>>
+>;
+export type GetFollowersQueryError = ErrorType<unknown>;
+
+export function useGetFollowers<
+  TData = Awaited<ReturnType<typeof getFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params: undefined | GetFollowersParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFollowers>>,
+          TError,
+          Awaited<ReturnType<typeof getFollowers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFollowers<
+  TData = Awaited<ReturnType<typeof getFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFollowers>>,
+          TError,
+          Awaited<ReturnType<typeof getFollowers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFollowers<
+  TData = Awaited<ReturnType<typeof getFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Followers
+ */
+
+export function useGetFollowers<
+  TData = Awaited<ReturnType<typeof getFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetFollowersQueryOptions(userId, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 사용자가 팔로우하는 사용자 목록을 조회합니다.
+ * @summary Get Following
+ */
+export type getFollowingResponse200 = {
+  data: GetConnectionsResponse;
+  status: 200;
+};
+
+export type getFollowingResponseSuccess = getFollowingResponse200 & {
+  headers: Headers;
+};
+export type getFollowingResponse = getFollowingResponseSuccess;
+
+export const getGetFollowingUrl = (
+  userId: string,
+  params?: GetFollowingParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/users/${userId}/following?${stringifiedParams}`
+    : `/users/${userId}/following`;
+};
+
+export const getFollowing = async (
+  userId: string,
+  params?: GetFollowingParams,
+  options?: RequestInit,
+): Promise<getFollowingResponse> => {
+  return api<getFollowingResponse>(getGetFollowingUrl(userId, params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetFollowingQueryKey = (
+  userId: string,
+  params?: GetFollowingParams,
+) => {
+  return [`/users/${userId}/following`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetFollowingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getFollowing>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowingParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowing>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetFollowingQueryKey(userId, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowing>>> = ({
+    signal,
+  }) => getFollowing(userId, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!userId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getFollowing>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetFollowingQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getFollowing>>
+>;
+export type GetFollowingQueryError = ErrorType<unknown>;
+
+export function useGetFollowing<
+  TData = Awaited<ReturnType<typeof getFollowing>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params: undefined | GetFollowingParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowing>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFollowing>>,
+          TError,
+          Awaited<ReturnType<typeof getFollowing>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFollowing<
+  TData = Awaited<ReturnType<typeof getFollowing>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowingParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowing>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFollowing>>,
+          TError,
+          Awaited<ReturnType<typeof getFollowing>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFollowing<
+  TData = Awaited<ReturnType<typeof getFollowing>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowingParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowing>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Following
+ */
+
+export function useGetFollowing<
+  TData = Awaited<ReturnType<typeof getFollowing>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetFollowingParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFollowing>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetFollowingQueryOptions(userId, params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

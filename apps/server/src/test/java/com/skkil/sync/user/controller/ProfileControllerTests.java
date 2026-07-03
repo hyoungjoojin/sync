@@ -148,6 +148,8 @@ class ProfileControllerTests {
             .profileImageUrl("https://example.com/profile-image.png")
             .role(Role.USER)
             .isFollowing(true)
+            .followerCount(3L)
+            .followingCount(5L)
             .isOnboarded(true)
             .isAuthenticatedUser(false)
             .build();
@@ -189,6 +191,8 @@ class ProfileControllerTests {
             .type(JsonFieldType.STRING)
             .description("Profile Image URL"),
         fieldWithPath("isFollowing").type(JsonFieldType.BOOLEAN).description("Is Following"),
+        fieldWithPath("followerCount").type(JsonFieldType.NUMBER).description("Follower Count"),
+        fieldWithPath("followingCount").type(JsonFieldType.NUMBER).description("Following Count"),
         fieldWithPath("isOnboarded").type(JsonFieldType.BOOLEAN).description("Is Onboarded"),
         fieldWithPath("isAuthenticatedUser")
             .type(JsonFieldType.BOOLEAN)

@@ -9,14 +9,10 @@ import type { GetProfileResponseContacts } from './GetProfileResponseContacts';
 export interface GetProfileResponse {
   /** Profession */
   profession: string;
-  /** Is Authenticated User */
-  isAuthenticatedUser: boolean;
   /** Role */
   role: string;
   /** Is Following */
   isFollowing: boolean;
-  /** Full Name */
-  name: string;
   /** Bio */
   bio: string;
   /**
@@ -24,10 +20,18 @@ export interface GetProfileResponse {
    * @nullable
    */
   handle?: string | null;
-  /** Profile Image URL */
-  profileImageUrl: string;
+  /** Following Count */
+  followingCount: number;
   /** ID */
   userId: string;
+  /** Is Authenticated User */
+  isAuthenticatedUser: boolean;
+  /** Full Name */
+  name: string;
+  /** Follower Count */
+  followerCount: number;
+  /** Profile Image URL */
+  profileImageUrl: string;
   /** Contacts */
   contacts?: GetProfileResponseContacts;
   /** E-mail */

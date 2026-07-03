@@ -79,6 +79,8 @@ public class ProfileService {
         .profession(user.getProfession())
         .profileImageUrl(profileImageUrl)
         .isFollowing(isFollowing)
+        .followerCount(user.getFollowerCount())
+        .followingCount(user.getFollowingCount())
         .isOnboarded(user.getIsOnboarded())
         .isAuthenticatedUser(isAuthenticatedUser)
         .role(user.getRole())

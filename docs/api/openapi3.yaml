@@ -760,8 +760,9 @@ paths:
                   value: "{\"userId\":\"1\",\"handle\":\"username\",\"name\":\"name\"\
                     ,\"email\":\"email@example.com\",\"bio\":\"bio\",\"profession\"\
                     :\"profession\",\"profileImageUrl\":\"https://example.com/profile-image.png\"\
-                    ,\"isFollowing\":true,\"isOnboarded\":true,\"isAuthenticatedUser\"\
-                    :false,\"role\":\"USER\",\"contacts\":null}"
+                    ,\"isFollowing\":true,\"followerCount\":3,\"followingCount\":5,\"\
+                    isOnboarded\":true,\"isAuthenticatedUser\":false,\"role\":\"USER\"\
+                    ,\"contacts\":null}"
     patch:
       tags:
       - profile
@@ -810,8 +811,9 @@ paths:
                   value: "{\"userId\":\"1\",\"handle\":\"username\",\"name\":\"name\"\
                     ,\"email\":\"email@example.com\",\"bio\":\"bio\",\"profession\"\
                     :\"profession\",\"profileImageUrl\":\"https://example.com/profile-image.png\"\
-                    ,\"isFollowing\":true,\"isOnboarded\":true,\"isAuthenticatedUser\"\
-                    :false,\"role\":\"USER\",\"contacts\":null}"
+                    ,\"isFollowing\":true,\"followerCount\":3,\"followingCount\":5,\"\
+                    isOnboarded\":true,\"isAuthenticatedUser\":false,\"role\":\"USER\"\
+                    ,\"contacts\":null}"
   /profiles/{handle}/posts/activities:
     get:
       tags:
@@ -1263,6 +1265,40 @@ paths:
                   value: "{\"projects\":[{\"id\":1,\"handle\":\"spring-boot-project\"\
                     ,\"name\":\"Spring Boot 프로젝트\"},{\"id\":2,\"handle\":\"react-project\"\
                     ,\"name\":\"React 프로젝트\"}]}"
+  /users/follow/{followeeId}:
+    post:
+      tags:
+      - user
+      summary: Follow User
+      description: 사용자를 팔로우합니다.
+      operationId: FollowUser
+      parameters:
+      - name: followeeId
+        in: path
+        description: 팔로우할 사용자 ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+  /users/unfollow/{followeeId}:
+    delete:
+      tags:
+      - user
+      summary: Unfollow User
+      description: 사용자 팔로우를 취소합니다.
+      operationId: UnfollowUser
+      parameters:
+      - name: followeeId
+        in: path
+        description: 언팔로우할 사용자 ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "204"
   /users/{handle}/projects:
     get:
       tags:
@@ -1289,6 +1325,114 @@ paths:
                   value: "{\"projects\":[{\"id\":1,\"handle\":\"spring-boot-project\"\
                     ,\"name\":\"Spring Boot 프로젝트\"},{\"id\":2,\"handle\":\"react-project\"\
                     ,\"name\":\"React 프로젝트\"}]}"
+  /users/{userId}/followers:
+    get:
+      tags:
+      - user
+      summary: Get Followers
+      description: 사용자를 팔로우하는 사용자 목록을 조회합니다.
+      operationId: GetFollowers
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: string
+      - name: first
+        in: query
+        description: Number of items to return from the beginning of the list
+        required: false
+        schema:
+          type: string
+      - name: after
+        in: query
+        description: "Cursor for pagination, indicating the position after which to\
+          \ return items"
+        required: false
+        schema:
+          type: string
+      - name: last
+        in: query
+        description: Number of items to return from the end of the list
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        description: "Cursor for pagination, indicating the position before which\
+          \ to return items"
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetConnectionsResponse"
+              examples:
+                GetFollowers:
+                  value: "{\"connections\":{\"pageInfo\":{\"size\":1,\"hasNextPage\"\
+                    :false,\"hasPreviousPage\":false,\"startCursor\":\"start-cursor\"\
+                    ,\"endCursor\":\"end-cursor\"},\"nodes\":[{\"cursor\":\"cursor\"\
+                    ,\"content\":{\"userId\":\"1\",\"handle\":\"user-handle\",\"name\"\
+                    :\"User\"}}]}}"
+  /users/{userId}/following:
+    get:
+      tags:
+      - user
+      summary: Get Following
+      description: 사용자가 팔로우하는 사용자 목록을 조회합니다.
+      operationId: GetFollowing
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: string
+      - name: first
+        in: query
+        description: Number of items to return from the beginning of the list
+        required: false
+        schema:
+          type: string
+      - name: after
+        in: query
+        description: "Cursor for pagination, indicating the position after which to\
+          \ return items"
+        required: false
+        schema:
+          type: string
+      - name: last
+        in: query
+        description: Number of items to return from the end of the list
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        description: "Cursor for pagination, indicating the position before which\
+          \ to return items"
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetConnectionsResponse"
+              examples:
+                GetFollowing:
+                  value: "{\"connections\":{\"pageInfo\":{\"size\":1,\"hasNextPage\"\
+                    :false,\"hasPreviousPage\":false,\"startCursor\":\"start-cursor\"\
+                    ,\"endCursor\":\"end-cursor\"},\"nodes\":[{\"cursor\":\"cursor\"\
+                    ,\"content\":{\"userId\":\"1\",\"handle\":\"user-handle\",\"name\"\
+                    :\"User\"}}]}}"
   /users/{userId}/posts:
     get:
       tags:
@@ -2081,6 +2225,70 @@ components:
                 type: string
                 description: 팀원 프로필 이미지 URL
                 nullable: true
+    GetConnectionsResponse:
+      title: GetConnectionsResponse
+      type: object
+      properties:
+        connections:
+          required:
+          - nodes
+          - pageInfo
+          type: object
+          properties:
+            nodes:
+              type: array
+              description: Nodes
+              items:
+                required:
+                - content
+                - cursor
+                type: object
+                properties:
+                  cursor:
+                    type: string
+                    description: Node Cursor
+                  content:
+                    required:
+                    - handle
+                    - name
+                    - userId
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: User Name
+                      handle:
+                        type: string
+                        description: User Handle
+                      userId:
+                        type: string
+                        description: User ID
+                    description: Node Content
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                endCursor:
+                  type: string
+                  description: End Cursor
+                  nullable: true
+                startCursor:
+                  type: string
+                  description: Start Cursor
+                  nullable: true
+              description: Page Info
     UpdateCommentRequest:
       title: UpdateCommentRequest
       required:
@@ -2366,79 +2574,6 @@ components:
                   description: Start Cursor
                   nullable: true
               description: Page Info
-    GetProfileResponse:
-      title: GetProfileResponse
-      required:
-      - bio
-      - email
-      - isAuthenticatedUser
-      - isFollowing
-      - isOnboarded
-      - name
-      - profession
-      - profileImageUrl
-      - role
-      - userId
-      type: object
-      properties:
-        profession:
-          type: string
-          description: Profession
-        isAuthenticatedUser:
-          type: boolean
-          description: Is Authenticated User
-        role:
-          type: string
-          description: Role
-        isFollowing:
-          type: boolean
-          description: Is Following
-        name:
-          type: string
-          description: Full Name
-        bio:
-          type: string
-          description: Bio
-        handle:
-          type: string
-          description: Handle
-          nullable: true
-        profileImageUrl:
-          type: string
-          description: Profile Image URL
-        userId:
-          type: string
-          description: ID
-        contacts:
-          type: object
-          properties:
-            twitter:
-              type: string
-              description: Twitter Username
-              nullable: true
-            github:
-              type: string
-              description: GitHub Username
-              nullable: true
-            custom:
-              type: string
-              description: Custom Contact
-              nullable: true
-            instagram:
-              type: string
-              description: Instagram Username
-              nullable: true
-            linkedin:
-              type: string
-              description: LinkedIn Username
-              nullable: true
-          description: Contacts
-        email:
-          type: string
-          description: E-mail
-        isOnboarded:
-          type: boolean
-          description: Is Onboarded
     RegisterRequest:
       title: RegisterRequest
       required:
@@ -2708,6 +2843,87 @@ components:
               id:
                 type: number
                 description: 프로젝트 ID
+    GetProfileResponse:
+      title: GetProfileResponse
+      required:
+      - bio
+      - email
+      - followerCount
+      - followingCount
+      - isAuthenticatedUser
+      - isFollowing
+      - isOnboarded
+      - name
+      - profession
+      - profileImageUrl
+      - role
+      - userId
+      type: object
+      properties:
+        profession:
+          type: string
+          description: Profession
+        role:
+          type: string
+          description: Role
+        isFollowing:
+          type: boolean
+          description: Is Following
+        bio:
+          type: string
+          description: Bio
+        handle:
+          type: string
+          description: Handle
+          nullable: true
+        followingCount:
+          type: number
+          description: Following Count
+        userId:
+          type: string
+          description: ID
+        isAuthenticatedUser:
+          type: boolean
+          description: Is Authenticated User
+        name:
+          type: string
+          description: Full Name
+        followerCount:
+          type: number
+          description: Follower Count
+        profileImageUrl:
+          type: string
+          description: Profile Image URL
+        contacts:
+          type: object
+          properties:
+            twitter:
+              type: string
+              description: Twitter Username
+              nullable: true
+            github:
+              type: string
+              description: GitHub Username
+              nullable: true
+            custom:
+              type: string
+              description: Custom Contact
+              nullable: true
+            instagram:
+              type: string
+              description: Instagram Username
+              nullable: true
+            linkedin:
+              type: string
+              description: LinkedIn Username
+              nullable: true
+          description: Contacts
+        email:
+          type: string
+          description: E-mail
+        isOnboarded:
+          type: boolean
+          description: Is Onboarded
     CreateProjectInvitationRequest:
       title: CreateProjectInvitationRequest
       required:

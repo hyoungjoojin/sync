@@ -46,8 +46,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { useFollowUserMutation } from '@/features/user/api/follow-user';
-import { useUnfollowUserMutation } from '@/features/user/api/unfollow-user';
 import { useSession } from '@/lib/auth/client';
 import SyncError, { ErrorCode } from '@/lib/error';
 
@@ -105,12 +103,9 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
                   {profile.data.isAuthenticatedUser ? (
                     <EditProfileDialog />
                   ) : (
-                    <>
-                      <FollowButton handle={handle} />
-                      <Link href={`/messages?to=${handle}`}>
-                        <Button variant="outline">{t('header.message')}</Button>
-                      </Link>
-                    </>
+                    <Link href={`/messages?to=${handle}`}>
+                      <Button variant="outline">{t('header.message')}</Button>
+                    </Link>
                   )}
                 </div>
               )}
@@ -595,48 +590,4 @@ function ProfileImageField() {
       {error && <div className="text-destructive">{error}</div>}
     </Field>
   );
-}
-
-interface FollowButtonProps {
-  handle: string;
-}
-
-function FollowButton({ handle }: FollowButtonProps) {
-  const t = useTranslations('pages.profile.header');
-
-  const { data: session } = useSession();
-  const { data: profile, isPending } = useGetProfileByHandle(handle);
-
-  const { mutate: followUser } = useFollowUserMutation();
-  const { mutate: unfollowUser } = useUnfollowUserMutation();
-
-  if (isPending || !profile) {
-    return null;
-  }
-
-  if (session?.user.id === profile.data.userId) {
-    return null;
-  }
-
-  if (profile.data.isFollowing) {
-    return (
-      <Button
-        onClick={() => {
-          unfollowUser(handle);
-        }}
-      >
-        {t('unfollow')}
-      </Button>
-    );
-  } else {
-    return (
-      <Button
-        onClick={() => {
-          followUser(handle);
-        }}
-      >
-        {t('follow')}
-      </Button>
-    );
-  }
 }

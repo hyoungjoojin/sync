@@ -58,6 +58,8 @@ CREATE TABLE users (
     is_email_verified BOOLEAN DEFAULT FALSE,
     deleted_at TIMESTAMPTZ DEFAULT NULL,
     profile_image_id BIGINT,
+    follower_count BIGINT NOT NULL DEFAULT 0,
+    following_count BIGINT NOT NULL DEFAULT 0,
     FOREIGN KEY(profile_image_id) REFERENCES media_files (id) ON DELETE
     SET
         NULL
@@ -178,6 +180,8 @@ CREATE TABLE user_follow_relationships (
     FOREIGN KEY(followee_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (follower_id, followee_id)
 );
+
+CREATE INDEX idx_user_follow_relationships_followee ON user_follow_relationships(followee_id);
 
 CREATE TABLE post_summaries (
     id BIGINT PRIMARY KEY,
