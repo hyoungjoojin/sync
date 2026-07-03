@@ -11,6 +11,7 @@ const ROUTES = {
   NEW_POST: () => `/posts/new`,
   PROJECT: (handle: string) => `/projects/${handle}`,
   NEW_PROJECT: () => '/projects/new',
+  PROJECT_POSTS: (handle: string) => ROUTES.PROJECT(handle) + '/posts',
   PROJECT_POST: (projectHandle: string, postHandle: string) =>
     ROUTES.PROJECT(projectHandle) + `/posts/${postHandle}`,
   NEW_PROJECT_POST: (handle: string) => ROUTES.PROJECT(handle) + '/posts/new',

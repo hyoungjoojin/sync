@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import FollowedProjects from './FollowedProjects';
 import ProjectInvitations from './ProjectInvitations';
 import UserProjects from './UserProjects';
 
@@ -51,9 +52,7 @@ export default function ProjectsTabs({ initialTab }: ProjectsTabsProps) {
         <UserProjects />
       </TabsContent>
       <TabsContent value="following">
-        {
-          // TODO: 프로젝트 팔로잉 기능 구현
-        }
+        <FollowedProjects />
       </TabsContent>
       <TabsContent value="invitations">
         <ProjectInvitations />

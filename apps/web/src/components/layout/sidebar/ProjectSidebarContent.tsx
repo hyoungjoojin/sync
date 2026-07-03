@@ -39,7 +39,7 @@ export default function ProjectSidebarContent({
   const projectName = data?.data.name ?? handle;
 
   const workspaceNavItems = [
-    { label: 'Feed', href: `/projects/${handle}`, icon: RssIcon },
+    { label: 'Feed', href: ROUTES.PROJECT_POSTS(handle), icon: RssIcon },
   ];
 
   return (
@@ -56,14 +56,20 @@ export default function ProjectSidebarContent({
           <SidebarCloseButton />
         </div>
 
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-            <FolderSimpleIcon className="size-4" />
-          </div>
-          <span className="truncate font-medium">{projectName}</span>
-        </div>
-
         <SidebarMenu>
+          <SidebarMenuButton
+            asChild
+            size="lg"
+            isActive={pathname === ROUTES.PROJECT(handle)}
+          >
+            <Link href={ROUTES.PROJECT(handle)}>
+              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <FolderSimpleIcon className="size-4" />
+              </div>
+              <span className="truncate font-medium">{projectName}</span>
+            </Link>
+          </SidebarMenuButton>
+
           <SidebarMenuButton
             asChild
             isActive={pathname === ROUTES.NEW_PROJECT_POST(handle)}

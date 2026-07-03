@@ -8,12 +8,14 @@ interface TwoColumnLayoutProps {
   main: ReactNode;
   side?: ReactNode;
   hideSideOnMobile?: boolean;
+  reverseSideOnMobile?: boolean;
 }
 
 export function TwoColumnLayout({
   main,
   side,
   hideSideOnMobile,
+  reverseSideOnMobile,
 }: TwoColumnLayoutProps) {
   return (
     <div
@@ -22,13 +24,21 @@ export function TwoColumnLayout({
         side && 'lg:grid-cols-3',
       )}
     >
-      <div className={cn(side && 'lg:col-span-2')}>{main}</div>
+      <div
+        className={cn(
+          side && 'lg:col-span-2',
+          reverseSideOnMobile && 'order-2 lg:order-1',
+        )}
+      >
+        {main}
+      </div>
 
       {side && (
         <div
           className={cn(
             'lg:sticky lg:top-7',
             hideSideOnMobile && 'hidden lg:block',
+            reverseSideOnMobile && 'order-1 lg:order-2',
           )}
         >
           {side}
