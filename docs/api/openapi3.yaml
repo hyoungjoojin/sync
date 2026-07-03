@@ -951,6 +951,77 @@ paths:
               examples:
                 GetProjectHandleAvailability:
                   value: "{\"available\":true}"
+  /projects/{handle}/follow:
+    post:
+      tags:
+      - project
+      summary: Follow Project
+      description: 프로젝트를 팔로우합니다.
+      operationId: FollowProject
+      parameters:
+      - name: handle
+        in: path
+        description: 팔로우할 프로젝트 Handle
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+  /projects/{handle}/followers:
+    get:
+      tags:
+      - project
+      summary: Get Project Followers
+      description: 프로젝트를 팔로우하는 사용자 목록을 조회합니다.
+      operationId: GetProjectFollowers
+      parameters:
+      - name: handle
+        in: path
+        description: 프로젝트 Handle
+        required: true
+        schema:
+          type: string
+      - name: first
+        in: query
+        description: Number of items to return from the beginning of the list
+        required: false
+        schema:
+          type: string
+      - name: after
+        in: query
+        description: "Cursor for pagination, indicating the position after which to\
+          \ return items"
+        required: false
+        schema:
+          type: string
+      - name: last
+        in: query
+        description: Number of items to return from the end of the list
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        description: "Cursor for pagination, indicating the position before which\
+          \ to return items"
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetProjectFollowersResponse"
+              examples:
+                GetProjectFollowers:
+                  value: "{\"followers\":{\"pageInfo\":{\"size\":1,\"hasNextPage\"\
+                    :false,\"hasPreviousPage\":false,\"startCursor\":\"start-cursor\"\
+                    ,\"endCursor\":\"end-cursor\"},\"nodes\":[{\"cursor\":\"cursor\"\
+                    ,\"content\":{\"userId\":\"1\",\"handle\":\"user-handle\",\"name\"\
+                    :\"User\"}}]}}"
   /projects/{handle}/invitations:
     get:
       tags:
@@ -1115,6 +1186,23 @@ paths:
       responses:
         "201":
           description: "201"
+  /projects/{handle}/unfollow:
+    delete:
+      tags:
+      - project
+      summary: Unfollow Project
+      description: 프로젝트 팔로우를 취소합니다.
+      operationId: UnfollowProject
+      parameters:
+      - name: handle
+        in: path
+        description: 언팔로우할 프로젝트 Handle
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "204"
   /projects/{handle}/invitations/{invitationId}:
     delete:
       tags:
@@ -1299,6 +1387,32 @@ paths:
       responses:
         "204":
           description: "204"
+  /users/{handle}/followed-projects:
+    get:
+      tags:
+      - project
+      summary: Get Followed Projects
+      description: 유저가 팔로우하는 프로젝트 목록을 조회합니다.
+      operationId: GetFollowedProjects
+      parameters:
+      - name: handle
+        in: path
+        description: 유저 핸들
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetProjectsResponse"
+              examples:
+                GetFollowedProjects:
+                  value: "{\"projects\":[{\"id\":1,\"handle\":\"spring-boot-project\"\
+                    ,\"name\":\"Spring Boot 프로젝트\"},{\"id\":2,\"handle\":\"react-project\"\
+                    ,\"name\":\"React 프로젝트\"}]}"
   /users/{handle}/projects:
     get:
       tags:
@@ -2548,6 +2662,70 @@ components:
                       commentCount:
                         type: number
                         description: Comment Count
+                    description: Node Content
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                endCursor:
+                  type: string
+                  description: End Cursor
+                  nullable: true
+                startCursor:
+                  type: string
+                  description: Start Cursor
+                  nullable: true
+              description: Page Info
+    GetProjectFollowersResponse:
+      title: GetProjectFollowersResponse
+      type: object
+      properties:
+        followers:
+          required:
+          - nodes
+          - pageInfo
+          type: object
+          properties:
+            nodes:
+              type: array
+              description: Nodes
+              items:
+                required:
+                - content
+                - cursor
+                type: object
+                properties:
+                  cursor:
+                    type: string
+                    description: Node Cursor
+                  content:
+                    required:
+                    - handle
+                    - name
+                    - userId
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: User Name
+                      handle:
+                        type: string
+                        description: User Handle
+                      userId:
+                        type: string
+                        description: User ID
                     description: Node Content
             pageInfo:
               required:

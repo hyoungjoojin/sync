@@ -35,6 +35,9 @@ public class Project extends BaseEntity {
   @Column(name = "is_public", nullable = false)
   private boolean isPublic = true;
 
+  @Column(name = "follower_count", nullable = false)
+  private long followerCount = 0;
+
   protected Project() {}
 
   @Builder

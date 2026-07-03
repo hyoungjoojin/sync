@@ -28,6 +28,8 @@ import type {
   CreateProjectRequest,
   CreateProjectResponse,
   GetMyProjectInvitationsResponse,
+  GetProjectFollowersParams,
+  GetProjectFollowersResponse,
   GetProjectHandleAvailabilityParams,
   GetProjectHandleAvailabilityResponse,
   GetProjectInvitationsResponse,
@@ -1005,6 +1007,319 @@ export function useGetProjectHandleAvailability<
 }
 
 /**
+ * 프로젝트를 팔로우합니다.
+ * @summary Follow Project
+ */
+export type followProjectResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type followProjectResponseSuccess = followProjectResponse200 & {
+  headers: Headers;
+};
+export type followProjectResponse = followProjectResponseSuccess;
+
+export const getFollowProjectUrl = (handle: string) => {
+  return `/projects/${handle}/follow`;
+};
+
+export const followProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<followProjectResponse> => {
+  return api<followProjectResponse>(getFollowProjectUrl(handle), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getFollowProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof followProject>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof followProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['followProject'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof followProject>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return followProject(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FollowProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof followProject>>
+>;
+
+export type FollowProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Follow Project
+ */
+export const useFollowProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof followProject>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof followProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(getFollowProjectMutationOptions(options), queryClient);
+};
+/**
+ * 프로젝트를 팔로우하는 사용자 목록을 조회합니다.
+ * @summary Get Project Followers
+ */
+export type getProjectFollowersResponse200 = {
+  data: GetProjectFollowersResponse;
+  status: 200;
+};
+
+export type getProjectFollowersResponseSuccess =
+  getProjectFollowersResponse200 & {
+    headers: Headers;
+  };
+export type getProjectFollowersResponse = getProjectFollowersResponseSuccess;
+
+export const getGetProjectFollowersUrl = (
+  handle: string,
+  params?: GetProjectFollowersParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/projects/${handle}/followers?${stringifiedParams}`
+    : `/projects/${handle}/followers`;
+};
+
+export const getProjectFollowers = async (
+  handle: string,
+  params?: GetProjectFollowersParams,
+  options?: RequestInit,
+): Promise<getProjectFollowersResponse> => {
+  return api<getProjectFollowersResponse>(
+    getGetProjectFollowersUrl(handle, params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetProjectFollowersQueryKey = (
+  handle: string,
+  params?: GetProjectFollowersParams,
+) => {
+  return [
+    `/projects/${handle}/followers`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetProjectFollowersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProjectFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  params?: GetProjectFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectFollowers>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetProjectFollowersQueryKey(handle, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getProjectFollowers>>
+  > = ({ signal }) =>
+    getProjectFollowers(handle, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!handle,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProjectFollowers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetProjectFollowersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProjectFollowers>>
+>;
+export type GetProjectFollowersQueryError = ErrorType<unknown>;
+
+export function useGetProjectFollowers<
+  TData = Awaited<ReturnType<typeof getProjectFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  params: undefined | GetProjectFollowersParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectFollowers>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProjectFollowers>>,
+          TError,
+          Awaited<ReturnType<typeof getProjectFollowers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetProjectFollowers<
+  TData = Awaited<ReturnType<typeof getProjectFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  params?: GetProjectFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectFollowers>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProjectFollowers>>,
+          TError,
+          Awaited<ReturnType<typeof getProjectFollowers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetProjectFollowers<
+  TData = Awaited<ReturnType<typeof getProjectFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  params?: GetProjectFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectFollowers>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Project Followers
+ */
+
+export function useGetProjectFollowers<
+  TData = Awaited<ReturnType<typeof getProjectFollowers>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  params?: GetProjectFollowersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectFollowers>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetProjectFollowersQueryOptions(
+    handle,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
  * 프로젝트의 대기 중인 초대 목록을 조회합니다.
  * @summary Get Project Invitations
  */
@@ -1579,6 +1894,103 @@ export const useAddTeammate = <TError = ErrorType<unknown>, TContext = unknown>(
   return useMutation(getAddTeammateMutationOptions(options), queryClient);
 };
 /**
+ * 프로젝트 팔로우를 취소합니다.
+ * @summary Unfollow Project
+ */
+export type unfollowProjectResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type unfollowProjectResponseSuccess = unfollowProjectResponse204 & {
+  headers: Headers;
+};
+export type unfollowProjectResponse = unfollowProjectResponseSuccess;
+
+export const getUnfollowProjectUrl = (handle: string) => {
+  return `/projects/${handle}/unfollow`;
+};
+
+export const unfollowProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<unfollowProjectResponse> => {
+  return api<unfollowProjectResponse>(getUnfollowProjectUrl(handle), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getUnfollowProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unfollowProject>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unfollowProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['unfollowProject'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unfollowProject>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return unfollowProject(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnfollowProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unfollowProject>>
+>;
+
+export type UnfollowProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unfollow Project
+ */
+export const useUnfollowProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof unfollowProject>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof unfollowProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(getUnfollowProjectMutationOptions(options), queryClient);
+};
+/**
  * 프로젝트 초대를 취소합니다.
  * @summary Cancel Project Invitation
  */
@@ -2033,6 +2445,188 @@ export function useSearchMyProjects<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getSearchMyProjectsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 유저가 팔로우하는 프로젝트 목록을 조회합니다.
+ * @summary Get Followed Projects
+ */
+export type getFollowedProjectsResponse200 = {
+  data: GetProjectsResponse;
+  status: 200;
+};
+
+export type getFollowedProjectsResponseSuccess =
+  getFollowedProjectsResponse200 & {
+    headers: Headers;
+  };
+export type getFollowedProjectsResponse = getFollowedProjectsResponseSuccess;
+
+export const getGetFollowedProjectsUrl = (handle: string) => {
+  return `/users/${handle}/followed-projects`;
+};
+
+export const getFollowedProjects = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<getFollowedProjectsResponse> => {
+  return api<getFollowedProjectsResponse>(getGetFollowedProjectsUrl(handle), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetFollowedProjectsQueryKey = (handle: string) => {
+  return [`/users/${handle}/followed-projects`] as const;
+};
+
+export const getGetFollowedProjectsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getFollowedProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getFollowedProjects>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetFollowedProjectsQueryKey(handle);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getFollowedProjects>>
+  > = ({ signal }) =>
+    getFollowedProjects(handle, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!handle,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getFollowedProjects>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetFollowedProjectsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getFollowedProjects>>
+>;
+export type GetFollowedProjectsQueryError = ErrorType<unknown>;
+
+export function useGetFollowedProjects<
+  TData = Awaited<ReturnType<typeof getFollowedProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getFollowedProjects>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFollowedProjects>>,
+          TError,
+          Awaited<ReturnType<typeof getFollowedProjects>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFollowedProjects<
+  TData = Awaited<ReturnType<typeof getFollowedProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getFollowedProjects>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFollowedProjects>>,
+          TError,
+          Awaited<ReturnType<typeof getFollowedProjects>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFollowedProjects<
+  TData = Awaited<ReturnType<typeof getFollowedProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getFollowedProjects>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Followed Projects
+ */
+
+export function useGetFollowedProjects<
+  TData = Awaited<ReturnType<typeof getFollowedProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getFollowedProjects>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetFollowedProjectsQueryOptions(handle, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
