@@ -5,7 +5,6 @@ import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { redirect } from 'next/navigation';
 
-import { useGetProjectByHandle } from '@/api/__generated__/project/project';
 import type { GetPostResponse } from '@/api/__generated__/types';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { Badge } from '@/components/ui/badge';
@@ -25,14 +24,15 @@ import { deserialize } from '../editor/utils/serializer';
 import { PostType } from '../types/post';
 import { PostCardActions } from './components/PostCardActions';
 import { PostTypeBadge } from './components/PostTypeBadge';
+import type { PostAuthorSummary, PostProjectSummary } from './types';
 import { PostBody } from './variants/PostBody';
 
 interface PostPreviewProps {
   id: number;
   slug: string;
   type?: PostType;
-  author: GetPostResponse['author'];
-  project?: string;
+  author: PostAuthorSummary;
+  project?: PostProjectSummary;
   content: GetPostResponse['content'];
   likeCount: number;
   commentCount: number;
@@ -59,15 +59,9 @@ export default function PostPreview({
     immediatelyRender: false,
   });
 
-  const { data: projectData } = useGetProjectByHandle(project ?? '', {
-    query: {
-      enabled: !!project,
-    },
-  });
-
   const handleClickCard = () => {
-    if (projectData?.data) {
-      redirect(ROUTES.PROJECT_POST(projectData.data.handle, slug));
+    if (project?.handle) {
+      redirect(ROUTES.PROJECT_POST(project.handle, slug));
     } else {
       redirect(ROUTES.POST(slug));
     }
@@ -108,16 +102,10 @@ function PostPreviewHeader({
   createdAt,
 }: {
   type?: PostType;
-  author: GetPostResponse['author'];
-  project?: string;
+  author: PostAuthorSummary;
+  project?: PostProjectSummary;
   createdAt: string;
 }) {
-  const { data: projectData } = useGetProjectByHandle(project ?? '', {
-    query: {
-      enabled: !!project,
-    },
-  });
-
   return (
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-2">
@@ -136,9 +124,7 @@ function PostPreviewHeader({
 
         {type && <PostTypeBadge type={type} />}
 
-        {projectData?.data && (
-          <Badge variant="secondary">{projectData.data.name}</Badge>
-        )}
+        {project?.name && <Badge variant="secondary">{project.name}</Badge>}
       </div>
 
       <DropdownMenu>

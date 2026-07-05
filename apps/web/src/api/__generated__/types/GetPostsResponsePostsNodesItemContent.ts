@@ -4,28 +4,14 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
-import type { GetPostsResponsePostsNodesItemContentAuthor } from './GetPostsResponsePostsNodesItemContentAuthor';
-import type { GetPostsResponsePostsNodesItemContentProject } from './GetPostsResponsePostsNodesItemContentProject';
-import type { GetPostsResponsePostsNodesItemContentType } from './GetPostsResponsePostsNodesItemContentType';
+import type { GetPostsResponsePostsNodesItemContentSummary } from './GetPostsResponsePostsNodesItemContentSummary';
 
 /**
  * Node Content
  */
 export type GetPostsResponsePostsNodesItemContent = {
-  /** Creation Timestamp */
-  createdAt: string;
-  /** Author Information */
-  author: GetPostsResponsePostsNodesItemContentAuthor;
-  /** Project Information */
-  project?: GetPostsResponsePostsNodesItemContentProject;
-  /** Post ID */
-  id: number;
-  /** Post Type */
-  type: GetPostsResponsePostsNodesItemContentType;
+  /** Post Summary */
+  summary: GetPostsResponsePostsNodesItemContentSummary;
   /** Post Content */
   content: string;
-  /** Post Slug */
-  slug: string;
-  /** Whether the question post has been resolved */
-  resolved: boolean;
 };

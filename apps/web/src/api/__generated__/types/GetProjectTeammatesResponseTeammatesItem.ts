@@ -5,17 +5,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { GetProjectTeammatesResponseTeammatesItemRole } from './GetProjectTeammatesResponseTeammatesItemRole';
+import type { GetProjectTeammatesResponseTeammatesItemUser } from './GetProjectTeammatesResponseTeammatesItemUser';
 
 export type GetProjectTeammatesResponseTeammatesItem = {
   /** 팀원 역할 */
   role: GetProjectTeammatesResponseTeammatesItemRole;
-  /** 팀원 이름 */
-  name: string;
-  /** 팀원 핸들 */
-  handle: string;
-  /**
-   * 팀원 프로필 이미지 URL
-   * @nullable
-   */
-  profileImageUrl?: string | null;
+  /** 팀원 유저 정보 */
+  user: GetProjectTeammatesResponseTeammatesItemUser;
 };

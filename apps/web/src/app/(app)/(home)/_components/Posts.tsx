@@ -3,7 +3,8 @@
 import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useEffect } from 'react';
 
-import { useGetRecentFeedInfinite } from '@/api/__generated__/feed/feed';
+import { useGetPostRecommendationsInfinite } from '@/api/__generated__/post/post';
+import { PostType } from '@/components/feature/post/types/post';
 import PostPreview from '@/components/feature/post/viewer/PostPreview';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
@@ -12,7 +13,7 @@ const FEED_PAGE_SIZE = '50';
 
 export default function Posts() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
-    useGetRecentFeedInfinite(
+    useGetPostRecommendationsInfinite(
       {
         first: FEED_PAGE_SIZE,
         after: '',
@@ -20,9 +21,9 @@ export default function Posts() {
       {
         query: {
           getNextPageParam: (lastPage) => {
-            const items = lastPage.data.items;
-            return items?.pageInfo.hasNextPage
-              ? items.pageInfo.endCursor
+            const pageInfo = lastPage.data.posts?.pageInfo;
+            return pageInfo?.hasNextPage
+              ? (pageInfo.endCursor ?? undefined)
               : undefined;
           },
         },
@@ -42,7 +43,7 @@ export default function Posts() {
   }, [entry?.isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const posts =
-    data?.pages.flatMap((page) => page.data.items?.nodes ?? []) ?? [];
+    data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
 
   if (isPending) {
     return (
@@ -59,16 +60,17 @@ export default function Posts() {
       <div className="space-y-4">
         {posts.map((post) => (
           <PostPreview
-            key={post.content.id}
-            id={post.content.id}
-            slug={post.content.slug}
-            author={post.content.author}
+            key={post.content.summary.id}
+            id={post.content.summary.id}
+            slug={post.content.summary.slug}
+            type={post.content.summary.type as PostType}
+            author={post.content.summary.author}
+            project={post.content.summary.project}
             content={{ json: post.content.content, media: [] }}
-            likeCount={post.content.likeCount}
-            commentCount={post.content.commentCount}
-            bookmarked={post.content.bookmarked}
-            createdAt={post.content.createdAt}
-            project={post.content.project?.handle}
+            likeCount={0}
+            commentCount={0}
+            bookmarked={false}
+            createdAt={post.content.summary.createdAt}
           />
         ))}
       </div>

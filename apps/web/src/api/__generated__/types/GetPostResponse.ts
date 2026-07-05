@@ -4,32 +4,18 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
-import type { GetPostResponseAuthor } from './GetPostResponseAuthor';
 import type { GetPostResponseContent } from './GetPostResponseContent';
-import type { GetPostResponseProject } from './GetPostResponseProject';
-import type { GetPostResponseType } from './GetPostResponseType';
+import type { GetPostResponseSummary } from './GetPostResponseSummary';
 
 export interface GetPostResponse {
-  /** Creation Timestamp */
-  createdAt: string;
+  /** 포스트 정보 */
+  summary: GetPostResponseSummary;
   /** Whether the current user bookmarked this post */
   bookmarked: boolean;
-  /** Author Information */
-  author: GetPostResponseAuthor;
-  /** Project Information */
-  project?: GetPostResponseProject;
   /** Number of Likes */
   likeCount: number;
-  /** Post ID */
-  id: number;
-  /** Post Type */
-  type: GetPostResponseType;
   /** Post Content */
   content: GetPostResponseContent;
-  /** Post Slug */
-  slug: string;
-  /** Whether the question post has been resolved */
-  resolved: boolean;
   /** Number of Comments */
   commentCount: number;
 }

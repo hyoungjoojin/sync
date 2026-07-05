@@ -4,28 +4,22 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
-import type { GetBookmarkedPostsResponsePostsNodesItemContentAuthor } from './GetBookmarkedPostsResponsePostsNodesItemContentAuthor';
+import type { GetBookmarkedPostsResponsePostsNodesItemContentSummary } from './GetBookmarkedPostsResponsePostsNodesItemContentSummary';
 
 /**
  * Node Content
  */
 export type GetBookmarkedPostsResponsePostsNodesItemContent = {
-  /** Created At */
-  createdAt: string;
-  /** Author Information */
-  author: GetBookmarkedPostsResponsePostsNodesItemContentAuthor;
+  /** Post Summary */
+  summary: GetBookmarkedPostsResponsePostsNodesItemContentSummary;
   /** Whether the current user bookmarked this post */
   bookmarked: boolean;
   /** Like Count */
   likeCount: number;
-  /** Post ID */
-  id: number;
   /** Bookmarked At */
   bookmarkedAt: string;
   /** Content */
   content: string;
-  /** Post Slug */
-  slug: string;
   /** Comment Count */
   commentCount: number;
 };

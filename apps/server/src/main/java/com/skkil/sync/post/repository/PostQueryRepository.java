@@ -3,7 +3,6 @@ package com.skkil.sync.post.repository;
 import static com.skkil.sync.jooq.tables.PostBookmarks.POST_BOOKMARKS;
 import static com.skkil.sync.jooq.tables.Posts.POSTS;
 import static com.skkil.sync.jooq.tables.Projects.PROJECTS;
-import static com.skkil.sync.jooq.tables.Users.USERS;
 
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
 import com.skkil.sync.post.dto.data.PostDto;
@@ -33,8 +32,6 @@ public class PostQueryRepository {
   public Optional<PostDto> getPostBySlug(Long requesterId, String slug) {
     return dsl.select(post(requesterId))
         .from(POSTS)
-        .join(USERS)
-        .on(POSTS.AUTHOR_ID.eq(USERS.ID))
         .leftJoin(PROJECTS)
         .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
         .where(POSTS.SLUG.eq(slug).and(visibleCondition()))
@@ -46,8 +43,6 @@ public class PostQueryRepository {
     return (condition, orderFields, size) ->
         dsl.select(post(null))
             .from(POSTS)
-            .join(USERS)
-            .on(POSTS.AUTHOR_ID.eq(USERS.ID))
             .leftJoin(PROJECTS)
             .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
             .where(condition.and(visibleCondition()))
@@ -83,8 +78,6 @@ public class PostQueryRepository {
         dsl
             .select(post(null))
             .from(POSTS)
-            .join(USERS)
-            .on(POSTS.AUTHOR_ID.eq(USERS.ID))
             .leftJoin(PROJECTS)
             .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
             .where(POSTS.ID.in(ids).and(visibleCondition()))
@@ -111,10 +104,11 @@ public class PostQueryRepository {
         POSTS.POST_TYPE.as("type"),
         POSTS.SLUG.as("slug"),
         POSTS.AUTHOR_ID.as("authorId"),
-        USERS.FULL_NAME.as("authorName"),
-        USERS.HANDLE.as("authorHandle"),
         PROJECTS.HANDLE.as("projectHandle"),
         PROJECTS.NAME.as("projectName"),
+        PROJECTS.DESCRIPTION.as("projectDescription"),
+        PROJECTS.WEBSITE_URL.as("projectWebsite"),
+        PROJECTS.IS_PUBLIC.as("projectIsPublic"),
         POSTS.CONTENT.as("content"),
         POSTS.CREATED_AT.as("createdAt"),
         POSTS.UPDATED_AT.as("updatedAt"),

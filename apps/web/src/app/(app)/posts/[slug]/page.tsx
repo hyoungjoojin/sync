@@ -26,8 +26,8 @@ export default async function Post({ params }: PostProps) {
       getGetPostBySlugQueryOptions(slug),
     );
 
-    if (post.project) {
-      redirect(ROUTES.PROJECT_POST(post.project.handle, post.slug));
+    if (post.summary.project?.handle) {
+      redirect(ROUTES.PROJECT_POST(post.summary.project.handle, slug));
     }
   } catch (error) {
     if (error instanceof SyncError) {

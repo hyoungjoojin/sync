@@ -2,7 +2,7 @@ package com.skkil.sync.bookmark.repository;
 
 import static com.skkil.sync.jooq.tables.PostBookmarks.POST_BOOKMARKS;
 import static com.skkil.sync.jooq.tables.Posts.POSTS;
-import static com.skkil.sync.jooq.tables.Users.USERS;
+import static com.skkil.sync.jooq.tables.Projects.PROJECTS;
 
 import com.skkil.sync.bookmark.dto.data.BookmarkedPostDto;
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
@@ -25,23 +25,27 @@ public class PostBookmarkQueryRepository {
         dsl.select(
                 POSTS.ID.as("id"),
                 POSTS.SLUG.as("slug"),
+                POSTS.POST_TYPE.as("type"),
                 POST_BOOKMARKS.ID.as("bookmarkId"),
                 POST_BOOKMARKS.CREATED_AT.as("bookmarkedAt"),
                 POSTS.AUTHOR_ID.as("authorId"),
-                USERS.HANDLE.as("authorHandle"),
-                USERS.FULL_NAME.as("authorName"),
-                USERS.PROFILE_IMAGE_ID.as("authorProfileImageId"),
+                PROJECTS.HANDLE.as("projectHandle"),
+                PROJECTS.NAME.as("projectName"),
+                PROJECTS.DESCRIPTION.as("projectDescription"),
+                PROJECTS.WEBSITE_URL.as("projectWebsite"),
+                PROJECTS.IS_PUBLIC.as("projectIsPublic"),
                 POSTS.CONTENT.as("content"),
                 DSL.value(0L).as("likeCount"),
                 DSL.value(0L).as("commentCount"),
                 DSL.value(true).as("bookmarked"),
+                POSTS.RESOLVED.as("resolved"),
                 POSTS.CREATED_AT.as("createdAt"),
                 POSTS.UPDATED_AT.as("updatedAt"))
             .from(POST_BOOKMARKS)
             .join(POSTS)
             .on(POST_BOOKMARKS.POST_ID.eq(POSTS.ID))
-            .join(USERS)
-            .on(POSTS.AUTHOR_ID.eq(USERS.ID))
+            .leftJoin(PROJECTS)
+            .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
             .where(
                 condition
                     .and(POST_BOOKMARKS.USER_ID.eq(userId))

@@ -50,13 +50,15 @@ export default function RecommendedUsers() {
             >
               <div className="flex flex-col items-center gap-3 rounded-lg border p-4 text-center">
                 <div className="bg-primary text-primary-foreground flex size-14 items-center justify-center rounded-2xl text-xl font-semibold">
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.summary.name.charAt(0).toUpperCase()}
                 </div>
 
                 <div>
-                  <p className="truncate text-sm font-semibold">{user.name}</p>
+                  <p className="truncate text-sm font-semibold">
+                    {user.summary.name}
+                  </p>
                   <p className="text-muted-foreground truncate text-xs">
-                    @{user.handle}
+                    @{user.summary.handle}
                   </p>
                 </div>
 

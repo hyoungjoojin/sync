@@ -20,21 +20,17 @@ import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.config.SecurityConfig;
-import com.skkil.sync.project.dto.request.AddTeammateRequest;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
 import com.skkil.sync.project.dto.request.UpdateProjectRequest;
 import com.skkil.sync.project.dto.response.CreateProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
-import com.skkil.sync.project.dto.response.GetProjectTeammatesResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
 import com.skkil.sync.project.service.ProjectService;
-import com.skkil.sync.project.snippets.AddTeammateRequestSnippets;
 import com.skkil.sync.project.snippets.CreateProjectRequestSnippets;
 import com.skkil.sync.project.snippets.CreateProjectResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectHandleAvailabilityResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectResponseSnippets;
-import com.skkil.sync.project.snippets.GetProjectTeammatesResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectsResponseSnippets;
 import com.skkil.sync.project.snippets.UpdateProjectRequestSnippets;
 import java.util.function.Function;
@@ -101,10 +97,10 @@ class ProjectControllerTests {
   void getProjectByHandle() throws Exception {
     GetProjectResponse response = GetProjectResponseSnippets.getGetProjectResponse();
 
-    when(projectService.getProjectByHandle(null, response.handle())).thenReturn(response);
+    when(projectService.getProjectByHandle(null, response.summary().handle())).thenReturn(response);
 
     mockMvc
-        .perform(get("/projects/{handle}", response.handle()))
+        .perform(get("/projects/{handle}", response.summary().handle()))
         .andExpect(status().isOk())
         .andDo(
             document(
@@ -119,33 +115,6 @@ class ProjectControllerTests {
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
                 GetProjectResponseSnippets.getGetProjectResponseFields()));
-  }
-
-  @Test
-  @DisplayName("[getProjectTeammates] API 문서화 테스트")
-  void getProjectTeammates() throws Exception {
-    String handle = "my-project";
-    GetProjectTeammatesResponse response =
-        GetProjectTeammatesResponseSnippets.getGetProjectTeammatesResponse();
-
-    when(projectService.getProjectTeammates(handle)).thenReturn(response);
-
-    mockMvc
-        .perform(get("/projects/{handle}/teammates", handle))
-        .andExpect(status().isOk())
-        .andDo(
-            document(
-                "GetProjectTeammates",
-                ResourceSnippetParameters.builder()
-                    .tag("project")
-                    .summary("Get Project Teammates")
-                    .description("프로젝트의 팀원 목록을 조회합니다.")
-                    .responseSchema(schema(GetProjectTeammatesResponse.class.getSimpleName())),
-                null,
-                null,
-                Function.identity(),
-                pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
-                GetProjectTeammatesResponseSnippets.getGetProjectTeammatesResponseFields()));
   }
 
   @Test
@@ -257,43 +226,13 @@ class ProjectControllerTests {
   }
 
   @Test
-  @DisplayName("[addTeammate] API 문서화 테스트")
-  @WithAuthenticatedUser
-  void addTeammate() throws Exception {
-    String projectHandle = "my-project";
-    AddTeammateRequest request = AddTeammateRequestSnippets.getAddTeammateRequest();
-
-    doNothing().when(projectService).addTeammate(anyLong(), anyString(), eq(request));
-
-    mockMvc
-        .perform(
-            post("/projects/{handle}/teammates", projectHandle)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated())
-        .andDo(
-            document(
-                "AddTeammate",
-                ResourceSnippetParameters.builder()
-                    .tag("project")
-                    .summary("Add Teammate")
-                    .description("프로젝트에 팀원을 추가합니다.")
-                    .requestSchema(schema(AddTeammateRequest.class.getSimpleName())),
-                null,
-                null,
-                Function.identity(),
-                pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
-                AddTeammateRequestSnippets.getAddTeammateRequestFields()));
-  }
-
-  @Test
   @DisplayName("[updateProject] API 문서화 테스트")
   @WithAuthenticatedUser
   void updateProject() throws Exception {
     String projectHandle = "my-project";
     UpdateProjectRequest request = UpdateProjectRequestSnippets.getUpdateProjectRequest();
 
-    doNothing().when(projectService).updateProject(anyLong(), anyString(), eq(request));
+    doNothing().when(projectService).updateProject(anyString(), eq(request));
 
     mockMvc
         .perform(

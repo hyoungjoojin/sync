@@ -2,12 +2,12 @@ package com.skkil.sync.bookmark.service;
 
 import com.skkil.sync.bookmark.dto.data.BookmarkedPostDto;
 import com.skkil.sync.bookmark.dto.response.GetBookmarkedPostsResponse;
-import com.skkil.sync.bookmark.mapper.PostBookmarkMapper;
+import com.skkil.sync.bookmark.mapper.PostBookmarkAssembler;
 import com.skkil.sync.bookmark.repository.PostBookmarkQueryRepository;
 import com.skkil.sync.bookmark.repository.pagination.BookmarkedPostCursorPaginationProvider;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.service.PaginationService;
-import com.skkil.sync.media.service.domain.MediaDomainService;
+import com.skkil.sync.user.mapper.UserAssembler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,22 +15,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostBookmarkQueryService {
 
   private final PostBookmarkQueryRepository postBookmarkQueryRepository;
-  private final PostBookmarkMapper postBookmarkMapper;
+  private final PostBookmarkAssembler postBookmarkAssembler;
+  private final UserAssembler userAssembler;
   private final BookmarkedPostCursorPaginationProvider paginationProvider;
   private final PaginationService paginationService;
-  private final MediaDomainService mediaDomainService;
 
   public PostBookmarkQueryService(
       PostBookmarkQueryRepository postBookmarkQueryRepository,
-      PostBookmarkMapper postBookmarkMapper,
+      PostBookmarkAssembler postBookmarkAssembler,
+      UserAssembler userAssembler,
       BookmarkedPostCursorPaginationProvider paginationProvider,
-      PaginationService paginationService,
-      MediaDomainService mediaDomainService) {
+      PaginationService paginationService) {
     this.postBookmarkQueryRepository = postBookmarkQueryRepository;
-    this.postBookmarkMapper = postBookmarkMapper;
+    this.postBookmarkAssembler = postBookmarkAssembler;
+    this.userAssembler = userAssembler;
     this.paginationProvider = paginationProvider;
     this.paginationService = paginationService;
-    this.mediaDomainService = mediaDomainService;
   }
 
   @Transactional(readOnly = true)
@@ -43,9 +43,11 @@ public class PostBookmarkQueryService {
                 paginationProvider,
                 pagination)
             .mapWithLookup(
-                BookmarkedPostDto::authorProfileImageId,
-                mediaDomainService::generatePublicGetUrls,
-                postBookmarkMapper::toBookmarkedPostResponse);
+                BookmarkedPostDto::authorId,
+                userAssembler::toUserSummaries,
+                (post, authors) ->
+                    postBookmarkAssembler.toBookmarkedPostResponse(
+                        post, authors.get(post.authorId())));
 
     return new GetBookmarkedPostsResponse(bookmarkedPosts);
   }

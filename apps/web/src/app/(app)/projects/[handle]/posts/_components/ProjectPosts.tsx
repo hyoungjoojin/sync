@@ -82,17 +82,17 @@ export default function ProjectPosts({ handle }: ProjectPostsProps) {
           <div className="space-y-4">
             {posts.map((post) => (
               <PostPreview
-                key={post.content.id}
-                id={post.content.id}
-                slug={post.content.slug}
-                type={post.content.type as PostType}
-                author={post.content.author ?? { id: 0, name: '' }}
-                project={post.content.project?.handle}
+                key={post.content.summary.id}
+                id={post.content.summary.id}
+                slug={post.content.summary.slug}
+                type={post.content.summary.type as PostType}
+                author={post.content.summary.author}
+                project={post.content.summary.project}
                 content={{ json: post.content.content, media: [] }}
                 likeCount={0}
                 commentCount={0}
                 bookmarked={false}
-                createdAt={post.content.createdAt}
+                createdAt={post.content.summary.createdAt}
               />
             ))}
           </div>

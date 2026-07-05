@@ -4,10 +4,11 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { SearchPostsResponsePostsItemSummary } from './SearchPostsResponsePostsItemSummary';
 
 export type SearchPostsResponsePostsItem = {
-  /** Post ID */
-  id: number;
+  /** Post Summary */
+  summary: SearchPostsResponsePostsItemSummary;
   /** Post Content */
   content: string;
 };

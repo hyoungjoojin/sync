@@ -47,7 +47,7 @@ export default function ProfileProjectsList({
   return (
     <div className="flex flex-col gap-3">
       {projects.map((project) => (
-        <Link key={project.id} href={`/projects/${project.handle}`}>
+        <Link key={project.handle} href={`/projects/${project.handle}`}>
           <article className="rounded-md border p-4 hover:bg-accent transition-colors">
             <p className="font-medium">{project.name}</p>
             <p className="text-sm text-muted-foreground">/{project.handle}</p>

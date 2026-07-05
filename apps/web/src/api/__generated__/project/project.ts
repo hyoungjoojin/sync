@@ -39,6 +39,7 @@ import type {
   SearchMyProjectsParams,
   SearchProjectsParams,
   UpdateProjectRequest,
+  UpdateTeammateRequest,
 } from '../types';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -2097,6 +2098,217 @@ export const useCancelProjectInvitation = <
     getCancelProjectInvitationMutationOptions(options),
     queryClient,
   );
+};
+/**
+ * 프로젝트에서 팀원을 제거합니다.
+ * @summary Remove Teammate
+ */
+export type removeTeammateResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type removeTeammateResponseSuccess = removeTeammateResponse204 & {
+  headers: Headers;
+};
+export type removeTeammateResponse = removeTeammateResponseSuccess;
+
+export const getRemoveTeammateUrl = (
+  handle: string,
+  teammateHandle: string,
+) => {
+  return `/projects/${handle}/teammates/${teammateHandle}`;
+};
+
+export const removeTeammate = async (
+  handle: string,
+  teammateHandle: string,
+  options?: RequestInit,
+): Promise<removeTeammateResponse> => {
+  return api<removeTeammateResponse>(
+    getRemoveTeammateUrl(handle, teammateHandle),
+    {
+      ...options,
+      method: 'DELETE',
+    },
+  );
+};
+
+export const getRemoveTeammateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeTeammate>>,
+    TError,
+    { handle: string; teammateHandle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeTeammate>>,
+  TError,
+  { handle: string; teammateHandle: string },
+  TContext
+> => {
+  const mutationKey = ['removeTeammate'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeTeammate>>,
+    { handle: string; teammateHandle: string }
+  > = (props) => {
+    const { handle, teammateHandle } = props ?? {};
+
+    return removeTeammate(handle, teammateHandle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveTeammateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeTeammate>>
+>;
+
+export type RemoveTeammateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Remove Teammate
+ */
+export const useRemoveTeammate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof removeTeammate>>,
+      TError,
+      { handle: string; teammateHandle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof removeTeammate>>,
+  TError,
+  { handle: string; teammateHandle: string },
+  TContext
+> => {
+  return useMutation(getRemoveTeammateMutationOptions(options), queryClient);
+};
+/**
+ * 프로젝트 팀원의 역할을 수정합니다.
+ * @summary Update Teammate
+ */
+export type updateTeammateResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type updateTeammateResponseSuccess = updateTeammateResponse204 & {
+  headers: Headers;
+};
+export type updateTeammateResponse = updateTeammateResponseSuccess;
+
+export const getUpdateTeammateUrl = (
+  handle: string,
+  teammateHandle: string,
+) => {
+  return `/projects/${handle}/teammates/${teammateHandle}`;
+};
+
+export const updateTeammate = async (
+  handle: string,
+  teammateHandle: string,
+  updateTeammateRequest: UpdateTeammateRequest,
+  options?: RequestInit,
+): Promise<updateTeammateResponse> => {
+  return api<updateTeammateResponse>(
+    getUpdateTeammateUrl(handle, teammateHandle),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(updateTeammateRequest),
+    },
+  );
+};
+
+export const getUpdateTeammateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTeammate>>,
+    TError,
+    { handle: string; teammateHandle: string; data: UpdateTeammateRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateTeammate>>,
+  TError,
+  { handle: string; teammateHandle: string; data: UpdateTeammateRequest },
+  TContext
+> => {
+  const mutationKey = ['updateTeammate'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTeammate>>,
+    { handle: string; teammateHandle: string; data: UpdateTeammateRequest }
+  > = (props) => {
+    const { handle, teammateHandle, data } = props ?? {};
+
+    return updateTeammate(handle, teammateHandle, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateTeammateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTeammate>>
+>;
+export type UpdateTeammateMutationBody = UpdateTeammateRequest;
+export type UpdateTeammateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update Teammate
+ */
+export const useUpdateTeammate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateTeammate>>,
+      TError,
+      { handle: string; teammateHandle: string; data: UpdateTeammateRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateTeammate>>,
+  TError,
+  { handle: string; teammateHandle: string; data: UpdateTeammateRequest },
+  TContext
+> => {
+  return useMutation(getUpdateTeammateMutationOptions(options), queryClient);
 };
 /**
  * 검색어로 프로젝트를 검색합니다.

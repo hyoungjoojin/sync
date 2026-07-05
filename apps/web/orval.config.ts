@@ -69,7 +69,7 @@ export default defineConfig({
               useInfinite: true,
             },
           },
-          GetRecentFeed: {
+          GetPostRecommendations: {
             query: {
               useInfinite: true,
             },

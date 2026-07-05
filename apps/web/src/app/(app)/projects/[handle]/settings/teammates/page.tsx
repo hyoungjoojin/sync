@@ -76,21 +76,23 @@ export default function TeammatesSettingsPage() {
           </TableHeader>
           <TableBody>
             {teammates.map((teammate) => (
-              <TableRow key={teammate.handle} className="border-0">
+              <TableRow key={teammate.user.handle} className="border-0">
                 <TableCell className="border-l-0">
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarImage
-                        src={teammate.profileImageUrl ?? undefined}
+                        src={teammate.user.profileImageUrl ?? undefined}
                       />
                       <AvatarFallback>
-                        {teammate.name.charAt(0).toUpperCase()}
+                        {teammate.user.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{teammate.name}</p>
+                      <p className="text-sm font-medium">
+                        {teammate.user.name}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        @{teammate.handle}
+                        @{teammate.user.handle}
                       </p>
                     </div>
                   </div>
@@ -130,11 +132,11 @@ export default function TeammatesSettingsPage() {
             {isAdmin &&
               invitations.map((invitation) => (
                 <PendingInvitationRow
-                  key={invitation.id}
+                  key={invitation.invitation.id}
                   projectHandle={handle}
-                  invitationId={invitation.id}
-                  name={invitation.inviteeName}
-                  handle={invitation.inviteeHandle}
+                  invitationId={invitation.invitation.id}
+                  name={invitation.invitee.name}
+                  handle={invitation.invitee.handle}
                 />
               ))}
           </TableBody>

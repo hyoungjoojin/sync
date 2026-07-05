@@ -5,6 +5,7 @@ import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useEffect } from 'react';
 
 import { useGetBookmarkedPostsInfinite } from '@/api/__generated__/bookmark/bookmark';
+import { PostType } from '@/components/feature/post/types/post';
 import PostPreview from '@/components/feature/post/viewer/PostPreview';
 import {
   Empty,
@@ -83,15 +84,17 @@ export default function BookmarkedPosts() {
         <div className="space-y-4">
           {posts.map((post) => (
             <PostPreview
-              key={post.content.id}
-              id={post.content.id}
-              slug={post.content.slug}
-              author={post.content.author}
+              key={post.content.summary.id}
+              id={post.content.summary.id}
+              slug={post.content.summary.slug}
+              type={post.content.summary.type as PostType}
+              author={post.content.summary.author}
+              project={post.content.summary.project}
               content={{ json: post.content.content, media: [] }}
               likeCount={post.content.likeCount}
               commentCount={post.content.commentCount}
               bookmarked={post.content.bookmarked}
-              createdAt={post.content.createdAt}
+              createdAt={post.content.summary.createdAt}
             />
           ))}
         </div>

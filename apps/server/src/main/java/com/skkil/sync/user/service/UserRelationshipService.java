@@ -5,7 +5,7 @@ import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.user.dto.response.GetConnectionsResponse;
 import com.skkil.sync.user.exception.UserCannotFollowSelfException;
 import com.skkil.sync.user.exception.UserNotFoundException;
-import com.skkil.sync.user.mapper.UserConnectionMapper;
+import com.skkil.sync.user.mapper.UserConnectionAssembler;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.model.UserFollowRelationship;
 import com.skkil.sync.user.repository.UserConnectionQueryRepository;
@@ -25,7 +25,7 @@ public class UserRelationshipService {
   private final UserFollowRelationshipRepository userFollowRelationshipRepository;
   private final UserConnectionQueryRepository userConnectionQueryRepository;
   private final UserConnectionCursorPaginationProvider connectionPaginationProvider;
-  private final UserConnectionMapper userConnectionMapper;
+  private final UserConnectionAssembler userConnectionAssembler;
   private final PaginationService paginationService;
 
   public UserRelationshipService(
@@ -33,13 +33,13 @@ public class UserRelationshipService {
       UserFollowRelationshipRepository userFollowRelationshipRepository,
       UserConnectionQueryRepository userConnectionQueryRepository,
       UserConnectionCursorPaginationProvider connectionPaginationProvider,
-      UserConnectionMapper userConnectionMapper,
+      UserConnectionAssembler userConnectionAssembler,
       PaginationService paginationService) {
     this.userRepository = userRepository;
     this.userFollowRelationshipRepository = userFollowRelationshipRepository;
     this.userConnectionQueryRepository = userConnectionQueryRepository;
     this.connectionPaginationProvider = connectionPaginationProvider;
-    this.userConnectionMapper = userConnectionMapper;
+    this.userConnectionAssembler = userConnectionAssembler;
     this.paginationService = paginationService;
   }
 
@@ -110,14 +110,12 @@ public class UserRelationshipService {
     log.debug("Retrieving users followed by user {}", userId);
 
     var connections =
-        paginationService
-            .paginate(
-                userConnectionQueryRepository.getFollowing(userId),
-                connectionPaginationProvider,
-                pagination)
-            .map(userConnectionMapper::toConnection);
+        paginationService.paginate(
+            userConnectionQueryRepository.getFollowing(userId),
+            connectionPaginationProvider,
+            pagination);
 
-    return new GetConnectionsResponse(connections);
+    return userConnectionAssembler.toGetConnectionsResponse(connections);
   }
 
   @Transactional(readOnly = true)
@@ -125,14 +123,12 @@ public class UserRelationshipService {
     log.debug("Retrieving followers of user {}", userId);
 
     var connections =
-        paginationService
-            .paginate(
-                userConnectionQueryRepository.getFollowers(userId),
-                connectionPaginationProvider,
-                pagination)
-            .map(userConnectionMapper::toConnection);
+        paginationService.paginate(
+            userConnectionQueryRepository.getFollowers(userId),
+            connectionPaginationProvider,
+            pagination);
 
-    return new GetConnectionsResponse(connections);
+    return userConnectionAssembler.toGetConnectionsResponse(connections);
   }
 
   @Transactional

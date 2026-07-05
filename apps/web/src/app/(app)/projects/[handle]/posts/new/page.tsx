@@ -52,7 +52,9 @@ export default function CreateProjectPostPage() {
       <PostEditor
         type={getInitialPostType(searchParams.get('type'))}
         project={
-          projectData ? { handle, name: projectData.data.name } : undefined
+          projectData
+            ? { handle, name: projectData.data.summary.name }
+            : undefined
         }
         onSubmit={({ title, type, tags, project, content }) => {
           createPost({

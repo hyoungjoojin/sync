@@ -138,7 +138,7 @@ export default function PersonalSidebarContent() {
                   {projects.map((project) => {
                     const isActive = pathname === `/projects/${project.handle}`;
                     return (
-                      <SidebarMenuItem key={project.id}>
+                      <SidebarMenuItem key={project.handle}>
                         <SidebarMenuButton asChild isActive={isActive}>
                           <Link href={`/projects/${project.handle}`}>
                             {project.name}

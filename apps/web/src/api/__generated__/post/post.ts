@@ -31,6 +31,8 @@ import type {
   CreatePostResponse,
   GetPostActivitiesParams,
   GetPostActivitiesResponse,
+  GetPostRecommendationsParams,
+  GetPostRecommendationsResponse,
   GetPostResponse,
   GetPostsByProjectParams,
   GetPostsParams,
@@ -489,6 +491,396 @@ export const useCreatePost = <TError = ErrorType<unknown>, TContext = unknown>(
 > => {
   return useMutation(getCreatePostMutationOptions(options), queryClient);
 };
+/**
+ * 추천 게시글 목록을 조회합니다.
+ * @summary Get Post Recommendations
+ */
+export type getPostRecommendationsResponse200 = {
+  data: GetPostRecommendationsResponse;
+  status: 200;
+};
+
+export type getPostRecommendationsResponseSuccess =
+  getPostRecommendationsResponse200 & {
+    headers: Headers;
+  };
+export type getPostRecommendationsResponse =
+  getPostRecommendationsResponseSuccess;
+
+export const getGetPostRecommendationsUrl = (
+  params?: GetPostRecommendationsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/posts/recommendations?${stringifiedParams}`
+    : `/posts/recommendations`;
+};
+
+export const getPostRecommendations = async (
+  params?: GetPostRecommendationsParams,
+  options?: RequestInit,
+): Promise<getPostRecommendationsResponse> => {
+  return api<getPostRecommendationsResponse>(
+    getGetPostRecommendationsUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetPostRecommendationsInfiniteQueryKey = (
+  params?: GetPostRecommendationsParams,
+) => {
+  return [
+    'infinite',
+    `/posts/recommendations`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetPostRecommendationsQueryKey = (
+  params?: GetPostRecommendationsParams,
+) => {
+  return [`/posts/recommendations`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetPostRecommendationsInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    GetPostRecommendationsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostRecommendationsParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPostRecommendationsInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    QueryKey,
+    GetPostRecommendationsParams['after']
+  > = ({ signal, pageParam }) =>
+    getPostRecommendations(
+      { ...params, after: pageParam || params?.['after'] },
+      { signal, ...requestOptions },
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    TError,
+    TData,
+    QueryKey,
+    GetPostRecommendationsParams['after']
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPostRecommendationsInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPostRecommendations>>
+>;
+export type GetPostRecommendationsInfiniteQueryError = ErrorType<unknown>;
+
+export function useGetPostRecommendationsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    GetPostRecommendationsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | GetPostRecommendationsParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostRecommendationsParams['after']
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostRecommendations>>,
+          TError,
+          Awaited<ReturnType<typeof getPostRecommendations>>,
+          QueryKey
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostRecommendationsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    GetPostRecommendationsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostRecommendationsParams['after']
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostRecommendations>>,
+          TError,
+          Awaited<ReturnType<typeof getPostRecommendations>>,
+          QueryKey
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostRecommendationsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    GetPostRecommendationsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostRecommendationsParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Post Recommendations
+ */
+
+export function useGetPostRecommendationsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    GetPostRecommendationsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostRecommendationsParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPostRecommendationsInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetPostRecommendationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPostRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPostRecommendationsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPostRecommendations>>
+  > = ({ signal }) =>
+    getPostRecommendations(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPostRecommendations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPostRecommendationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPostRecommendations>>
+>;
+export type GetPostRecommendationsQueryError = ErrorType<unknown>;
+
+export function useGetPostRecommendations<
+  TData = Awaited<ReturnType<typeof getPostRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | GetPostRecommendationsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostRecommendations>>,
+          TError,
+          Awaited<ReturnType<typeof getPostRecommendations>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostRecommendations<
+  TData = Awaited<ReturnType<typeof getPostRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostRecommendations>>,
+          TError,
+          Awaited<ReturnType<typeof getPostRecommendations>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostRecommendations<
+  TData = Awaited<ReturnType<typeof getPostRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Post Recommendations
+ */
+
+export function useGetPostRecommendations<
+  TData = Awaited<ReturnType<typeof getPostRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPostRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostRecommendations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPostRecommendationsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 /**
  * Delete Post
  * @summary Delete Post

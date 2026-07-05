@@ -6,10 +6,20 @@
  */
 
 export type GetProjectsResponseProjectsItem = {
+  /**
+   * 프로젝트 웹사이트
+   * @nullable
+   */
+  website?: string | null;
   /** 프로젝트 이름 */
   name: string;
+  /** 공개 여부 */
+  isPublic: boolean;
+  /**
+   * 프로젝트 설명
+   * @nullable
+   */
+  description?: string | null;
   /** 프로젝트 핸들 */
   handle: string;
-  /** 프로젝트 ID */
-  id: number;
 };

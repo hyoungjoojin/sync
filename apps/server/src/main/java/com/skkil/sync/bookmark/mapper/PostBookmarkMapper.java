@@ -1,39 +1,23 @@
 package com.skkil.sync.bookmark.mapper;
 
 import com.skkil.sync.bookmark.dto.data.BookmarkedPostDto;
-import com.skkil.sync.bookmark.dto.response.GetBookmarkedPostsResponse;
-import java.net.URL;
-import java.util.Map;
+import com.skkil.sync.post.dto.summary.PostSummary;
+import com.skkil.sync.project.dto.summary.ProjectSummary;
+import com.skkil.sync.user.dto.summary.UserSummary;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface PostBookmarkMapper {
 
-  default GetBookmarkedPostsResponse.Post toBookmarkedPostResponse(
-      BookmarkedPostDto dto, Map<Long, URL> profileImageUrls) {
-    URL profileImageUrl =
-        dto.authorProfileImageId() == null
-            ? null
-            : profileImageUrls.get(dto.authorProfileImageId());
+  PostSummary toPostSummary(
+      BookmarkedPostDto post, UserSummary author, @Nullable ProjectSummary project);
 
-    GetBookmarkedPostsResponse.Author author =
-        GetBookmarkedPostsResponse.Author.builder()
-            .id(dto.authorId())
-            .handle(dto.authorHandle())
-            .name(dto.authorName())
-            .profileImageUrl(profileImageUrl == null ? null : profileImageUrl.toExternalForm())
-            .build();
-
-    return GetBookmarkedPostsResponse.Post.builder()
-        .id(dto.id())
-        .slug(dto.slug())
-        .author(author)
-        .content(dto.content())
-        .likeCount(dto.likeCount())
-        .commentCount(dto.commentCount())
-        .bookmarked(Boolean.TRUE.equals(dto.bookmarked()))
-        .createdAt(dto.createdAt())
-        .bookmarkedAt(dto.bookmarkedAt())
-        .build();
-  }
+  @Mapping(target = "handle", source = "projectHandle")
+  @Mapping(target = "name", source = "projectName")
+  @Mapping(target = "description", source = "projectDescription")
+  @Mapping(target = "website", source = "projectWebsite")
+  @Mapping(target = "isPublic", source = "projectIsPublic")
+  ProjectSummary toProjectSummary(BookmarkedPostDto post);
 }

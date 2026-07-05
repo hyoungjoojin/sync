@@ -43,7 +43,7 @@ export default function WorkspaceSettingsPage() {
           <Label htmlFor="project-name">이름</Label>
           <Input
             id="project-name"
-            defaultValue={project?.name ?? ''}
+            defaultValue={project?.summary.name ?? ''}
             disabled={!isAdmin}
           />
         </div>
@@ -65,7 +65,7 @@ export default function WorkspaceSettingsPage() {
           <Label htmlFor="project-handle">슬러그</Label>
           <Input
             id="project-handle"
-            defaultValue={project?.handle ?? ''}
+            defaultValue={project?.summary.handle ?? ''}
             disabled={!isAdmin}
           />
         </div>

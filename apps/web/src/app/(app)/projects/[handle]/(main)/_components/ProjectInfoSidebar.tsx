@@ -49,7 +49,7 @@ export default function ProjectInfoSidebar({
     return null;
   }
 
-  const { data: project } = data;
+  const { summary } = data.data;
 
   const isFollowing =
     followedProjectsData?.data.projects.some((p) => p.handle === handle) ??
@@ -76,16 +76,16 @@ export default function ProjectInfoSidebar({
   return (
     <div className="flex flex-col items-center gap-4 rounded-lg border p-6 text-center">
       <div className="bg-primary text-primary-foreground flex size-16 items-center justify-center rounded-2xl text-2xl font-semibold">
-        {project.name.charAt(0).toUpperCase()}
+        {summary.name.charAt(0).toUpperCase()}
       </div>
 
       <div>
-        <p className="text-lg font-semibold">{project.name}</p>
-        <p className="text-muted-foreground text-sm">@{project.handle}</p>
+        <p className="text-lg font-semibold">{summary.name}</p>
+        <p className="text-muted-foreground text-sm">@{summary.handle}</p>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        {project.description || '설명이 없습니다.'}
+        {summary.description || '설명이 없습니다.'}
       </p>
 
       {isAuthenticated(session) && (

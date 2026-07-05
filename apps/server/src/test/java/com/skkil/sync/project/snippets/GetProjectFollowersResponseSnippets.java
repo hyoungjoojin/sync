@@ -6,7 +6,9 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import com.epages.restdocs.apispec.FieldDescriptors;
 import com.skkil.sync.common.util.pagination.snippets.CursorPaginationResponseSnippets;
 import com.skkil.sync.project.dto.response.GetProjectFollowersResponse;
+import com.skkil.sync.user.snippets.UserSummarySnippets;
 import java.util.List;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 
@@ -14,7 +16,7 @@ public class GetProjectFollowersResponseSnippets {
 
   public static GetProjectFollowersResponse getGetProjectFollowersResponse() {
     GetProjectFollowersResponse.Follower follower =
-        new GetProjectFollowersResponse.Follower("1", "user-handle", "User");
+        new GetProjectFollowersResponse.Follower(UserSummarySnippets.getUserSummary());
 
     return new GetProjectFollowersResponse(CursorPaginationResponseSnippets.of(List.of(follower)));
   }
@@ -26,9 +28,12 @@ public class GetProjectFollowersResponseSnippets {
     fields =
         fields.andWithPrefix(
             "followers.nodes[].content",
-            fieldWithPath(".userId").type(JsonFieldType.STRING).description("User ID"),
-            fieldWithPath(".handle").type(JsonFieldType.STRING).description("User Handle"),
-            fieldWithPath(".name").type(JsonFieldType.STRING).description("User Name"));
+            fieldWithPath(".user").type(JsonFieldType.OBJECT).description("팔로워 유저 정보"));
+
+    fields =
+        fields.andWithPrefix(
+            "followers.nodes[].content.user",
+            UserSummarySnippets.getUserSummaryFields(".").toArray(FieldDescriptor[]::new));
 
     return responseFields(fields.getFieldDescriptors());
   }

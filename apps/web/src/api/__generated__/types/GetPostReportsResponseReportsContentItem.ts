@@ -24,9 +24,11 @@ export type GetPostReportsResponseReportsContentItem = {
    * @nullable
    */
   description?: string | null;
-  reporter?: GetPostReportsResponseReportsContentItemReporter;
+  /** 신고자 정보 */
+  reporter: GetPostReportsResponseReportsContentItemReporter;
   /** 신고 ID */
   id: number;
+  /** 검토자 정보 */
   reviewedBy?: GetPostReportsResponseReportsContentItemReviewedBy;
   /**
    * 관리자 처리 메모

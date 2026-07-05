@@ -124,21 +124,21 @@ export default function ProjectInvitations() {
     <div className="flex flex-col gap-3 pt-4">
       {invitations.map((invitation) => (
         <div
-          key={invitation.id}
+          key={invitation.invitation.id}
           className="flex items-center justify-between gap-4 rounded-lg border p-4"
         >
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback>
-                {invitation.projectName.slice(0, 1)}
+                {invitation.project.name.slice(0, 1)}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <span className="text-sm font-medium">
-                {invitation.projectName}
+                {invitation.project.name}
               </span>
               <span className="text-xs text-muted-foreground">
-                {invitation.inviterName}님이 초대함
+                {invitation.invitation.inviter.name}님이 초대함
               </span>
             </div>
           </div>

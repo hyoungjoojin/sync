@@ -113,7 +113,7 @@ export default function AddTeammateDropdown({
                     className="gap-2"
                   >
                     <Avatar className="h-6 w-6">
-                      <AvatarImage src={user.profileImageUrl} />
+                      <AvatarImage src={user.profileImageUrl ?? undefined} />
                       <AvatarFallback>
                         <UserCircleIcon className="h-4 w-4" />
                       </AvatarFallback>

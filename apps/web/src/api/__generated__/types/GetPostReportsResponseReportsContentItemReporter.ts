@@ -5,11 +5,17 @@
  * OpenAPI spec version: 0.0.1
  */
 
+/**
+ * 신고자 정보
+ */
 export type GetPostReportsResponseReportsContentItemReporter = {
-  /** 신고자 이름 */
+  /** 유저 이름 */
   name: string;
-  /** 신고자 핸들 */
+  /** 유저 핸들 */
   handle: string;
-  /** 신고자 ID */
-  id: number;
+  /**
+   * 유저 프로필 이미지 URL
+   * @nullable
+   */
+  profileImageUrl?: string | null;
 };

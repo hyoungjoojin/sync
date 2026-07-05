@@ -6,10 +6,13 @@
  */
 
 export type SearchUsersResponseUsersItem = {
-  /** 사용자 이름 */
+  /** 유저 이름 */
   name: string;
-  /** 사용자 핸들 */
+  /** 유저 핸들 */
   handle: string;
-  /** 프로필 이미지 URL */
-  profileImageUrl: string;
+  /**
+   * 유저 프로필 이미지 URL
+   * @nullable
+   */
+  profileImageUrl?: string | null;
 };

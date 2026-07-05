@@ -47,6 +47,9 @@ public class Post extends BaseEntity {
   @Column(name = "content", columnDefinition = "TEXT", nullable = false)
   private String content;
 
+  @Column(name = "summary", columnDefinition = "TEXT")
+  private String summary;
+
   @Column(name = "like_count", nullable = false)
   private int likeCount = 0;
 
@@ -89,6 +92,10 @@ public class Post extends BaseEntity {
 
   public void updateContent(String content) {
     this.content = content;
+  }
+
+  public void updateSummary(String summary) {
+    this.summary = summary;
   }
 
   public void addTag(PostTag postTag) {

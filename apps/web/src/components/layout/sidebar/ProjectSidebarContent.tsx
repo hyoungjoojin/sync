@@ -36,7 +36,7 @@ export default function ProjectSidebarContent({
   const pathname = usePathname();
   const { data } = useGetProjectByHandle(handle);
 
-  const projectName = data?.data.name ?? handle;
+  const projectName = data?.data.summary.name ?? handle;
 
   const workspaceNavItems = [
     { label: 'Feed', href: ROUTES.PROJECT_POSTS(handle), icon: RssIcon },

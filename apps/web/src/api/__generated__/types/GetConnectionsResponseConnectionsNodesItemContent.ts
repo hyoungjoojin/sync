@@ -4,15 +4,14 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { GetConnectionsResponseConnectionsNodesItemContentSummary } from './GetConnectionsResponseConnectionsNodesItemContentSummary';
 
 /**
  * Node Content
  */
 export type GetConnectionsResponseConnectionsNodesItemContent = {
-  /** User Name */
-  name: string;
-  /** User Handle */
-  handle: string;
+  /** User Summary */
+  summary: GetConnectionsResponseConnectionsNodesItemContentSummary;
   /** User ID */
   userId: string;
 };

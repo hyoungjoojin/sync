@@ -5,8 +5,7 @@ import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.project.dto.response.GetProjectFollowersResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
 import com.skkil.sync.project.exception.ProjectNotFoundException;
-import com.skkil.sync.project.mapper.ProjectFollowerMapper;
-import com.skkil.sync.project.mapper.ProjectMapper;
+import com.skkil.sync.project.mapper.ProjectAssembler;
 import com.skkil.sync.project.model.Project;
 import com.skkil.sync.project.model.ProjectFollowRelationship;
 import com.skkil.sync.project.repository.ProjectFollowRelationshipRepository;
@@ -32,8 +31,7 @@ public class ProjectFollowService {
   private final ProjectFollowRelationshipRepository projectFollowRelationshipRepository;
   private final ProjectFollowerQueryRepository projectFollowerQueryRepository;
   private final ProjectFollowerCursorPaginationProvider followerPaginationProvider;
-  private final ProjectFollowerMapper projectFollowerMapper;
-  private final ProjectMapper projectMapper;
+  private final ProjectAssembler projectAssembler;
   private final PaginationService paginationService;
 
   public ProjectFollowService(
@@ -43,8 +41,7 @@ public class ProjectFollowService {
       ProjectFollowRelationshipRepository projectFollowRelationshipRepository,
       ProjectFollowerQueryRepository projectFollowerQueryRepository,
       ProjectFollowerCursorPaginationProvider followerPaginationProvider,
-      ProjectFollowerMapper projectFollowerMapper,
-      ProjectMapper projectMapper,
+      ProjectAssembler projectAssembler,
       PaginationService paginationService) {
     this.projectRepository = projectRepository;
     this.userRepository = userRepository;
@@ -52,8 +49,7 @@ public class ProjectFollowService {
     this.projectFollowRelationshipRepository = projectFollowRelationshipRepository;
     this.projectFollowerQueryRepository = projectFollowerQueryRepository;
     this.followerPaginationProvider = followerPaginationProvider;
-    this.projectFollowerMapper = projectFollowerMapper;
-    this.projectMapper = projectMapper;
+    this.projectAssembler = projectAssembler;
     this.paginationService = paginationService;
   }
 
@@ -134,14 +130,12 @@ public class ProjectFollowService {
         projectRepository.findByHandle(projectHandle).orElseThrow(ProjectNotFoundException::new);
 
     var followers =
-        paginationService
-            .paginate(
-                projectFollowerQueryRepository.getFollowers(project.getId()),
-                followerPaginationProvider,
-                pagination)
-            .map(projectFollowerMapper::toFollower);
+        paginationService.paginate(
+            projectFollowerQueryRepository.getFollowers(project.getId()),
+            followerPaginationProvider,
+            pagination);
 
-    return new GetProjectFollowersResponse(followers);
+    return projectAssembler.toGetProjectFollowersResponse(followers);
   }
 
   @Transactional(readOnly = true)
@@ -153,9 +147,8 @@ public class ProjectFollowService {
     var projects =
         projectFollowRelationshipRepository.findByFollowerId(user.getId()).stream()
             .map(ProjectFollowRelationship::getProject)
-            .map(projectMapper::toGetProjectsResponseProject)
             .toList();
 
-    return new GetProjectsResponse(projects);
+    return projectAssembler.toGetProjectsResponse(projects);
   }
 }

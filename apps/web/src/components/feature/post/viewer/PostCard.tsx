@@ -25,13 +25,14 @@ import { PostType } from '../types/post';
 import { PostCardActions } from './components/PostCardActions';
 import { PostTypeBadge } from './components/PostTypeBadge';
 import { ReportPostDialog } from './components/ReportPostDialog';
+import type { PostAuthorSummary, PostProjectSummary } from './types';
 import { PostBody } from './variants/PostBody';
 
 interface PostCardProps {
   id: number;
   type: PostType;
-  author: GetPostResponse['author'];
-  project?: GetPostResponse['project'];
+  author: PostAuthorSummary;
+  project?: PostProjectSummary;
   content: GetPostResponse['content'];
   likeCount: number;
   commentCount: number;
@@ -97,8 +98,8 @@ function PostCardHeader({
 }: {
   postId: number;
   type: PostType;
-  author: GetPostResponse['author'];
-  project?: GetPostResponse['project'];
+  author: PostAuthorSummary;
+  project?: PostProjectSummary;
   createdAt: string;
 }) {
   const t = useTranslations('pages.posts.report');

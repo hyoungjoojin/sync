@@ -1,8 +1,9 @@
 package com.skkil.sync.user.dto.response;
 
 import com.skkil.sync.common.util.pagination.dto.response.CursorPaginationResponse;
+import com.skkil.sync.user.dto.summary.UserSummary;
 
 public record GetConnectionsResponse(CursorPaginationResponse<Connection> connections) {
 
-  public static record Connection(String userId, String handle, String name) {}
+  public record Connection(String userId, UserSummary summary) {}
 }

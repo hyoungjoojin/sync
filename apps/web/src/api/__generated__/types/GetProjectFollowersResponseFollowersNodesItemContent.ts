@@ -4,15 +4,12 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { GetProjectFollowersResponseFollowersNodesItemContentUser } from './GetProjectFollowersResponseFollowersNodesItemContentUser';
 
 /**
  * Node Content
  */
 export type GetProjectFollowersResponseFollowersNodesItemContent = {
-  /** User Name */
-  name: string;
-  /** User Handle */
-  handle: string;
-  /** User ID */
-  userId: string;
+  /** 팔로워 유저 정보 */
+  user: GetProjectFollowersResponseFollowersNodesItemContentUser;
 };
