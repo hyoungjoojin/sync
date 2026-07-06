@@ -9,6 +9,7 @@ public record PostDto(
     PostType type,
     String slug,
     Long authorId,
+    @Nullable String title,
     @Nullable String projectHandle,
     @Nullable String projectName,
     @Nullable String projectDescription,

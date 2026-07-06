@@ -11,6 +11,7 @@ public record BookmarkedPostDto(
     Long bookmarkId,
     OffsetDateTime bookmarkedAt,
     Long authorId,
+    @Nullable String title,
     @Nullable String projectHandle,
     @Nullable String projectName,
     @Nullable String projectDescription,

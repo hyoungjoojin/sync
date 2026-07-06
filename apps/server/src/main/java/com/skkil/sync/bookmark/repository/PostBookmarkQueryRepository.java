@@ -29,6 +29,7 @@ public class PostBookmarkQueryRepository {
                 POST_BOOKMARKS.ID.as("bookmarkId"),
                 POST_BOOKMARKS.CREATED_AT.as("bookmarkedAt"),
                 POSTS.AUTHOR_ID.as("authorId"),
+                POSTS.TITLE.as("title"),
                 PROJECTS.HANDLE.as("projectHandle"),
                 PROJECTS.NAME.as("projectName"),
                 PROJECTS.DESCRIPTION.as("projectDescription"),

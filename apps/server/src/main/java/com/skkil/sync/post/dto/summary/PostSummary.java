@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 public record PostSummary(
     Long id,
     String slug,
+    @Nullable String title,
     PostType type,
     UserSummary author,
     @Nullable ProjectSummary project,
