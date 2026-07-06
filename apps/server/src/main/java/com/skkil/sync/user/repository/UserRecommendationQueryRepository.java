@@ -2,6 +2,7 @@ package com.skkil.sync.user.repository;
 
 import static com.skkil.sync.jooq.tables.ProjectFollowRelationships.PROJECT_FOLLOW_RELATIONSHIPS;
 import static com.skkil.sync.jooq.tables.UserFollowRelationships.USER_FOLLOW_RELATIONSHIPS;
+import static com.skkil.sync.jooq.tables.Users.USERS;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -58,5 +59,21 @@ public class UserRecommendationQueryRepository {
         .orderBy(DSL.count().desc())
         .limit(limit)
         .fetch(USER_FOLLOW_RELATIONSHIPS.FOLLOWEE_ID);
+  }
+
+  // 신호 기반 후보만으로 추천 인원이 부족할 때(콜드 스타트) 채워 넣을 대체 후보 목록
+  public List<Long> findRecentlyJoinedCandidateIds(Long userId, int limit) {
+    return dsl.select(USERS.ID)
+        .from(USERS)
+        .where(USERS.ID.ne(userId), USERS.DELETED_AT.isNull())
+        .andNotExists(
+            dsl.selectOne()
+                .from(USER_FOLLOW_RELATIONSHIPS)
+                .where(
+                    USER_FOLLOW_RELATIONSHIPS.FOLLOWER_ID.eq(userId),
+                    USER_FOLLOW_RELATIONSHIPS.FOLLOWEE_ID.eq(USERS.ID)))
+        .orderBy(USERS.CREATED_AT.desc())
+        .limit(limit)
+        .fetch(USERS.ID);
   }
 }

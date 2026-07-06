@@ -16,4 +16,5 @@ public record PostSummary(
     UserSummary author,
     @Nullable ProjectSummary project,
     boolean resolved,
+    boolean isAuthor,
     OffsetDateTime createdAt) {}

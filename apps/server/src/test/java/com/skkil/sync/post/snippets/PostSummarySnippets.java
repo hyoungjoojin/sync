@@ -19,10 +19,12 @@ public class PostSummarySnippets {
     return PostSummary.builder()
         .id(1L)
         .slug("test-slug")
+        .title("Test Post Title")
         .type(PostType.SHORT)
         .author(UserSummarySnippets.getUserSummary())
         .project(ProjectSummarySnippets.getProjectSummary())
         .resolved(false)
+        .isAuthor(false)
         .createdAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .build();
   }
@@ -31,6 +33,11 @@ public class PostSummarySnippets {
     List<FieldDescriptor> fields = new ArrayList<>();
     fields.add(fieldWithPath(prefix + "id").type(JsonFieldType.NUMBER).description("Post ID"));
     fields.add(fieldWithPath(prefix + "slug").type(JsonFieldType.STRING).description("Post Slug"));
+    fields.add(
+        fieldWithPath(prefix + "title")
+            .type(JsonFieldType.STRING)
+            .description("Post Title")
+            .optional());
     fields.add(
         fieldWithPath(prefix + "type")
             .type(RestDocsUtils.ENUM_TYPE)
@@ -50,6 +57,10 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "resolved")
             .type(JsonFieldType.BOOLEAN)
             .description("Whether the question post has been resolved"));
+    fields.add(
+        fieldWithPath(prefix + "isAuthor")
+            .type(JsonFieldType.BOOLEAN)
+            .description("Whether the requesting user is the author of this post"));
     fields.add(
         fieldWithPath(prefix + "createdAt")
             .type(JsonFieldType.STRING)

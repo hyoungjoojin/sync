@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useSession } from '@/lib/auth/client';
 
 import { ChooseHandle } from './_components/ChooseHandle';
+import { RecommendedFollows } from './_components/RecommendedFollows';
 
 export interface OnboardingStepContentRef {
   submit: (onSuccess: () => void) => void;
@@ -34,6 +35,10 @@ const steps: {
   {
     id: 'choose-handle',
     content: ChooseHandle,
+  },
+  {
+    id: 'follow',
+    content: RecommendedFollows,
   },
   {
     id: 'finished',

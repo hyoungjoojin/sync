@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDebounce } from '@uidotdev/usehooks';
 import { useTranslations } from 'next-intl';
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import z from 'zod';
 
@@ -16,6 +16,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { useSession } from '@/lib/auth/client';
 
 import { OnboardingStepContentProps, OnboardingStepContentRef } from '../page';
 
@@ -54,6 +55,16 @@ export const ChooseHandle = forwardRef<
       handle: '',
     },
   });
+
+  const { data: session, refetch: refetchSession } = useSession();
+
+  const hasPrefilledHandle = useRef(false);
+  useEffect(() => {
+    if (!hasPrefilledHandle.current && session?.user.handle) {
+      hasPrefilledHandle.current = true;
+      form.reset({ handle: session.user.handle });
+    }
+  }, [session, form]);
 
   const handle = form.watch('handle');
 
@@ -124,7 +135,8 @@ export const ChooseHandle = forwardRef<
           },
         },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
+            await refetchSession();
             onSuccess();
           },
         },

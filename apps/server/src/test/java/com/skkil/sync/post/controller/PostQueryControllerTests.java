@@ -2,6 +2,7 @@ package com.skkil.sync.post.controller;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -54,7 +55,7 @@ class PostQueryControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getPosts(pagination)).thenReturn(response);
+    when(postQueryService.getPosts(any(), eq(pagination))).thenReturn(response);
 
     mockMvc
         .perform(
@@ -112,7 +113,7 @@ class PostQueryControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getUserPosts(userId, pagination)).thenReturn(response);
+    when(postQueryService.getUserPosts(any(), eq(userId), eq(pagination))).thenReturn(response);
 
     mockMvc
         .perform(
@@ -146,7 +147,8 @@ class PostQueryControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getPostsByProject(handle, type, pagination)).thenReturn(response);
+    when(postQueryService.getPostsByProject(any(), eq(handle), eq(type), eq(pagination)))
+        .thenReturn(response);
 
     mockMvc
         .perform(

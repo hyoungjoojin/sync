@@ -4,7 +4,7 @@ import { CharacterCount, Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,6 +63,14 @@ export default function PostEditor({
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [title]);
 
   const editor = useEditor({
     extensions: [
@@ -142,11 +150,19 @@ export default function PostEditor({
         </Tabs>
 
         {showTitle && (
-          <input
-            className="w-full shrink-0 resize-none bg-transparent text-4xl font-bold outline-none placeholder:text-muted-foreground leading-tight"
+          <textarea
+            ref={titleRef}
+            rows={1}
+            className="w-full shrink-0 resize-none overflow-hidden bg-transparent text-4xl font-bold outline-none placeholder:text-muted-foreground leading-tight break-words"
             placeholder={titlePlaceholder}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                editor?.commands.focus();
+              }
+            }}
           />
         )}
 

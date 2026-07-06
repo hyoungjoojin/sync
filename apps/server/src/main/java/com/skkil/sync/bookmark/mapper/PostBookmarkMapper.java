@@ -12,7 +12,10 @@ import org.mapstruct.Mapping;
 public interface PostBookmarkMapper {
 
   PostSummary toPostSummary(
-      BookmarkedPostDto post, UserSummary author, @Nullable ProjectSummary project);
+      BookmarkedPostDto post,
+      UserSummary author,
+      @Nullable ProjectSummary project,
+      boolean isAuthor);
 
   @Mapping(target = "handle", source = "projectHandle")
   @Mapping(target = "name", source = "projectName")

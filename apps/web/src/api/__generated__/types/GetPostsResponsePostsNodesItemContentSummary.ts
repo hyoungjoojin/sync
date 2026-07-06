@@ -22,8 +22,15 @@ export type GetPostsResponsePostsNodesItemContentSummary = {
   id: number;
   /** Post Type */
   type: GetPostsResponsePostsNodesItemContentSummaryType;
+  /**
+   * Post Title
+   * @nullable
+   */
+  title?: string | null;
   /** Post Slug */
   slug: string;
+  /** Whether the requesting user is the author of this post */
+  isAuthor: boolean;
   /** Whether the question post has been resolved */
   resolved: boolean;
 };

@@ -26,8 +26,10 @@ public class PostQueryController {
 
   @GetMapping("/posts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getPosts(@Validated CursorPaginationRequest pagination) {
-    return postQueryService.getPosts(pagination);
+  public GetPostsResponse getPosts(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @Validated CursorPaginationRequest pagination) {
+    return postQueryService.getPosts(user == null ? null : user.userId(), pagination);
   }
 
   @GetMapping("/posts/{slug}")
@@ -40,16 +42,20 @@ public class PostQueryController {
   @GetMapping("/users/{userId}/posts")
   @ResponseStatus(HttpStatus.OK)
   public GetPostsResponse getUserPosts(
-      @PathVariable Long userId, @Validated CursorPaginationRequest pagination) {
-    return postQueryService.getUserPosts(userId, pagination);
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable Long userId,
+      @Validated CursorPaginationRequest pagination) {
+    return postQueryService.getUserPosts(user == null ? null : user.userId(), userId, pagination);
   }
 
   @GetMapping("/projects/{handle}/posts")
   @ResponseStatus(HttpStatus.OK)
   public GetPostsResponse getPostsByProject(
+      @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable String handle,
       @RequestParam(required = false) PostType type,
       @Validated CursorPaginationRequest pagination) {
-    return postQueryService.getPostsByProject(handle, type, pagination);
+    return postQueryService.getPostsByProject(
+        user == null ? null : user.userId(), handle, type, pagination);
   }
 }

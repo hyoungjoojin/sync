@@ -15,7 +15,8 @@ import org.mapstruct.Mappings;
 @Mapper(componentModel = "spring")
 public interface PostMapper {
 
-  PostSummary toPostSummary(PostDto post, UserSummary author, @Nullable ProjectSummary project);
+  PostSummary toPostSummary(
+      PostDto post, UserSummary author, @Nullable ProjectSummary project, boolean isAuthor);
 
   @Mappings({
     @Mapping(target = "json", source = "post.content"),

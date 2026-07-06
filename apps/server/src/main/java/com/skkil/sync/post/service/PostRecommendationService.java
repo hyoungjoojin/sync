@@ -49,7 +49,8 @@ public class PostRecommendationService {
             .collect(Collectors.toMap(PostDto::id, Function.identity()));
 
     var posts =
-        postAssembler.toPostResponses(candidates.map(candidate -> postsById.get(candidate.id())));
+        postAssembler.toPostResponses(
+            candidates.map(candidate -> postsById.get(candidate.id())), requesterId);
 
     return new GetPostRecommendationsResponse(posts);
   }

@@ -44,7 +44,7 @@ public class PostQueryService {
   }
 
   @Transactional(readOnly = true)
-  public GetPostsResponse getPosts(CursorPaginationRequest pagination) {
+  public GetPostsResponse getPosts(Long requesterId, CursorPaginationRequest pagination) {
     var posts =
         paginationService
             .paginate(postQueryRepository.getPosts(), paginationProvider, pagination)
@@ -52,7 +52,7 @@ public class PostQueryService {
                 PostDto::authorId,
                 userAssembler::toUserSummaries,
                 (post, authors) ->
-                    postAssembler.toPostResponse(post, authors.get(post.authorId())));
+                    postAssembler.toPostResponse(post, authors.get(post.authorId()), requesterId));
 
     return new GetPostsResponse(posts);
   }
@@ -66,12 +66,13 @@ public class PostQueryService {
 
     var media = contentMediaService.getMediaFilesForPost(post.id());
 
-    return postAssembler.toGetPostResponse(post, media);
+    return postAssembler.toGetPostResponse(post, media, requesterId);
   }
 
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#userId, 'PROFILE', 'READ')")
-  public GetPostsResponse getUserPosts(Long userId, CursorPaginationRequest pagination) {
+  public GetPostsResponse getUserPosts(
+      Long requesterId, Long userId, CursorPaginationRequest pagination) {
     var posts =
         paginationService
             .paginate(postQueryRepository.getPostsByUser(userId), paginationProvider, pagination)
@@ -79,14 +80,14 @@ public class PostQueryService {
                 PostDto::authorId,
                 userAssembler::toUserSummaries,
                 (post, authors) ->
-                    postAssembler.toPostResponse(post, authors.get(post.authorId())));
+                    postAssembler.toPostResponse(post, authors.get(post.authorId()), requesterId));
 
     return new GetPostsResponse(posts);
   }
 
   @Transactional(readOnly = true)
   public GetPostsResponse getPostsByProject(
-      String handle, PostType type, CursorPaginationRequest pagination) {
+      Long requesterId, String handle, PostType type, CursorPaginationRequest pagination) {
     var posts =
         paginationService
             .paginate(
@@ -95,7 +96,7 @@ public class PostQueryService {
                 PostDto::authorId,
                 userAssembler::toUserSummaries,
                 (post, authors) ->
-                    postAssembler.toPostResponse(post, authors.get(post.authorId())));
+                    postAssembler.toPostResponse(post, authors.get(post.authorId()), requesterId));
 
     return new GetPostsResponse(posts);
   }

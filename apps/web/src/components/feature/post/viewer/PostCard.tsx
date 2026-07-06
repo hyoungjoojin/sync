@@ -4,10 +4,22 @@ import { DotsThreeIcon, SirenIcon } from '@phosphor-icons/react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
+import { useDeletePost } from '@/api/__generated__/post/post';
 import type { GetPostResponse } from '@/api/__generated__/types';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -18,10 +30,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { RelativeTime } from '@/components/ui/relative-time';
+import ROUTES from '@/util/routes';
 
 import { ImageNode } from '../editor/extensions/nodes/image';
 import { deserialize } from '../editor/utils/serializer';
 import { PostType } from '../types/post';
+import PostErrorBoundary from './PostErrorBoundary';
 import { PostCardActions } from './components/PostCardActions';
 import { PostTypeBadge } from './components/PostTypeBadge';
 import { ReportPostDialog } from './components/ReportPostDialog';
@@ -31,24 +45,36 @@ import { PostBody } from './variants/PostBody';
 interface PostCardProps {
   id: number;
   type: PostType;
+  title?: string | null;
   author: PostAuthorSummary;
   project?: PostProjectSummary;
   content: GetPostResponse['content'];
   likeCount: number;
   commentCount: number;
   bookmarked: boolean;
+  isAuthor: boolean;
   createdAt: string;
 }
 
-export default function PostCard({
+export default function PostCard(props: PostCardProps) {
+  return (
+    <PostErrorBoundary>
+      <PostCardContent {...props} />
+    </PostErrorBoundary>
+  );
+}
+
+function PostCardContent({
   id,
   type,
+  title,
   author,
   project,
   content,
   likeCount,
   commentCount,
   bookmarked,
+  isAuthor,
   createdAt,
 }: PostCardProps) {
   const editor = useEditor({
@@ -66,6 +92,7 @@ export default function PostCard({
           type={type}
           author={author}
           project={project}
+          isAuthor={isAuthor}
           createdAt={createdAt}
         />
       </CardHeader>
@@ -73,6 +100,7 @@ export default function PostCard({
       <CardContent
         className={type === PostType.SHORT ? 'space-y-3' : 'space-y-4'}
       >
+        {title && <h3 className="text-lg font-semibold">{title}</h3>}
         <PostBody
           type={type}
           editor={editor}
@@ -94,16 +122,38 @@ function PostCardHeader({
   type,
   author,
   project,
+  isAuthor,
   createdAt,
 }: {
   postId: number;
   type: PostType;
   author: PostAuthorSummary;
   project?: PostProjectSummary;
+  isAuthor: boolean;
   createdAt: string;
 }) {
   const t = useTranslations('pages.posts.report');
+  const tDelete = useTranslations('pages.posts.delete');
+  const router = useRouter();
   const [reportOpen, setReportOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
+
+  const handleDelete = () => {
+    deletePost(
+      { postId: String(postId) },
+      {
+        onSuccess: () => {
+          toast.success(tDelete('messages.success'));
+          setDeleteOpen(false);
+          router.push(ROUTES.HOME());
+        },
+        onError: () => {
+          toast.error(tDelete('messages.error'));
+        },
+      },
+    );
+  };
 
   return (
     <>
@@ -136,16 +186,26 @@ function PostCardHeader({
 
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Copy link</DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => {
-                setReportOpen(true);
-              }}
-            >
-              <SirenIcon />
-              {t('trigger')}
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+            {isAuthor ? (
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  setDeleteOpen(true);
+                }}
+              >
+                {tDelete('trigger')}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  setReportOpen(true);
+                }}
+              >
+                <SirenIcon />
+                {t('trigger')}
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -155,6 +215,25 @@ function PostCardHeader({
         open={reportOpen}
         onOpenChange={setReportOpen}
       />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tDelete('title')}</AlertDialogTitle>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tDelete('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={handleDelete}
+            >
+              {tDelete('actions.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

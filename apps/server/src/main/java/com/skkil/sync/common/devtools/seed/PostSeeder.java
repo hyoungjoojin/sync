@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 @Component
 class PostSeeder {
 
+  private static final String EMPTY_TIPTAP_DOCUMENT = "{\"type\":\"doc\",\"content\":[]}";
+
   private final PostService postService;
   private final PostRepository postRepository;
 
@@ -28,7 +30,7 @@ class PostSeeder {
       List<String> tags,
       String projectHandle) {
     CreatePostRequest.Content requestContent =
-        new CreatePostRequest.Content(content, content, List.of());
+        new CreatePostRequest.Content(content, EMPTY_TIPTAP_DOCUMENT, List.of());
     CreatePostRequest.Project project =
         projectHandle == null ? null : new CreatePostRequest.Project(projectHandle);
 

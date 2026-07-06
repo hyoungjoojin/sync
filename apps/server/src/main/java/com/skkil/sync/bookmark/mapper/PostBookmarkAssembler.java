@@ -15,9 +15,10 @@ public class PostBookmarkAssembler {
   }
 
   public GetBookmarkedPostsResponse.Post toBookmarkedPostResponse(
-      BookmarkedPostDto post, UserSummary author) {
+      BookmarkedPostDto post, UserSummary author, Long requesterId) {
     var project = post.projectHandle() == null ? null : postBookmarkMapper.toProjectSummary(post);
-    var summary = postBookmarkMapper.toPostSummary(post, author, project);
+    var isAuthor = requesterId != null && requesterId.equals(post.authorId());
+    var summary = postBookmarkMapper.toPostSummary(post, author, project, isAuthor);
 
     return GetBookmarkedPostsResponse.Post.builder()
         .summary(summary)

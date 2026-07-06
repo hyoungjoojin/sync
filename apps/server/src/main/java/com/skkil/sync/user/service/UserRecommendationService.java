@@ -41,6 +41,12 @@ public class UserRecommendationService {
     candidateIds.addAll(projectOverlapIds);
     candidateIds.addAll(trendingIds);
 
+    if (candidateIds.size() < RECOMMENDATION_LIMIT) {
+      candidateIds.addAll(
+          userRecommendationQueryRepository.findRecentlyJoinedCandidateIds(
+              userId, CANDIDATES_PER_SIGNAL));
+    }
+
     var orderedIds = candidateIds.stream().limit(RECOMMENDATION_LIMIT).toList();
 
     var summaries = userAssembler.toUserSummaries(orderedIds);

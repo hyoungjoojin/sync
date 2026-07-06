@@ -47,7 +47,7 @@ public class PostBookmarkQueryService {
                 userAssembler::toUserSummaries,
                 (post, authors) ->
                     postBookmarkAssembler.toBookmarkedPostResponse(
-                        post, authors.get(post.authorId())));
+                        post, authors.get(post.authorId()), userId));
 
     return new GetBookmarkedPostsResponse(bookmarkedPosts);
   }

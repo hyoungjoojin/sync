@@ -23,11 +23,11 @@ public class PostAssembler {
     this.userAssembler = userAssembler;
   }
 
-  public GetPostResponse toGetPostResponse(PostDto post, List<MediaDto> media) {
+  public GetPostResponse toGetPostResponse(PostDto post, List<MediaDto> media, Long requesterId) {
     UserSummary author = userAssembler.toUserSummary(post.authorId());
 
     return GetPostResponse.builder()
-        .summary(toPostSummary(post, author))
+        .summary(toPostSummary(post, author, requesterId))
         .content(postMapper.toContent(post, media))
         .likeCount(post.likeCount())
         .commentCount(post.commentCount())
@@ -35,30 +35,46 @@ public class PostAssembler {
         .build();
   }
 
-  public GetPostsResponse.Post toPostResponse(PostDto post, UserSummary author) {
+  public GetPostsResponse.Post toPostResponse(PostDto post, UserSummary author, Long requesterId) {
     return GetPostsResponse.Post.builder()
-        .summary(toPostSummary(post, author))
+        .summary(toPostSummary(post, author, requesterId))
         .content(post.content())
         .build();
   }
 
+  public GetPostsResponse.Post toPostResponse(PostDto post, UserSummary author) {
+    return toPostResponse(post, author, null);
+  }
+
   public CursorPaginationResponse<GetPostsResponse.Post> toPostResponses(
-      CursorPaginationResponse<PostDto> posts) {
+      CursorPaginationResponse<PostDto> posts, Long requesterId) {
     return posts.mapWithLookup(
         PostDto::authorId,
         userAssembler::toUserSummaries,
-        (post, authors) -> toPostResponse(post, authors.get(post.authorId())));
+        (post, authors) -> toPostResponse(post, authors.get(post.authorId()), requesterId));
   }
 
-  public List<GetPostsResponse.Post> toPostResponses(List<PostDto> posts) {
+  public CursorPaginationResponse<GetPostsResponse.Post> toPostResponses(
+      CursorPaginationResponse<PostDto> posts) {
+    return toPostResponses(posts, null);
+  }
+
+  public List<GetPostsResponse.Post> toPostResponses(List<PostDto> posts, Long requesterId) {
     var authorIds = posts.stream().map(PostDto::authorId).distinct().toList();
     var authors = userAssembler.toUserSummaries(authorIds);
 
-    return posts.stream().map(post -> toPostResponse(post, authors.get(post.authorId()))).toList();
+    return posts.stream()
+        .map(post -> toPostResponse(post, authors.get(post.authorId()), requesterId))
+        .toList();
   }
 
-  private PostSummary toPostSummary(PostDto post, UserSummary author) {
+  public List<GetPostsResponse.Post> toPostResponses(List<PostDto> posts) {
+    return toPostResponses(posts, null);
+  }
+
+  private PostSummary toPostSummary(PostDto post, UserSummary author, Long requesterId) {
     var project = post.projectHandle() == null ? null : postMapper.toProjectSummary(post);
-    return postMapper.toPostSummary(post, author, project);
+    var isAuthor = requesterId != null && requesterId.equals(post.authorId());
+    return postMapper.toPostSummary(post, author, project, isAuthor);
   }
 }

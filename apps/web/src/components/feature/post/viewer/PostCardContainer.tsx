@@ -24,12 +24,14 @@ export default function PostCardContainer({ slug }: PostCardContainerProps) {
     <PostCard
       id={summary.id}
       type={summary.type as PostType}
+      title={summary.title}
       author={summary.author}
       project={summary.project}
       content={post.content}
       likeCount={post.likeCount}
       commentCount={post.commentCount}
       bookmarked={post.bookmarked}
+      isAuthor={summary.isAuthor}
       createdAt={summary.createdAt}
     />
   );
