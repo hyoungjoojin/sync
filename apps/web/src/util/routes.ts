@@ -18,6 +18,15 @@ const ROUTES = {
   PROJECT_SETTINGS: (handle: string) => ROUTES.PROJECT(handle) + '/settings',
   PROJECT_SETTINGS_TEAMMATES: (handle: string) =>
     ROUTES.PROJECT(handle) + '/settings/teammates',
+  PROJECTS: () => '/projects',
+  BOOKMARKS: () => '/bookmarks',
+  COOKIES: () => '/cookies',
+  PROFILE: (handle: string) => `/@${handle}`,
+  SEARCH: (query?: string) =>
+    query ? `/search?q=${encodeURIComponent(query)}` : '/search',
+  MESSAGES: (to?: string) => (to ? `/messages?to=${to}` : '/messages'),
+  ADMIN: () => '/admin',
+  ADMIN_POST_REPORTS: () => '/admin/post-reports',
 };
 
 export default ROUTES;

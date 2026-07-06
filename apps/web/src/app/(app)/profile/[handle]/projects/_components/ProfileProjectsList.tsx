@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { useGetProjectsByUser } from '@/api/__generated__/project/project';
 import { Skeleton } from '@/components/ui/skeleton';
+import ROUTES from '@/util/routes';
 
 interface ProfileProjectsListProps {
   handle: string;
@@ -47,7 +48,7 @@ export default function ProfileProjectsList({
   return (
     <div className="flex flex-col gap-3">
       {projects.map((project) => (
-        <Link key={project.handle} href={`/projects/${project.handle}`}>
+        <Link key={project.handle} href={ROUTES.PROJECT(project.handle)}>
           <article className="rounded-md border p-4 hover:bg-accent transition-colors">
             <p className="font-medium">{project.name}</p>
             <p className="text-sm text-muted-foreground">/{project.handle}</p>

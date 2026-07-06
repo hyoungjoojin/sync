@@ -134,10 +134,20 @@ function PostCardHeader({
 }) {
   const t = useTranslations('pages.posts.report');
   const tDelete = useTranslations('pages.posts.delete');
+  const tCopyLink = useTranslations('pages.posts.copy-link');
   const router = useRouter();
   const [reportOpen, setReportOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success(tCopyLink('messages.success'));
+    } catch {
+      toast.error(tCopyLink('messages.error'));
+    }
+  };
 
   const handleDelete = () => {
     deletePost(
@@ -185,7 +195,9 @@ function PostCardHeader({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Copy link</DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleCopyLink}>
+              {tCopyLink('trigger')}
+            </DropdownMenuItem>
             {isAuthor ? (
               <DropdownMenuItem
                 variant="destructive"

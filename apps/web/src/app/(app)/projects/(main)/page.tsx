@@ -6,11 +6,7 @@ import ROUTES from '@/util/routes';
 
 import ProjectsTabs from './_components/ProjectsTabs';
 
-type ProjectsProps = {
-  searchParams: Promise<{ tab?: string }>;
-};
-
-export default async function Projects({ searchParams }: ProjectsProps) {
+export default async function Projects() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -19,15 +15,13 @@ export default async function Projects({ searchParams }: ProjectsProps) {
     redirect(ROUTES.HOME());
   }
 
-  const { tab } = await searchParams;
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Your Workspaces</h1>
       </div>
 
-      <ProjectsTabs initialTab={tab} />
+      <ProjectsTabs />
     </div>
   );
 }

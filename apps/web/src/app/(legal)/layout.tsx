@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/button';
 import { Copyright } from '@/components/ui/copyright';
 import { Logo } from '@/components/ui/logo';
 import { auth, isAuthenticated } from '@/lib/auth';
@@ -26,17 +26,15 @@ export default async function LegalLayout({ children }: LegalLayoutProps) {
 
         <div className="flex items-center gap-2">
           {loggedIn ? (
-            <Button asChild>
-              <Link href={ROUTES.HOME()}>{t('nav.app')}</Link>
-            </Button>
+            <LinkButton href={ROUTES.HOME()}>{t('nav.app')}</LinkButton>
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link href={ROUTES.LOGIN()}>{t('nav.login')}</Link>
-              </Button>
-              <Button asChild>
-                <Link href={ROUTES.REGISTER()}>{t('nav.register')}</Link>
-              </Button>
+              <LinkButton href={ROUTES.LOGIN()} variant="ghost">
+                {t('nav.login')}
+              </LinkButton>
+              <LinkButton href={ROUTES.REGISTER()}>
+                {t('nav.register')}
+              </LinkButton>
             </>
           )}
         </div>

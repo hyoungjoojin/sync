@@ -1,11 +1,10 @@
 'use client';
 
 import { CompassIcon } from '@phosphor-icons/react';
-import Link from 'next/link';
 
 import { useGetFollowedProjects } from '@/api/__generated__/project/project';
 import { ProjectCard } from '@/components/feature/project/card';
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/button';
 import {
   Empty,
   EmptyContent,
@@ -40,9 +39,9 @@ function FollowedProjectsEmpty() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button asChild size="sm">
-          <Link href="/explore">탐색하기</Link>
-        </Button>
+        <LinkButton href="/explore" size="sm">
+          탐색하기
+        </LinkButton>
       </EmptyContent>
     </Empty>
   );

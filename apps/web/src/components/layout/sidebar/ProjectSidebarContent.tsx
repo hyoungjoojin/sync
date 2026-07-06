@@ -47,7 +47,7 @@ export default function ProjectSidebarContent({
       <SidebarHeader className="flex flex-col gap-3 p-4">
         <div className="flex items-center justify-between">
           <Link
-            href="/"
+            href={ROUTES.HOME()}
             className="flex items-center gap-1 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
           >
             <ArrowLeftIcon size={12} />

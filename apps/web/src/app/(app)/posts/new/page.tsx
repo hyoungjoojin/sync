@@ -7,6 +7,7 @@ import PostEditor from '@/components/feature/post/editor/PostEditor';
 import { PostType } from '@/components/feature/post/types/post';
 import { isAuthenticated, isOnboarded } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import ROUTES from '@/util/routes';
 
 function getInitialPostType(value: string | null): PostType {
   if (value === PostType.SHORT || value === PostType.QUESTION) {
@@ -24,18 +25,18 @@ export default function CreatePostPage() {
   const { mutate: createPost } = useCreatePost({
     mutation: {
       onSuccess: ({ data }) => {
-        router.push(`/posts/${data.slug}`);
+        router.push(ROUTES.POST(data.slug));
       },
     },
   });
 
   if (!isPending) {
     if (isAuthenticated(session) && !isOnboarded(session)) {
-      redirect('/onboarding');
+      redirect(ROUTES.ONBOARDING());
     }
 
     if (!isAuthenticated(session)) {
-      redirect('/auth/login');
+      redirect(ROUTES.LOGIN());
     }
   }
 

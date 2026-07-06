@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import SyncError, { ErrorCode } from '@/lib/error';
+import ROUTES from '@/util/routes';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -81,7 +82,7 @@ export default function RegisterForm() {
       },
       {
         onSuccess: () => {
-          router.push('/auth/login');
+          router.replace(ROUTES.LOGIN());
         },
         onError: (error) => {
           if (error instanceof SyncError) {
@@ -184,7 +185,7 @@ export default function RegisterForm() {
             </Button>
 
             <Button className="w-full" variant="link">
-              <Link href="/auth/login">{t('links.login.label')}</Link>
+              <Link href={ROUTES.LOGIN()}>{t('links.login.label')}</Link>
             </Button>
           </div>
         </FieldGroup>

@@ -48,6 +48,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession } from '@/lib/auth/client';
 import SyncError, { ErrorCode } from '@/lib/error';
+import ROUTES from '@/util/routes';
 
 interface ProfileOverviewProps {
   handle: string;
@@ -103,7 +104,7 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
                   {profile.data.isAuthenticatedUser ? (
                     <EditProfileDialog />
                   ) : (
-                    <Link href={`/messages?to=${handle}`}>
+                    <Link href={ROUTES.MESSAGES(handle)}>
                       <Button variant="outline">{t('header.message')}</Button>
                     </Link>
                   )}

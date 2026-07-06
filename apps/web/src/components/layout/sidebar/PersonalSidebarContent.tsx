@@ -12,7 +12,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { useSearchMyProjects } from '@/api/__generated__/project/project';
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/button';
 import {
   SidebarContent,
   SidebarFooter,
@@ -32,31 +32,31 @@ import ROUTES from '@/util/routes';
 import SidebarCloseButton from './SidebarCloseButton';
 
 const global = [
-  { label: 'Home', href: '/', icon: HouseIcon, authenticated: false },
+  { label: 'Home', href: ROUTES.HOME(), icon: HouseIcon, authenticated: false },
   {
     label: 'Explore',
-    href: '/explore',
+    href: ROUTES.EXPLORE(),
     icon: CompassIcon,
     authenticated: false,
   },
   {
     label: 'New Post',
-    href: '/posts/new',
+    href: ROUTES.NEW_POST(),
     icon: NotePencilIcon,
     authenticated: true,
   },
   {
     label: 'Bookmarks',
-    href: '/bookmarks',
+    href: ROUTES.BOOKMARKS(),
     icon: BookmarkSimpleIcon,
     authenticated: true,
   },
 ];
 
 const footer = [
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'Terms', href: '/terms' },
-  { label: 'Cookies', href: '/cookies' },
+  { label: 'Privacy', href: ROUTES.PRIVACY() },
+  { label: 'Terms', href: ROUTES.TERMS() },
+  { label: 'Cookies', href: ROUTES.COOKIES() },
 ];
 
 export default function PersonalSidebarContent() {
@@ -120,27 +120,26 @@ export default function PersonalSidebarContent() {
               <SidebarGroupLabel asChild>
                 <div className="flex">
                   <Link
-                    href="/projects"
+                    href={ROUTES.PROJECTS()}
                     className="grow hover:text-sidebar-foreground"
                   >
                     Workspaces
                   </Link>
 
-                  <Button variant="ghost" asChild>
-                    <Link href={ROUTES.NEW_PROJECT()}>
-                      <PlusIcon />
-                    </Link>
-                  </Button>
+                  <LinkButton href={ROUTES.NEW_PROJECT()} variant="ghost">
+                    <PlusIcon />
+                  </LinkButton>
                 </div>
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {projects.map((project) => {
-                    const isActive = pathname === `/projects/${project.handle}`;
+                    const isActive =
+                      pathname === ROUTES.PROJECT(project.handle);
                     return (
                       <SidebarMenuItem key={project.handle}>
                         <SidebarMenuButton asChild isActive={isActive}>
-                          <Link href={`/projects/${project.handle}`}>
+                          <Link href={ROUTES.PROJECT(project.handle)}>
                             {project.name}
                           </Link>
                         </SidebarMenuButton>

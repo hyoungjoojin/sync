@@ -1,5 +1,6 @@
 import ky from 'ky';
 
+import ROUTES from '@/util/routes';
 import { getCookies, getCsrfToken, isServer } from '@/util/server';
 
 import { env } from './env';
@@ -24,7 +25,7 @@ async function invalidateClientSessionIfAuthenticated() {
       method: 'POST',
       credentials: 'include',
     });
-    window.location.href = '/auth/login';
+    window.location.href = ROUTES.LOGIN();
   }
 }
 

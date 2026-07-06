@@ -2,13 +2,12 @@
 
 import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useEffect } from 'react';
 
 import { useGetPostsByProjectInfinite } from '@/api/__generated__/post/post';
 import { PostType } from '@/components/feature/post/types/post';
 import PostPreview from '@/components/feature/post/viewer/PostPreview';
-import { Button } from '@/components/ui/button';
+import { Button, LinkButton } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import ROUTES from '@/util/routes';
@@ -146,9 +145,9 @@ function ProjectPostsEmpty({ handle }: ProjectPostsProps) {
             </Button>
           }
         />
-        <Button asChild size="sm">
-          <Link href={ROUTES.NEW_PROJECT_POST(handle)}>첫 게시물 작성하기</Link>
-        </Button>
+        <LinkButton href={ROUTES.NEW_PROJECT_POST(handle)} size="sm">
+          첫 게시물 작성하기
+        </LinkButton>
       </div>
     </div>
   );

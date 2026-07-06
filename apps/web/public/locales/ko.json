@@ -49,6 +49,13 @@
           "error": "포스트 삭제에 실패했습니다."
         }
       },
+      "copy-link": {
+        "trigger": "링크 복사",
+        "messages": {
+          "success": "링크가 복사되었습니다.",
+          "error": "링크 복사에 실패했습니다."
+        }
+      },
       "render-error": {
         "title": "포스트를 표시할 수 없습니다",
         "description": "이 포스트의 내용을 불러오는 중 문제가 발생했습니다."
@@ -449,16 +456,14 @@
       }
     },
     "search": {
+      "empty-query": "검색어를 입력해 주세요.",
       "results": {
         "title": "{query}에 대한 검색 결과",
         "no-results": "{query}에 대한 검색 결과가 없습니다."
       },
-      "filters": {
-        "title": "필터",
-        "people": "사람",
-        "schools": "학교",
-        "companies": "회사",
-        "contests": "대회",
+      "tabs": {
+        "posts": "게시물",
+        "users": "사용자",
         "projects": "프로젝트"
       }
     },
@@ -540,7 +545,8 @@
     "about": {
       "nav": {
         "login": "로그인",
-        "register": "가입하기"
+        "register": "가입하기",
+        "app": "앱으로 이동"
       },
       "hero": {
         "badge": "sync 소개",
@@ -628,6 +634,9 @@
         "previous": "뒤로",
         "next": "다음",
         "finish": "완료"
+      },
+      "errors": {
+        "finish": "온보딩을 완료하지 못했습니다. 다시 시도해주세요."
       }
     },
     "profile": {
@@ -1061,7 +1070,10 @@
         "profile": "내 프로필",
         "settings": "설정",
         "admin": "관리자 페이지",
-        "sign-out": "로그아웃"
+        "sign-out": "로그아웃",
+        "errors": {
+          "sign-out": "로그아웃에 실패했습니다. 다시 시도해주세요."
+        }
       }
     },
     "footer": {

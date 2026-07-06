@@ -1,7 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -16,24 +15,18 @@ function isTab(value: string | undefined): value is Tab {
   return TABS.includes(value as Tab);
 }
 
-type ProjectsTabsProps = {
-  initialTab?: string;
-};
-
-export default function ProjectsTabs({ initialTab }: ProjectsTabsProps) {
+export default function ProjectsTabs() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<Tab>(
-    isTab(initialTab) ? initialTab : 'member',
-  );
+  const tabParam = searchParams.get('tab') ?? undefined;
+  const activeTab: Tab = isTab(tabParam) ? tabParam : 'member';
 
   const handleTabChange = (value: string) => {
     if (!isTab(value)) {
       return;
     }
-
-    setActiveTab(value);
 
     const params = new URLSearchParams();
     params.set('tab', value);

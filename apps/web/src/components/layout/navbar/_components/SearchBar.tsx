@@ -11,6 +11,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import ROUTES from '@/util/routes';
 
 interface SearchBarProps {
   variant: 'desktop' | 'mobile';
@@ -32,7 +33,7 @@ export default function SearchBar({ variant }: SearchBarProps) {
 
   const handleSearch = () => {
     if (!query.trim()) return;
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    router.push(ROUTES.SEARCH(query.trim()));
     setQuery('');
     setIsExpanded(false);
   };

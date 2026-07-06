@@ -1,7 +1,6 @@
 import { PlusIcon } from '@phosphor-icons/react';
-import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 interface ProjectCardProps {
@@ -21,9 +20,9 @@ function ProjectCard({ name, handle }: ProjectCardProps) {
         <p className="text-muted-foreground text-sm">@{handle}</p>
       </div>
 
-      <Button asChild size="sm" className="w-full">
-        <Link href={`/projects/${handle}`}>Open</Link>
-      </Button>
+      <LinkButton href={`/projects/${handle}`} size="sm" className="w-full">
+        Open
+      </LinkButton>
     </Card>
   );
 }
@@ -40,9 +39,9 @@ function NewProjectCard() {
           For a team, company, or open-source project.
         </p>
       </div>
-      <Button asChild size="sm" className="w-full">
-        <Link href="/projects/new">Create</Link>
-      </Button>
+      <LinkButton href="/projects/new" size="sm" className="w-full">
+        Create
+      </LinkButton>
     </Card>
   );
 }

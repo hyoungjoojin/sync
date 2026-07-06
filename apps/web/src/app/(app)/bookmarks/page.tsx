@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { auth, isAuthenticated, isOnboarded } from '@/lib/auth';
+import ROUTES from '@/util/routes';
 
 import BookmarkedPosts from './_components/BookmarkedPosts';
 
@@ -11,11 +12,11 @@ export default async function BookmarksPage() {
   });
 
   if (!isAuthenticated(session)) {
-    redirect('/auth/login');
+    redirect(ROUTES.LOGIN());
   }
 
   if (!isOnboarded(session)) {
-    redirect('/onboarding');
+    redirect(ROUTES.ONBOARDING());
   }
 
   return <BookmarkedPosts />;

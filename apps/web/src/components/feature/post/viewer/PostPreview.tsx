@@ -99,6 +99,7 @@ function PostPreviewContent({
       <CardHeader>
         <PostPreviewHeader
           postId={id}
+          slug={slug}
           type={type}
           author={author}
           project={project}
@@ -127,6 +128,7 @@ function PostPreviewContent({
 
 function PostPreviewHeader({
   postId,
+  slug,
   type,
   author,
   project,
@@ -134,6 +136,7 @@ function PostPreviewHeader({
   createdAt,
 }: {
   postId: number;
+  slug: string;
   type?: PostType;
   author: PostAuthorSummary;
   project?: PostProjectSummary;
@@ -141,9 +144,23 @@ function PostPreviewHeader({
   createdAt: string;
 }) {
   const tDelete = useTranslations('pages.posts.delete');
+  const tCopyLink = useTranslations('pages.posts.copy-link');
   const queryClient = useQueryClient();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
+
+  const handleCopyLink = async () => {
+    const path = project?.handle
+      ? ROUTES.PROJECT_POST(project.handle, slug)
+      : ROUTES.POST(slug);
+
+    try {
+      await navigator.clipboard.writeText(window.location.origin + path);
+      toast.success(tCopyLink('messages.success'));
+    } catch {
+      toast.error(tCopyLink('messages.error'));
+    }
+  };
 
   const handleDelete = () => {
     deletePost(
@@ -202,7 +219,9 @@ function PostPreviewHeader({
           align="end"
           onClick={(event) => event.stopPropagation()}
         >
-          <DropdownMenuItem>Copy link</DropdownMenuItem>
+          <DropdownMenuItem onSelect={handleCopyLink}>
+            {tCopyLink('trigger')}
+          </DropdownMenuItem>
           {isAuthor ? (
             <DropdownMenuItem
               variant="destructive"

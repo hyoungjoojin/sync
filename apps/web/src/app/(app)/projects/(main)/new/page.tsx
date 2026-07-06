@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import ROUTES from '@/util/routes';
 
 export default function CreateProjectPage() {
   const t = useTranslations('pages.projects.new');
@@ -106,7 +107,7 @@ export default function CreateProjectPage() {
       {
         onSuccess: ({ data: { handle } }) => {
           toast.success(t('form.submit.success'));
-          router.push(`/projects/${handle}`);
+          router.push(ROUTES.PROJECT(handle));
         },
         onError: () => {
           toast.error(t('form.submit.error'));
@@ -120,7 +121,7 @@ export default function CreateProjectPage() {
   }
 
   if (!isAuthenticated(session)) {
-    redirect('/auth/login');
+    redirect(ROUTES.LOGIN());
   }
 
   return (
