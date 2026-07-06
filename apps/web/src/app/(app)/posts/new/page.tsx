@@ -40,24 +40,22 @@ export default function CreatePostPage() {
   }
 
   return (
-    <div className="h-full">
-      <PostEditor
-        type={getInitialPostType(searchParams.get('type'))}
-        onSubmit={({ title, type, tags, content }) => {
-          createPost({
-            data: {
-              type,
-              title,
-              tags,
-              content: {
-                json: content.json,
-                text: content.text,
-                mediaIds: content.media.map((media) => media.id),
-              },
+    <PostEditor
+      type={getInitialPostType(searchParams.get('type'))}
+      onSubmit={({ title, type, tags, content }) => {
+        createPost({
+          data: {
+            type,
+            title,
+            tags,
+            content: {
+              json: content.json,
+              text: content.text,
+              mediaIds: content.media.map((media) => media.id),
             },
-          });
-        }}
-      />
-    </div>
+          },
+        });
+      }}
+    />
   );
 }

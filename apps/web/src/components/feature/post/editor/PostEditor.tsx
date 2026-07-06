@@ -1,20 +1,21 @@
 'use client';
 
+import { FolderIcon } from '@phosphor-icons/react';
 import { CharacterCount, Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
-import { Badge } from '@/components/ui/badge';
+import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 import { PostType } from '../types/post';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTemplates } from './components/EditorTemplates';
+import { PostTypeSelector } from './components/PostTypeSelector';
 import { TagInput } from './components/TagInput';
 import { CommandsExtension } from './extensions/commands';
 import { ImageNode } from './extensions/nodes/image';
@@ -41,6 +42,12 @@ interface PostEditorProps {
   }) => void;
 }
 
+const ACCENT_RING: Record<PostType, string> = {
+  [PostType.SHORT]: 'focus-within:ring-primary/30',
+  [PostType.LONG]: 'focus-within:ring-blue-500/30',
+  [PostType.QUESTION]: 'focus-within:ring-amber-600/30',
+};
+
 function getContentPlaceholder(
   t: ReturnType<typeof useTranslations<'components.editor'>>,
   type: PostType,
@@ -56,7 +63,6 @@ export default function PostEditor({
   onSubmit,
 }: PostEditorProps) {
   const t = useTranslations('components.editor');
-  const tType = useTranslations('components.post.type');
   const locale = useLocale();
 
   const [type, setType] = useState<PostType>(initialType);
@@ -110,6 +116,11 @@ export default function PostEditor({
       return;
     }
 
+    if (editor.getText().trim().length === 0) {
+      toast.error(t('messages.empty-content'));
+      return;
+    }
+
     onSubmit({
       title,
       type,
@@ -125,70 +136,90 @@ export default function PostEditor({
       ? t('placeholders.title-question')
       : t('placeholders.title-long');
 
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto py-12 flex flex-col gap-4">
-        {project && (
-          <Badge variant="secondary" className="w-fit">
-            {t('posting-to', { project: project.name })}
-          </Badge>
-        )}
-
-        <Tabs
-          value={type}
-          onValueChange={(value) => {
-            setType(value as PostType);
+  const main = (
+    <div
+      className={cn(
+        'flex w-full flex-col gap-4 py-6',
+        type === PostType.SHORT && 'mx-auto max-w-xl pt-10',
+      )}
+    >
+      {showTitle && (
+        <textarea
+          ref={titleRef}
+          rows={1}
+          className="w-full shrink-0 resize-none overflow-hidden bg-transparent text-4xl font-bold outline-none placeholder:text-muted-foreground/50 leading-tight break-words"
+          placeholder={titlePlaceholder}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              editor?.commands.focus();
+            }
           }}
-        >
-          <TabsList>
-            {Object.values(PostType).map((pt) => (
-              <TabsTrigger key={pt} value={pt}>
-                {tType(pt)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        />
+      )}
 
-        {showTitle && (
-          <textarea
-            ref={titleRef}
-            rows={1}
-            className="w-full shrink-0 resize-none overflow-hidden bg-transparent text-4xl font-bold outline-none placeholder:text-muted-foreground leading-tight break-words"
-            placeholder={titlePlaceholder}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                editor?.commands.focus();
-              }
+      <div className={cn(type === PostType.SHORT && 'text-lg')}>
+        <EditorContent editor={editor} />
+        {editor && <EditorBubbleMenu editor={editor} />}
+        {isEditorEmpty && type === PostType.LONG && (
+          <EditorTemplates
+            locale={locale}
+            onSelect={(template) => {
+              setTitle(template.title);
+              editor?.commands.setContent(template.content);
             }}
           />
         )}
-
-        <ScrollArea className="flex-1 min-h-0 max-h-screen">
-          <EditorContent editor={editor} />
-          {editor && <EditorBubbleMenu editor={editor} />}
-          {isEditorEmpty && type === PostType.LONG && (
-            <EditorTemplates
-              locale={locale}
-              onSelect={(template) => {
-                setTitle(template.title);
-                editor?.commands.setContent(template.content);
-              }}
-            />
-          )}
-        </ScrollArea>
-      </div>
-
-      <Separator />
-
-      <div className="px-6 py-3 flex flex-col gap-3 shrink-0">
-        <TagInput tags={tags} onChange={setTags} />
-        <div className="flex justify-end">
-          <Button onClick={handleSubmit}>{t('submit')}</Button>
-        </div>
       </div>
     </div>
   );
+
+  const side = (
+    <div className="flex flex-col gap-6">
+      <section className="flex flex-col gap-2">
+        <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('sidebar.type')}
+        </h3>
+        <PostTypeSelector value={type} onChange={setType} />
+      </section>
+
+      {project && (
+        <section className="flex flex-col gap-2">
+          <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('sidebar.project')}
+          </h3>
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2.5">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+              <FolderIcon size={16} />
+            </span>
+            <span className="truncate text-sm font-medium">{project.name}</span>
+          </div>
+        </section>
+      )}
+
+      <section className="flex flex-col gap-2">
+        <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('sidebar.tags')}
+        </h3>
+        <TagInput
+          tags={tags}
+          onChange={setTags}
+          accentRing={ACCENT_RING[type]}
+        />
+      </section>
+
+      <Button
+        className="w-full"
+        size="lg"
+        disabled={isEditorEmpty}
+        onClick={handleSubmit}
+      >
+        {t('submit')}
+      </Button>
+    </div>
+  );
+
+  return <TwoColumnLayout main={main} side={side} />;
 }

@@ -1109,7 +1109,18 @@
       "posting-to": "{project}에 게시",
       "messages": {
         "create-success": "게시글이 작성되었습니다.",
-        "create-error": "게시글 작성에 실패했습니다."
+        "create-error": "게시글 작성에 실패했습니다.",
+        "empty-content": "내용을 입력해주세요."
+      },
+      "sidebar": {
+        "type": "종류",
+        "project": "프로젝트",
+        "tags": "태그"
+      },
+      "type-descriptions": {
+        "SHORT": "오늘 배운 것을 짧게 기록해요",
+        "LONG": "생각을 정리해 글로 남겨요",
+        "QUESTION": "막힌 부분을 물어봐요"
       },
       "toolbar": {
         "bold": {

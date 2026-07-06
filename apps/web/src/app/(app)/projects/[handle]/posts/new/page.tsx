@@ -48,30 +48,28 @@ export default function CreateProjectPostPage() {
   }
 
   return (
-    <div className="h-full">
-      <PostEditor
-        type={getInitialPostType(searchParams.get('type'))}
-        project={
-          projectData
-            ? { handle, name: projectData.data.summary.name }
-            : undefined
-        }
-        onSubmit={({ title, type, tags, project, content }) => {
-          createPost({
-            data: {
-              type,
-              title,
-              tags,
-              project,
-              content: {
-                json: content.json,
-                text: content.text,
-                mediaIds: content.media.map((media) => media.id),
-              },
+    <PostEditor
+      type={getInitialPostType(searchParams.get('type'))}
+      project={
+        projectData
+          ? { handle, name: projectData.data.summary.name }
+          : undefined
+      }
+      onSubmit={({ title, type, tags, project, content }) => {
+        createPost({
+          data: {
+            type,
+            title,
+            tags,
+            project,
+            content: {
+              json: content.json,
+              text: content.text,
+              mediaIds: content.media.map((media) => media.id),
             },
-          });
-        }}
-      />
-    </div>
+          },
+        });
+      }}
+    />
   );
 }
