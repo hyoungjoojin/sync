@@ -9,10 +9,11 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { PostType } from '../types/post';
+import { PostScope, PostStatus, PostType } from '../types/post';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTemplates } from './components/EditorTemplates';
 import { PostTypeSelector } from './components/PostTypeSelector';
@@ -23,13 +24,17 @@ import { serialize } from './utils/serializer';
 
 interface PostEditorProps {
   type: PostType;
+  scope: PostScope;
   project?: {
     handle: string;
     name: string;
   };
+  isSubmitting?: boolean;
   onSubmit: (data: {
     title: string;
     type: PostType;
+    scope: PostScope;
+    status: PostStatus;
     tags: string[];
     project?: { handle: string };
     content: {
@@ -59,7 +64,9 @@ function getContentPlaceholder(
 
 export default function PostEditor({
   type: initialType,
+  scope,
   project,
+  isSubmitting = false,
   onSubmit,
 }: PostEditorProps) {
   const t = useTranslations('components.editor');
@@ -69,6 +76,9 @@ export default function PostEditor({
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null,
+  );
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -111,7 +121,7 @@ export default function PostEditor({
     }
   }, [type, editor, t]);
 
-  const handleSubmit = () => {
+  const handleSubmit = (status: PostStatus) => {
     if (!editor) {
       return;
     }
@@ -121,9 +131,27 @@ export default function PostEditor({
       return;
     }
 
+    if (
+      status === PostStatus.PUBLISHED &&
+      type !== PostType.SHORT &&
+      title.trim().length === 0
+    ) {
+      setValidationMessage(t('validation.title-required'));
+      return;
+    }
+
+    if (status === PostStatus.PUBLISHED && tags.length === 0) {
+      setValidationMessage(t('validation.tags-required'));
+      return;
+    }
+
+    setValidationMessage(null);
+
     onSubmit({
       title,
       type,
+      scope,
+      status,
       tags,
       project: project ? { handle: project.handle } : undefined,
       content: serialize(editor),
@@ -135,6 +163,12 @@ export default function PostEditor({
     type === PostType.QUESTION
       ? t('placeholders.title-question')
       : t('placeholders.title-long');
+  const scopeLabel =
+    scope === PostScope.WORKSPACE
+      ? t('scope.workspace', {
+          workspace: project?.name ?? t('scope.workspace-loading'),
+        })
+      : t('scope.public');
 
   const main = (
     <div
@@ -173,11 +207,19 @@ export default function PostEditor({
           />
         )}
       </div>
+
+      {validationMessage && (
+        <p className="text-sm text-destructive">{validationMessage}</p>
+      )}
     </div>
   );
 
   const side = (
     <div className="flex flex-col gap-6">
+      <Badge variant="secondary" className="w-fit">
+        {scopeLabel}
+      </Badge>
+
       <section className="flex flex-col gap-2">
         <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t('sidebar.type')}
@@ -210,14 +252,21 @@ export default function PostEditor({
         />
       </section>
 
-      <Button
-        className="w-full"
-        size="lg"
-        disabled={isEditorEmpty}
-        onClick={handleSubmit}
-      >
-        {t('submit')}
-      </Button>
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          disabled={isSubmitting || isEditorEmpty}
+          onClick={() => handleSubmit(PostStatus.DRAFT)}
+        >
+          {t('actions.save-draft')}
+        </Button>
+        <Button
+          disabled={isSubmitting || isEditorEmpty}
+          onClick={() => handleSubmit(PostStatus.PUBLISHED)}
+        >
+          {t('actions.publish')}
+        </Button>
+      </div>
     </div>
   );
 

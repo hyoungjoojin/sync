@@ -5,6 +5,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import com.skkil.sync.common.util.restdocs.RestDocsUtils;
 import com.skkil.sync.common.util.time.DateTimeTestUtils;
 import com.skkil.sync.post.dto.summary.PostSummary;
+import com.skkil.sync.post.model.PostScope;
+import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.project.snippets.ProjectSummarySnippets;
 import com.skkil.sync.user.snippets.UserSummarySnippets;
@@ -21,6 +23,8 @@ public class PostSummarySnippets {
         .slug("test-slug")
         .title("Test Post Title")
         .type(PostType.SHORT)
+        .scope(PostScope.PUBLIC)
+        .status(PostStatus.PUBLISHED)
         .author(UserSummarySnippets.getUserSummary())
         .project(ProjectSummarySnippets.getProjectSummary())
         .resolved(false)
@@ -45,6 +49,16 @@ public class PostSummarySnippets {
             .type(RestDocsUtils.ENUM_TYPE)
             .description("Post Type")
             .attributes(RestDocsUtils.getEnumAttributes(PostType.class)));
+    fields.add(
+        fieldWithPath(prefix + "scope")
+            .type(RestDocsUtils.ENUM_TYPE)
+            .description("Post Scope")
+            .attributes(RestDocsUtils.getEnumAttributes(PostScope.class)));
+    fields.add(
+        fieldWithPath(prefix + "status")
+            .type(RestDocsUtils.ENUM_TYPE)
+            .description("Post Status")
+            .attributes(RestDocsUtils.getEnumAttributes(PostStatus.class)));
     fields.add(fieldWithPath(prefix + "author").type(JsonFieldType.OBJECT).description("작성자 정보"));
     fields.addAll(UserSummarySnippets.getUserSummaryFields(prefix + "author."));
     fields.add(

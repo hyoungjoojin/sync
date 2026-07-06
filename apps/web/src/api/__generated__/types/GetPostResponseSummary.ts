@@ -6,22 +6,20 @@
  */
 import type { GetPostResponseSummaryAuthor } from './GetPostResponseSummaryAuthor';
 import type { GetPostResponseSummaryProject } from './GetPostResponseSummaryProject';
+import type { GetPostResponseSummaryScope } from './GetPostResponseSummaryScope';
+import type { GetPostResponseSummaryStatus } from './GetPostResponseSummaryStatus';
 import type { GetPostResponseSummaryType } from './GetPostResponseSummaryType';
 
 /**
  * 포스트 정보
  */
 export type GetPostResponseSummary = {
-  /** Creation Timestamp */
-  createdAt: string;
   /** 작성자 정보 */
   author: GetPostResponseSummaryAuthor;
   /** 소속 프로젝트 정보 */
   project?: GetPostResponseSummaryProject;
   /** Number of Likes */
   likeCount: number;
-  /** Post ID */
-  id: number;
   /** Post Type */
   type: GetPostResponseSummaryType;
   /**
@@ -29,12 +27,20 @@ export type GetPostResponseSummary = {
    * @nullable
    */
   title?: string | null;
-  /** Post Slug */
-  slug: string;
   /** Number of Comments */
   commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
+  /** Creation Timestamp */
+  createdAt: string;
+  /** Post Scope */
+  scope: GetPostResponseSummaryScope;
+  /** Post ID */
+  id: number;
+  /** Post Slug */
+  slug: string;
   /** Whether the question post has been resolved */
   resolved: boolean;
+  /** Post Status */
+  status: GetPostResponseSummaryStatus;
 };

@@ -20,7 +20,12 @@ import { Input } from '@/components/ui/input';
 import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
 
-export default function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: () => void;
+  redirectTo?: string;
+}
+
+export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
   const t = useTranslations('pages.login.form');
 
   const router = useRouter();
@@ -62,7 +67,13 @@ export default function LoginForm() {
       {
         onSuccess: async () => {
           await refetchSession();
-          router.replace(ROUTES.HOME());
+
+          if (onSuccess) {
+            onSuccess();
+            return;
+          }
+
+          router.replace(redirectTo ?? ROUTES.HOME());
         },
         onError: () => {
           toast.error(t('errors.invalid-credentials'));
@@ -132,7 +143,7 @@ export default function LoginForm() {
               {t('submit.label')}
             </Button>
 
-            <Button className="w-full" variant="link">
+            <Button className="w-full" variant="link" type="button">
               <Link href={ROUTES.REGISTER()}>{t('links.register.label')}</Link>
             </Button>
           </div>

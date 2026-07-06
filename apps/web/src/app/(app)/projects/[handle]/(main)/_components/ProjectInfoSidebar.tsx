@@ -13,6 +13,7 @@ import {
 import { ProjectAvatar } from '@/components/feature/project/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
 
@@ -25,6 +26,7 @@ export default function ProjectInfoSidebar({
 }: ProjectInfoSidebarProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const { requireAuth } = useRequireAuth();
 
   const { data, isPending } = useGetProjectByHandle(handle);
 
@@ -66,6 +68,10 @@ export default function ProjectInfoSidebar({
   };
 
   const handleFollowToggle = () => {
+    if (!requireAuth({ intent: 'follow' })) {
+      return;
+    }
+
     if (isFollowing) {
       unfollowProject({ handle }, { onSuccess: invalidateFollowQueries });
       return;
@@ -92,16 +98,14 @@ export default function ProjectInfoSidebar({
         {summary.description || '설명이 없습니다.'}
       </p>
 
-      {isAuthenticated(session) && (
-        <Button
-          className="w-full"
-          variant={isFollowing ? 'outline' : 'default'}
-          disabled={isFollowPending || isUnfollowPending}
-          onClick={handleFollowToggle}
-        >
-          {isFollowing ? '팔로잉' : '팔로우'}
-        </Button>
-      )}
+      <Button
+        className="w-full"
+        variant={isFollowing ? 'outline' : 'default'}
+        disabled={isFollowPending || isUnfollowPending}
+        onClick={handleFollowToggle}
+      >
+        {isFollowing ? '팔로잉' : '팔로우'}
+      </Button>
     </div>
   );
 }

@@ -91,7 +91,9 @@ public class PostQueryService {
     var posts =
         paginationService
             .paginate(
-                postQueryRepository.getPostsByProject(handle, type), paginationProvider, pagination)
+                postQueryRepository.getPostsByProject(requesterId, handle, type),
+                paginationProvider,
+                pagination)
             .mapWithLookup(
                 PostDto::authorId,
                 userAssembler::toUserSummaries,

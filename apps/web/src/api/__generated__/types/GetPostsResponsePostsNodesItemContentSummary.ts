@@ -6,22 +6,20 @@
  */
 import type { GetPostsResponsePostsNodesItemContentSummaryAuthor } from './GetPostsResponsePostsNodesItemContentSummaryAuthor';
 import type { GetPostsResponsePostsNodesItemContentSummaryProject } from './GetPostsResponsePostsNodesItemContentSummaryProject';
+import type { GetPostsResponsePostsNodesItemContentSummaryScope } from './GetPostsResponsePostsNodesItemContentSummaryScope';
+import type { GetPostsResponsePostsNodesItemContentSummaryStatus } from './GetPostsResponsePostsNodesItemContentSummaryStatus';
 import type { GetPostsResponsePostsNodesItemContentSummaryType } from './GetPostsResponsePostsNodesItemContentSummaryType';
 
 /**
  * Post Summary
  */
 export type GetPostsResponsePostsNodesItemContentSummary = {
-  /** Creation Timestamp */
-  createdAt: string;
   /** 작성자 정보 */
   author: GetPostsResponsePostsNodesItemContentSummaryAuthor;
   /** 소속 프로젝트 정보 */
   project?: GetPostsResponsePostsNodesItemContentSummaryProject;
   /** Number of Likes */
   likeCount: number;
-  /** Post ID */
-  id: number;
   /** Post Type */
   type: GetPostsResponsePostsNodesItemContentSummaryType;
   /**
@@ -29,12 +27,20 @@ export type GetPostsResponsePostsNodesItemContentSummary = {
    * @nullable
    */
   title?: string | null;
-  /** Post Slug */
-  slug: string;
   /** Number of Comments */
   commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
+  /** Creation Timestamp */
+  createdAt: string;
+  /** Post Scope */
+  scope: GetPostsResponsePostsNodesItemContentSummaryScope;
+  /** Post ID */
+  id: number;
+  /** Post Slug */
+  slug: string;
   /** Whether the question post has been resolved */
   resolved: boolean;
+  /** Post Status */
+  status: GetPostsResponsePostsNodesItemContentSummaryStatus;
 };

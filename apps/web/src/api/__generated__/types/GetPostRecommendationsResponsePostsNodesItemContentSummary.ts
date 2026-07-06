@@ -6,22 +6,20 @@
  */
 import type { GetPostRecommendationsResponsePostsNodesItemContentSummaryAuthor } from './GetPostRecommendationsResponsePostsNodesItemContentSummaryAuthor';
 import type { GetPostRecommendationsResponsePostsNodesItemContentSummaryProject } from './GetPostRecommendationsResponsePostsNodesItemContentSummaryProject';
+import type { GetPostRecommendationsResponsePostsNodesItemContentSummaryScope } from './GetPostRecommendationsResponsePostsNodesItemContentSummaryScope';
+import type { GetPostRecommendationsResponsePostsNodesItemContentSummaryStatus } from './GetPostRecommendationsResponsePostsNodesItemContentSummaryStatus';
 import type { GetPostRecommendationsResponsePostsNodesItemContentSummaryType } from './GetPostRecommendationsResponsePostsNodesItemContentSummaryType';
 
 /**
  * Post Summary
  */
 export type GetPostRecommendationsResponsePostsNodesItemContentSummary = {
-  /** Creation Timestamp */
-  createdAt: string;
   /** 작성자 정보 */
   author: GetPostRecommendationsResponsePostsNodesItemContentSummaryAuthor;
   /** 소속 프로젝트 정보 */
   project?: GetPostRecommendationsResponsePostsNodesItemContentSummaryProject;
   /** Number of Likes */
   likeCount: number;
-  /** Post ID */
-  id: number;
   /** Post Type */
   type: GetPostRecommendationsResponsePostsNodesItemContentSummaryType;
   /**
@@ -29,12 +27,20 @@ export type GetPostRecommendationsResponsePostsNodesItemContentSummary = {
    * @nullable
    */
   title?: string | null;
-  /** Post Slug */
-  slug: string;
   /** Number of Comments */
   commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
+  /** Creation Timestamp */
+  createdAt: string;
+  /** Post Scope */
+  scope: GetPostRecommendationsResponsePostsNodesItemContentSummaryScope;
+  /** Post ID */
+  id: number;
+  /** Post Slug */
+  slug: string;
   /** Whether the question post has been resolved */
   resolved: boolean;
+  /** Post Status */
+  status: GetPostRecommendationsResponsePostsNodesItemContentSummaryStatus;
 };

@@ -5,7 +5,9 @@ import com.skkil.sync.common.security.CustomPermissionEvaluator;
 import com.skkil.sync.common.security.PermissionOperation;
 import com.skkil.sync.common.security.enums.PermissionEvaluatorType;
 import com.skkil.sync.post.model.Post;
+import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.repository.PostRepository;
+import com.skkil.sync.project.repository.TeammateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +15,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> {
 
-  private PostRepository postRepository;
+  private final PostRepository postRepository;
+  private final TeammateRepository teammateRepository;
 
-  public PostPermissionEvaluator(PostRepository postRepository) {
+  public PostPermissionEvaluator(
+      PostRepository postRepository, TeammateRepository teammateRepository) {
     this.postRepository = postRepository;
+    this.teammateRepository = teammateRepository;
   }
 
   @Override
@@ -34,7 +39,7 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
     }
 
     return switch (permission) {
-      case READ -> post.isVisible();
+      case READ -> canRead(user, post);
       case EDIT -> canEdit(user, post);
       case DELETE -> canDelete(user, post);
 
@@ -43,6 +48,31 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
         yield false;
       }
     };
+  }
+
+  private boolean canRead(AuthenticatedUser user, Post post) {
+    if (!post.isVisible()) {
+      return false;
+    }
+
+    if (post.isPublished() && post.isPublic()) {
+      return true;
+    }
+
+    if (user == null) {
+      return false;
+    }
+
+    if (user.userId().equals(post.getAuthor().getId())) {
+      return true;
+    }
+
+    return post.isPublished()
+        && post.getScope() == PostScope.WORKSPACE
+        && post.getProject() != null
+        && teammateRepository
+            .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
+            .isPresent();
   }
 
   private boolean canEdit(AuthenticatedUser user, Post post) {

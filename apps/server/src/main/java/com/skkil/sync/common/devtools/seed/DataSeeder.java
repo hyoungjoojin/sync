@@ -91,7 +91,12 @@ class DataSeeder implements ApplicationRunner {
             "sync");
 
     postSeeder.seed(
-        carol, "Recipe App 진행 상황", PostType.SHORT, "이번 주에는 검색 기능을 붙였습니다.", List.of(), "recipe-app");
+        carol,
+        "Recipe App 진행 상황",
+        PostType.SHORT,
+        "이번 주에는 검색 기능을 붙였습니다.",
+        List.of("recipe-app"),
+        "recipe-app");
 
     String recruitmentPost =
         postSeeder.seed(
@@ -103,8 +108,7 @@ class DataSeeder implements ApplicationRunner {
             null);
 
     socialGraphSeeder.like(bob, syncLaunchPost);
-    socialGraphSeeder.like(dave, syncLaunchPost);
-    socialGraphSeeder.comment(bob, syncLaunchPost, "멋진 프로젝트네요! 응원합니다.");
+    socialGraphSeeder.comment(bob, recruitmentPost, "좋은 기회네요! 관심있는 분들께 공유할게요.");
     socialGraphSeeder.comment(carol, recruitmentPost, "저도 참여하고 싶어요.");
 
     socialGraphSeeder.followUser(bob, alice);

@@ -5,11 +5,16 @@ import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { useGetPostsByProjectInfinite } from '@/api/__generated__/post/post';
-import { PostType } from '@/components/feature/post/types/post';
+import {
+  PostScope,
+  PostStatus,
+  PostType,
+} from '@/components/feature/post/types/post';
 import PostPreview from '@/components/feature/post/viewer/PostPreview';
 import { Button, LinkButton } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import ROUTES from '@/util/routes';
 
 import AddTeammatePopover from './AddTeammatePopover';
@@ -85,6 +90,8 @@ export default function ProjectPosts({ handle }: ProjectPostsProps) {
                 id={post.content.summary.id}
                 slug={post.content.summary.slug}
                 type={post.content.summary.type as PostType}
+                scope={post.content.summary.scope as PostScope}
+                status={post.content.summary.status as PostStatus}
                 title={post.content.summary.title}
                 author={post.content.summary.author}
                 project={post.content.summary.project}
@@ -128,6 +135,8 @@ function ProjectPostsSkeleton() {
 }
 
 function ProjectPostsEmpty({ handle }: ProjectPostsProps) {
+  const { requireAuth } = useRequireAuth();
+
   return (
     <div className="flex flex-col items-center gap-6 text-center w-full">
       <div className="space-y-2">
@@ -145,7 +154,20 @@ function ProjectPostsEmpty({ handle }: ProjectPostsProps) {
             </Button>
           }
         />
-        <LinkButton href={ROUTES.NEW_PROJECT_POST(handle)} size="sm">
+        <LinkButton
+          href={ROUTES.NEW_PROJECT_POST(handle)}
+          size="sm"
+          onClick={(event) => {
+            if (
+              !requireAuth({
+                intent: 'write',
+                redirectTo: ROUTES.NEW_PROJECT_POST(handle),
+              })
+            ) {
+              event.preventDefault();
+            }
+          }}
+        >
           첫 게시물 작성하기
         </LinkButton>
       </div>

@@ -6,22 +6,20 @@
  */
 import type { SearchPostsResponsePostsItemSummaryAuthor } from './SearchPostsResponsePostsItemSummaryAuthor';
 import type { SearchPostsResponsePostsItemSummaryProject } from './SearchPostsResponsePostsItemSummaryProject';
+import type { SearchPostsResponsePostsItemSummaryScope } from './SearchPostsResponsePostsItemSummaryScope';
+import type { SearchPostsResponsePostsItemSummaryStatus } from './SearchPostsResponsePostsItemSummaryStatus';
 import type { SearchPostsResponsePostsItemSummaryType } from './SearchPostsResponsePostsItemSummaryType';
 
 /**
  * Post Summary
  */
 export type SearchPostsResponsePostsItemSummary = {
-  /** Creation Timestamp */
-  createdAt: string;
   /** 작성자 정보 */
   author: SearchPostsResponsePostsItemSummaryAuthor;
   /** 소속 프로젝트 정보 */
   project?: SearchPostsResponsePostsItemSummaryProject;
   /** Number of Likes */
   likeCount: number;
-  /** Post ID */
-  id: number;
   /** Post Type */
   type: SearchPostsResponsePostsItemSummaryType;
   /**
@@ -29,12 +27,20 @@ export type SearchPostsResponsePostsItemSummary = {
    * @nullable
    */
   title?: string | null;
-  /** Post Slug */
-  slug: string;
   /** Number of Comments */
   commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
+  /** Creation Timestamp */
+  createdAt: string;
+  /** Post Scope */
+  scope: SearchPostsResponsePostsItemSummaryScope;
+  /** Post ID */
+  id: number;
+  /** Post Slug */
+  slug: string;
   /** Whether the question post has been resolved */
   resolved: boolean;
+  /** Post Status */
+  status: SearchPostsResponsePostsItemSummaryStatus;
 };

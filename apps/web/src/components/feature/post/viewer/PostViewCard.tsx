@@ -31,7 +31,12 @@ import {
 import { RelativeTime } from '@/components/ui/relative-time';
 import ROUTES from '@/util/routes';
 
-import { PostType } from '../types/post';
+import {
+  PostScope,
+  PostStatus,
+  PostType,
+  isPublicPublishedPost,
+} from '../types/post';
 import PostErrorBoundary from './PostErrorBoundary';
 import { PostCardActions } from './components/PostCardActions';
 import { PostTypeBadge } from './components/PostTypeBadge';
@@ -48,6 +53,8 @@ export interface PostViewCardProps {
   id: number;
   slug: string;
   type?: PostType;
+  scope?: PostScope;
+  status?: PostStatus;
   title?: string | null;
   author: PostAuthorSummary;
   project?: PostProjectSummary;
@@ -72,6 +79,8 @@ function PostViewCardContent({
   id,
   slug,
   type,
+  scope,
+  status,
   title,
   author,
   project,
@@ -86,6 +95,7 @@ function PostViewCardContent({
   const router = useRouter();
   const editor = useReadOnlyPostEditor(content);
   const { contentClassName, bodyClassName } = getPostCardStyles(variant, type);
+  const showActions = isPublicPublishedPost(scope, status);
 
   const postPath = project?.handle
     ? ROUTES.PROJECT_POST(project.handle, slug)
@@ -101,6 +111,8 @@ function PostViewCardContent({
           postId={id}
           postPath={postPath}
           type={type}
+          scope={scope}
+          status={status}
           author={author}
           project={project}
           isAuthor={isAuthor}
@@ -112,12 +124,14 @@ function PostViewCardContent({
       <CardContent className={contentClassName}>
         {title && <h3 className="text-lg font-semibold">{title}</h3>}
         <PostBody type={type} editor={editor} className={bodyClassName} />
-        <PostCardActions
-          postId={id}
-          likeCount={likeCount}
-          commentCount={commentCount}
-          bookmarked={bookmarked}
-        />
+        {showActions && (
+          <PostCardActions
+            postId={id}
+            likeCount={likeCount}
+            commentCount={commentCount}
+            bookmarked={bookmarked}
+          />
+        )}
       </CardContent>
     </Card>
   );
@@ -127,6 +141,8 @@ function PostViewCardHeader({
   postId,
   postPath,
   type,
+  scope,
+  status,
   author,
   project,
   isAuthor,
@@ -136,6 +152,8 @@ function PostViewCardHeader({
   postId: number;
   postPath: string;
   type?: PostType;
+  scope?: PostScope;
+  status?: PostStatus;
   author: PostAuthorSummary;
   project?: PostProjectSummary;
   isAuthor: boolean;
@@ -143,6 +161,7 @@ function PostViewCardHeader({
   variant: PostCardVariant;
 }) {
   const t = useTranslations('pages.posts.report');
+  const tPost = useTranslations('components.post');
   const tDelete = useTranslations('pages.posts.delete');
   const tCopyLink = useTranslations('pages.posts.copy-link');
   const router = useRouter();
@@ -209,6 +228,14 @@ function PostViewCardHeader({
           </div>
 
           {type && <PostTypeBadge type={type} />}
+
+          {status === PostStatus.DRAFT && (
+            <Badge variant="outline">{tPost('status.DRAFT')}</Badge>
+          )}
+
+          {scope === PostScope.WORKSPACE && (
+            <Badge variant="outline">{tPost('scope.WORKSPACE')}</Badge>
+          )}
 
           {project?.name && <Badge variant="secondary">{project.name}</Badge>}
         </div>
