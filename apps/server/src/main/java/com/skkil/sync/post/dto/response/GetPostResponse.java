@@ -7,8 +7,7 @@ import lombok.Builder;
 
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record GetPostResponse(
-    PostSummary summary, Content content, Long likeCount, Long commentCount, boolean bookmarked) {
+public record GetPostResponse(PostSummary summary, Content content, boolean bookmarked) {
 
   @Builder
   public static record Content(String json, List<Media> media) {}

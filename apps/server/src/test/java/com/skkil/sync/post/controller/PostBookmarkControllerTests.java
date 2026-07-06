@@ -1,21 +1,28 @@
-package com.skkil.sync.bookmark.controller;
+package com.skkil.sync.post.controller;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
+import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.skkil.sync.auth.AuthenticatedUser;
-import com.skkil.sync.bookmark.service.PostBookmarkService;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
+import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
+import com.skkil.sync.common.util.pagination.snippets.CursorPaginationRequestSnippets;
 import com.skkil.sync.config.SecurityConfig;
+import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.service.PostBookmarkService;
+import com.skkil.sync.post.snippets.GetPostsResponseSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -88,5 +95,38 @@ class PostBookmarkControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("postId").description("Post ID"))));
+  }
+
+  @Test
+  @DisplayName("[getBookmarkedPosts] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void getBookmarkedPosts() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    CursorPaginationRequest pagination =
+        CursorPaginationRequestSnippets.getCursorPaginationRequest();
+    GetPostsResponse response = GetPostsResponseSnippets.getGetBookmarkedPostsResponse();
+
+    when(postBookmarkService.getBookmarkedPosts(eq(user.userId()), eq(pagination)))
+        .thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/bookmarks/posts")
+                .queryParams(
+                    CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetBookmarkedPosts",
+                ResourceSnippetParameters.builder()
+                    .tag("bookmark")
+                    .summary("Get Bookmarked Posts")
+                    .description("Get Bookmarked Posts")
+                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                GetPostsResponseSnippets.getBookmarkedPostsResponseFields()));
   }
 }

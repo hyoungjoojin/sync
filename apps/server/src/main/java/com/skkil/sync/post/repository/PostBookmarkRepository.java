@@ -1,6 +1,6 @@
-package com.skkil.sync.bookmark.repository;
+package com.skkil.sync.post.repository;
 
-import com.skkil.sync.bookmark.model.PostBookmark;
+import com.skkil.sync.post.model.PostBookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

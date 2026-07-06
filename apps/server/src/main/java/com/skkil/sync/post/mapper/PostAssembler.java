@@ -29,8 +29,6 @@ public class PostAssembler {
     return GetPostResponse.builder()
         .summary(toPostSummary(post, author, requesterId))
         .content(postMapper.toContent(post, media))
-        .likeCount(post.likeCount())
-        .commentCount(post.commentCount())
         .bookmarked(Boolean.TRUE.equals(post.bookmarked()))
         .build();
   }
@@ -70,6 +68,16 @@ public class PostAssembler {
 
   public List<GetPostsResponse.Post> toPostResponses(List<PostDto> posts) {
     return toPostResponses(posts, null);
+  }
+
+  public GetPostsResponse.Post toBookmarkedPostResponse(
+      PostDto post, UserSummary author, Long requesterId) {
+    return GetPostsResponse.Post.builder()
+        .summary(toPostSummary(post, author, requesterId))
+        .content(post.content())
+        .bookmarked(Boolean.TRUE.equals(post.bookmarked()))
+        .bookmarkedAt(post.bookmarkedAt())
+        .build();
   }
 
   private PostSummary toPostSummary(PostDto post, UserSummary author, Long requesterId) {

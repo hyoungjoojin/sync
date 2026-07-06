@@ -1,7 +1,6 @@
-package com.skkil.sync.bookmark.model;
+package com.skkil.sync.post.model;
 
 import com.skkil.sync.common.domain.BaseEntity;
-import com.skkil.sync.post.model.Post;
 import com.skkil.sync.user.model.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

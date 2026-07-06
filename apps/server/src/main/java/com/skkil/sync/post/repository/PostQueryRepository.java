@@ -69,6 +69,21 @@ public class PostQueryRepository {
     };
   }
 
+  public CursorPaginationDataFetcher<PostDto> getBookmarkedPosts(Long userId) {
+    return (condition, orderFields, size) ->
+        dsl.select(post(userId))
+            .select(POST_BOOKMARKS.CREATED_AT.as("bookmarkedAt"))
+            .from(POST_BOOKMARKS)
+            .join(POSTS)
+            .on(POST_BOOKMARKS.POST_ID.eq(POSTS.ID))
+            .leftJoin(PROJECTS)
+            .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
+            .where(condition.and(POST_BOOKMARKS.USER_ID.eq(userId)).and(visibleCondition()))
+            .orderBy(orderFields)
+            .limit(size)
+            .fetchInto(PostDto.class);
+  }
+
   public List<PostDto> getPostsByIds(List<Long> ids) {
     if (ids.isEmpty()) {
       return List.of();

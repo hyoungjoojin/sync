@@ -17,4 +17,6 @@ public record PostSummary(
     @Nullable ProjectSummary project,
     boolean resolved,
     boolean isAuthor,
-    OffsetDateTime createdAt) {}
+    OffsetDateTime createdAt,
+    Long likeCount,
+    Long commentCount) {}

@@ -26,6 +26,8 @@ public class PostSummarySnippets {
         .resolved(false)
         .isAuthor(false)
         .createdAt(DateTimeTestUtils.defaultTestOffsetDateTime())
+        .likeCount(1L)
+        .commentCount(1L)
         .build();
   }
 
@@ -65,6 +67,14 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "createdAt")
             .type(JsonFieldType.STRING)
             .description("Creation Timestamp"));
+    fields.add(
+        fieldWithPath(prefix + "likeCount")
+            .type(JsonFieldType.NUMBER)
+            .description("Number of Likes"));
+    fields.add(
+        fieldWithPath(prefix + "commentCount")
+            .type(JsonFieldType.NUMBER)
+            .description("Number of Comments"));
     return fields;
   }
 }

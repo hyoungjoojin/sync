@@ -22,8 +22,6 @@ public class GetPostResponseSnippets {
     return GetPostResponse.builder()
         .summary(PostSummarySnippets.getPostSummary())
         .content(content)
-        .likeCount(1L)
-        .commentCount(1L)
         .bookmarked(true)
         .build();
   }
@@ -43,10 +41,6 @@ public class GetPostResponseSnippets {
         fieldWithPath("content.media[].id").type(JsonFieldType.NUMBER).description("Media ID"));
     fields.add(
         fieldWithPath("content.media[].url").type(JsonFieldType.STRING).description("Media URL"));
-    fields.add(
-        fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("Number of Likes"));
-    fields.add(
-        fieldWithPath("commentCount").type(JsonFieldType.NUMBER).description("Number of Comments"));
     fields.add(
         fieldWithPath("bookmarked")
             .type(JsonFieldType.BOOLEAN)

@@ -29,5 +29,6 @@ public interface PostMapper {
   @Mapping(target = "description", source = "projectDescription")
   @Mapping(target = "website", source = "projectWebsite")
   @Mapping(target = "isPublic", source = "projectIsPublic")
+  @Mapping(target = "iconUrl", ignore = true)
   ProjectSummary toProjectSummary(PostDto post);
 }

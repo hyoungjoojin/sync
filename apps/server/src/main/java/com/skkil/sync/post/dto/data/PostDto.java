@@ -21,4 +21,5 @@ public record PostDto(
     Long likeCount,
     Long commentCount,
     Boolean bookmarked,
-    Boolean resolved) {}
+    Boolean resolved,
+    @Nullable OffsetDateTime bookmarkedAt) {}
