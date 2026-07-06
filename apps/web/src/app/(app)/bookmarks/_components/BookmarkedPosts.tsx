@@ -92,8 +92,8 @@ export default function BookmarkedPosts() {
               author={post.content.summary.author}
               project={post.content.summary.project}
               content={{ json: post.content.content, media: [] }}
-              likeCount={post.content.likeCount}
-              commentCount={post.content.commentCount}
+              likeCount={post.content.summary.likeCount}
+              commentCount={post.content.summary.commentCount}
               bookmarked={post.content.bookmarked}
               isAuthor={post.content.summary.isAuthor}
               createdAt={post.content.summary.createdAt}

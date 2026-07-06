@@ -2,7 +2,6 @@
 
 import {
   ArrowLeftIcon,
-  FolderSimpleIcon,
   GearIcon,
   PencilIcon,
   RssIcon,
@@ -11,6 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
+import { ProjectAvatar } from '@/components/feature/project/avatar';
 import {
   SidebarContent,
   SidebarGroup,
@@ -37,6 +37,7 @@ export default function ProjectSidebarContent({
   const { data } = useGetProjectByHandle(handle);
 
   const projectName = data?.data.summary.name ?? handle;
+  const projectIconUrl = data?.data.summary.iconUrl;
 
   const workspaceNavItems = [
     { label: 'Feed', href: ROUTES.PROJECT_POSTS(handle), icon: RssIcon },
@@ -63,9 +64,7 @@ export default function ProjectSidebarContent({
             isActive={pathname === ROUTES.PROJECT(handle)}
           >
             <Link href={ROUTES.PROJECT(handle)}>
-              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <FolderSimpleIcon className="size-4" />
-              </div>
+              <ProjectAvatar name={projectName} iconUrl={projectIconUrl} />
               <span className="truncate font-medium">{projectName}</span>
             </Link>
           </SidebarMenuButton>

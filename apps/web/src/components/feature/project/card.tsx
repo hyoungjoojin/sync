@@ -3,17 +3,23 @@ import { PlusIcon } from '@phosphor-icons/react';
 import { LinkButton } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
+import { ProjectAvatar } from './avatar';
+
 interface ProjectCardProps {
   name: string;
   handle: string;
+  iconUrl?: string | null;
 }
 
-function ProjectCard({ name, handle }: ProjectCardProps) {
+function ProjectCard({ name, handle, iconUrl }: ProjectCardProps) {
   return (
     <Card className="justify-between gap-4 p-5">
-      <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-lg font-semibold text-primary-foreground">
-        {name.charAt(0).toUpperCase()}
-      </div>
+      <ProjectAvatar
+        name={name}
+        iconUrl={iconUrl}
+        size="lg"
+        className="size-10 text-lg"
+      />
 
       <div>
         <p className="font-semibold">{name}</p>

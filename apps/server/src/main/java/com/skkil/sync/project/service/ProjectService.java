@@ -1,5 +1,7 @@
 package com.skkil.sync.project.service;
 
+import com.skkil.sync.media.model.Media;
+import com.skkil.sync.media.service.domain.MediaDomainService;
 import com.skkil.sync.project.constants.ProjectConstants;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
 import com.skkil.sync.project.dto.request.UpdateProjectRequest;
@@ -32,15 +34,19 @@ public class ProjectService {
 
   private final ProjectAssembler projectAssembler;
 
+  private final MediaDomainService mediaDomainService;
+
   public ProjectService(
       UserDomainService userDomainService,
       ProjectRepository projectRepository,
       TeammateRepository teammateRepository,
-      ProjectAssembler projectAssembler) {
+      ProjectAssembler projectAssembler,
+      MediaDomainService mediaDomainService) {
     this.userDomainService = userDomainService;
     this.projectRepository = projectRepository;
     this.teammateRepository = teammateRepository;
     this.projectAssembler = projectAssembler;
+    this.mediaDomainService = mediaDomainService;
   }
 
   @Transactional
@@ -110,11 +116,21 @@ public class ProjectService {
 
   @Transactional
   @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
-  public void updateProject(String handle, UpdateProjectRequest request) {
+  public void updateProject(Long requesterId, String handle, UpdateProjectRequest request) {
     Project project =
         projectRepository.findByHandle(handle).orElseThrow(ProjectNotFoundException::new);
 
     project.update(request.description(), request.website());
+
+    if (Boolean.TRUE.equals(request.removeIcon())) {
+      project.removeIcon();
+    }
+
+    if (request.iconMediaId() != null) {
+      Media icon =
+          mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(request.iconMediaId()));
+      project.setIcon(icon);
+    }
   }
 
   @Transactional

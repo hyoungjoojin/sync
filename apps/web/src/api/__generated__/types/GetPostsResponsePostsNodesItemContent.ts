@@ -12,6 +12,10 @@ import type { GetPostsResponsePostsNodesItemContentSummary } from './GetPostsRes
 export type GetPostsResponsePostsNodesItemContent = {
   /** Post Summary */
   summary: GetPostsResponsePostsNodesItemContentSummary;
-  /** Post Content */
+  /** Whether the current user bookmarked this post */
+  bookmarked: boolean;
+  /** Bookmarked At */
+  bookmarkedAt: string;
+  /** Content */
   content: string;
 };

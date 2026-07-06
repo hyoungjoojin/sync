@@ -25,4 +25,9 @@ export type GetProjectResponseSummary = {
   description?: string | null;
   /** 프로젝트 핸들 */
   handle: string;
+  /**
+   * 프로젝트 아이콘 URL
+   * @nullable
+   */
+  iconUrl?: string | null;
 };

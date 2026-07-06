@@ -16,6 +16,7 @@ public class ProjectSummarySnippets {
         .description("프로젝트 설명")
         .website("https://example.com")
         .isPublic(true)
+        .iconUrl("https://example.com/icon.png")
         .build();
   }
 
@@ -31,6 +32,10 @@ public class ProjectSummarySnippets {
             .type(JsonFieldType.STRING)
             .optional()
             .description("프로젝트 웹사이트"),
-        fieldWithPath(prefix + "isPublic").type(JsonFieldType.BOOLEAN).description("공개 여부"));
+        fieldWithPath(prefix + "isPublic").type(JsonFieldType.BOOLEAN).description("공개 여부"),
+        fieldWithPath(prefix + "iconUrl")
+            .type(JsonFieldType.STRING)
+            .optional()
+            .description("프로젝트 아이콘 URL"));
   }
 }

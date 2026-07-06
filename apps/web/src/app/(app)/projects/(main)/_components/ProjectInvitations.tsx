@@ -10,7 +10,7 @@ import {
   useDeclineProjectInvitation,
   useGetMyProjectInvitations,
 } from '@/api/__generated__/project/project';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ProjectAvatar } from '@/components/feature/project/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Empty,
@@ -128,11 +128,11 @@ export default function ProjectInvitations() {
           className="flex items-center justify-between gap-4 rounded-lg border p-4"
         >
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback>
-                {invitation.project.name.slice(0, 1)}
-              </AvatarFallback>
-            </Avatar>
+            <ProjectAvatar
+              name={invitation.project.name}
+              iconUrl={invitation.project.iconUrl}
+              size="lg"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-medium">
                 {invitation.project.name}

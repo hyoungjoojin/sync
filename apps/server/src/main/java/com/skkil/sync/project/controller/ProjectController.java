@@ -80,8 +80,10 @@ public class ProjectController {
   @PatchMapping("/projects/{handle}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void updateProject(
-      @PathVariable String handle, @RequestBody @Validated UpdateProjectRequest request) {
-    projectService.updateProject(handle, request);
+      @AuthenticationPrincipal @NotNull AuthenticatedUser user,
+      @PathVariable String handle,
+      @RequestBody @Validated UpdateProjectRequest request) {
+    projectService.updateProject(user.userId(), handle, request);
   }
 
   @DeleteMapping("/projects/{handle}")

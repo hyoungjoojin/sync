@@ -18,6 +18,8 @@ export type SearchPostsResponsePostsItemSummary = {
   author: SearchPostsResponsePostsItemSummaryAuthor;
   /** 소속 프로젝트 정보 */
   project?: SearchPostsResponsePostsItemSummaryProject;
+  /** Number of Likes */
+  likeCount: number;
   /** Post ID */
   id: number;
   /** Post Type */
@@ -29,6 +31,8 @@ export type SearchPostsResponsePostsItemSummary = {
   title?: string | null;
   /** Post Slug */
   slug: string;
+  /** Number of Comments */
+  commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
   /** Whether the question post has been resolved */

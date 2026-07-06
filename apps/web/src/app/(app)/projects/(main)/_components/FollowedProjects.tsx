@@ -76,6 +76,7 @@ export default function FollowedProjects() {
           key={project.handle}
           name={project.name}
           handle={project.handle}
+          iconUrl={project.iconUrl}
         />
       ))}
     </div>

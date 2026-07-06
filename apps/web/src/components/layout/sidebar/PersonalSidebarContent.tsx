@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { useSearchMyProjects } from '@/api/__generated__/project/project';
+import { ProjectAvatar } from '@/components/feature/project/avatar';
 import { LinkButton } from '@/components/ui/button';
 import {
   SidebarContent,
@@ -140,6 +141,11 @@ export default function PersonalSidebarContent() {
                       <SidebarMenuItem key={project.handle}>
                         <SidebarMenuButton asChild isActive={isActive}>
                           <Link href={ROUTES.PROJECT(project.handle)}>
+                            <ProjectAvatar
+                              name={project.name}
+                              iconUrl={project.iconUrl}
+                              size="sm"
+                            />
                             {project.name}
                           </Link>
                         </SidebarMenuButton>

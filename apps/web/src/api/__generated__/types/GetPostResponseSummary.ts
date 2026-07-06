@@ -18,6 +18,8 @@ export type GetPostResponseSummary = {
   author: GetPostResponseSummaryAuthor;
   /** 소속 프로젝트 정보 */
   project?: GetPostResponseSummaryProject;
+  /** Number of Likes */
+  likeCount: number;
   /** Post ID */
   id: number;
   /** Post Type */
@@ -29,6 +31,8 @@ export type GetPostResponseSummary = {
   title?: string | null;
   /** Post Slug */
   slug: string;
+  /** Number of Comments */
+  commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
   /** Whether the question post has been resolved */

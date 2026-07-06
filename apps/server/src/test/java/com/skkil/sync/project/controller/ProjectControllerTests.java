@@ -232,7 +232,7 @@ class ProjectControllerTests {
     String projectHandle = "my-project";
     UpdateProjectRequest request = UpdateProjectRequestSnippets.getUpdateProjectRequest();
 
-    doNothing().when(projectService).updateProject(anyString(), eq(request));
+    doNothing().when(projectService).updateProject(anyLong(), anyString(), eq(request));
 
     mockMvc
         .perform(

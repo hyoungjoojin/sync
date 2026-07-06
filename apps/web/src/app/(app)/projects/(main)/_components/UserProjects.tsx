@@ -33,6 +33,7 @@ export default function UserProjects() {
           key={project.handle}
           name={project.name}
           handle={project.handle}
+          iconUrl={project.iconUrl}
         />
       ))}
       <NewProjectCard />

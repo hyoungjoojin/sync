@@ -103,7 +103,11 @@ CREATE TABLE projects (
     description TEXT,
     website_url VARCHAR(255),
     is_public BOOLEAN NOT NULL DEFAULT TRUE,
-    follower_count BIGINT NOT NULL DEFAULT 0
+    follower_count BIGINT NOT NULL DEFAULT 0,
+    icon_media_id BIGINT,
+    FOREIGN KEY(icon_media_id) REFERENCES media_files (id) ON DELETE
+    SET
+        NULL
 );
 
 CREATE TABLE teammates (

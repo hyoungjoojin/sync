@@ -61,6 +61,7 @@ export default function SearchProjectResults({
           key={project.handle}
           name={project.name}
           handle={project.handle}
+          iconUrl={project.iconUrl}
         />
       ))}
     </div>

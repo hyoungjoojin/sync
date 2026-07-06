@@ -12,10 +12,6 @@ export interface GetPostResponse {
   summary: GetPostResponseSummary;
   /** Whether the current user bookmarked this post */
   bookmarked: boolean;
-  /** Number of Likes */
-  likeCount: number;
   /** Post Content */
   content: GetPostResponseContent;
-  /** Number of Comments */
-  commentCount: number;
 }

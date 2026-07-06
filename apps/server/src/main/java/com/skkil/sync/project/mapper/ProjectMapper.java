@@ -8,6 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProjectMapper {
 
-  @Mapping(target = "isPublic", source = "public")
-  ProjectSummary toProjectSummary(Project project);
+  @Mapping(target = "isPublic", source = "project.public")
+  ProjectSummary toProjectSummary(Project project, String iconUrl);
 }

@@ -26,10 +26,7 @@ import type {
 
 import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
-import type {
-  GetBookmarkedPostsParams,
-  GetBookmarkedPostsResponse,
-} from '../types';
+import type { GetBookmarkedPostsParams, GetPostsResponse } from '../types';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -38,7 +35,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary Get Bookmarked Posts
  */
 export type getBookmarkedPostsResponse200 = {
-  data: GetBookmarkedPostsResponse;
+  data: GetPostsResponse;
   status: 200;
 };
 

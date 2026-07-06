@@ -10,6 +10,7 @@ import {
   useGetProjectByHandle,
   useUnfollowProject,
 } from '@/api/__generated__/project/project';
+import { ProjectAvatar } from '@/components/feature/project/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAuthenticated } from '@/lib/auth';
@@ -75,9 +76,12 @@ export default function ProjectInfoSidebar({
 
   return (
     <div className="flex flex-col items-center gap-4 rounded-lg border p-6 text-center">
-      <div className="bg-primary text-primary-foreground flex size-16 items-center justify-center rounded-2xl text-2xl font-semibold">
-        {summary.name.charAt(0).toUpperCase()}
-      </div>
+      <ProjectAvatar
+        name={summary.name}
+        iconUrl={summary.iconUrl}
+        size="lg"
+        className="size-16 rounded-2xl text-2xl"
+      />
 
       <div>
         <p className="text-lg font-semibold">{summary.name}</p>

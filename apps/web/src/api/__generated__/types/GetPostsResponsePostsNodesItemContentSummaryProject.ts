@@ -34,4 +34,9 @@ export type GetPostsResponsePostsNodesItemContentSummaryProject = {
    * @nullable
    */
   handle?: string | null;
+  /**
+   * 프로젝트 아이콘 URL
+   * @nullable
+   */
+  iconUrl?: string | null;
 };
