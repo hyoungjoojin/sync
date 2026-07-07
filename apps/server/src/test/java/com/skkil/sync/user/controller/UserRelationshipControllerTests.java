@@ -5,8 +5,6 @@ import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -73,10 +71,7 @@ class UserRelationshipControllerTests {
                     .tag("user")
                     .summary("Follow User")
                     .description("사용자를 팔로우합니다."),
-                // TODO: Temporary fix for Orval's issue where it doesn't recognize the content type
-                // if it contains a charset=UTF-8.
-                // See https://github.com/orval-labs/orval/issues/3040
-                preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
+                null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("followeeId").description("팔로우할 사용자 ID"))));
@@ -104,10 +99,7 @@ class UserRelationshipControllerTests {
                     .tag("user")
                     .summary("Unfollow User")
                     .description("사용자 팔로우를 취소합니다."),
-                // TODO: Temporary fix for Orval's issue where it doesn't recognize the content type
-                // if it contains a charset=UTF-8.
-                // See https://github.com/orval-labs/orval/issues/3040
-                preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
+                null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("followeeId").description("언팔로우할 사용자 ID"))));
@@ -138,10 +130,7 @@ class UserRelationshipControllerTests {
                     .summary("Get Following")
                     .description("사용자가 팔로우하는 사용자 목록을 조회합니다.")
                     .responseSchema(schema(GetConnectionsResponse.class.getSimpleName())),
-                // TODO: Temporary fix for Orval's issue where it doesn't recognize the content type
-                // if it contains a charset=UTF-8.
-                // See https://github.com/orval-labs/orval/issues/3040
-                preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
+                null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("userId").description("User ID")),
@@ -174,10 +163,7 @@ class UserRelationshipControllerTests {
                     .summary("Get Followers")
                     .description("사용자를 팔로우하는 사용자 목록을 조회합니다.")
                     .responseSchema(schema(GetConnectionsResponse.class.getSimpleName())),
-                // TODO: Temporary fix for Orval's issue where it doesn't recognize the content type
-                // if it contains a charset=UTF-8.
-                // See https://github.com/orval-labs/orval/issues/3040
-                preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
+                null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("userId").description("User ID")),

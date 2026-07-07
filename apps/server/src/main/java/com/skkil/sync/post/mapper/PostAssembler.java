@@ -29,7 +29,6 @@ public class PostAssembler {
     return GetPostResponse.builder()
         .summary(toPostSummary(post, author, requesterId))
         .content(postMapper.toContent(post, media))
-        .bookmarked(Boolean.TRUE.equals(post.bookmarked()))
         .build();
   }
 
@@ -75,8 +74,6 @@ public class PostAssembler {
     return GetPostsResponse.Post.builder()
         .summary(toPostSummary(post, author, requesterId))
         .content(post.content())
-        .bookmarked(Boolean.TRUE.equals(post.bookmarked()))
-        .bookmarkedAt(post.bookmarkedAt())
         .build();
   }
 

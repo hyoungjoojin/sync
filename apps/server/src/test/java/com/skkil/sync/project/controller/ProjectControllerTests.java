@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -49,7 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(ProjectController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 @AutoConfigureRestDocs
 @ExtendWith(RestDocumentationExtension.class)
 @Import({SecurityConfig.class, TestSecurityConfig.class})
@@ -74,7 +75,8 @@ class ProjectControllerTests {
         .perform(
             post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonMapper.writeValueAsString(request)))
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
         .andExpect(status().isCreated())
         .andDo(
             document(
@@ -174,6 +176,7 @@ class ProjectControllerTests {
 
   @Test
   @DisplayName("[searchProjects] API 문서화 테스트")
+  @WithAuthenticatedUser
   void searchProjects() throws Exception {
     String query = "Spring";
     GetProjectsResponse response = GetProjectsResponseSnippets.getGetProjectsResponse();
@@ -226,6 +229,22 @@ class ProjectControllerTests {
   }
 
   @Test
+  @DisplayName("[searchProjects] 로그인하지 않은 사용자는 접근할 수 없다")
+  void searchProjects_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    mockMvc
+        .perform(get("/search/projects").queryParam("query", "Spring"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("[searchMyProjects] 로그인하지 않은 사용자는 접근할 수 없다")
+  void searchMyProjects_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    mockMvc
+        .perform(get("/search/projects/my").queryParam("query", "Spring"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
   @DisplayName("[updateProject] API 문서화 테스트")
   @WithAuthenticatedUser
   void updateProject() throws Exception {
@@ -238,7 +257,8 @@ class ProjectControllerTests {
         .perform(
             patch("/projects/{handle}", projectHandle)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonMapper.writeValueAsString(request)))
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
         .andExpect(status().isNoContent())
         .andDo(
             document(

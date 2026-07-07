@@ -45,7 +45,7 @@ public class PostRecommendationService {
     var ids = candidates.nodes().stream().map(node -> node.content().id()).toList();
 
     Map<Long, PostDto> postsById =
-        postQueryRepository.getPostsByIds(ids).stream()
+        postQueryRepository.getPostsByIds(requesterId, ids).stream()
             .collect(Collectors.toMap(PostDto::id, Function.identity()));
 
     var posts =

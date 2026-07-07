@@ -1,6 +1,7 @@
 package com.skkil.sync.post.repository;
 
 import static com.skkil.sync.jooq.tables.PostBookmarks.POST_BOOKMARKS;
+import static com.skkil.sync.jooq.tables.PostLikes.POST_LIKES;
 import static com.skkil.sync.jooq.tables.Posts.POSTS;
 import static com.skkil.sync.jooq.tables.Projects.PROJECTS;
 import static com.skkil.sync.jooq.tables.Teammates.TEAMMATES;
@@ -44,9 +45,9 @@ public class PostQueryRepository {
         .map(record -> record.into(PostDto.class));
   }
 
-  public CursorPaginationDataFetcher<PostDto> getPosts() {
+  public CursorPaginationDataFetcher<PostDto> getPosts(Long requesterId) {
     return (condition, orderFields, size) ->
-        dsl.select(post(null))
+        dsl.select(post(requesterId))
             .from(POSTS)
             .leftJoin(PROJECTS)
             .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
@@ -56,9 +57,9 @@ public class PostQueryRepository {
             .fetchInto(PostDto.class);
   }
 
-  public CursorPaginationDataFetcher<PostDto> getPostsByUser(Long userId) {
+  public CursorPaginationDataFetcher<PostDto> getPostsByUser(Long requesterId, Long userId) {
     return (condition, orderFields, size) -> {
-      CursorPaginationDataFetcher<PostDto> base = getPosts();
+      CursorPaginationDataFetcher<PostDto> base = getPosts(requesterId);
       return base.fetch(condition.and(POSTS.AUTHOR_ID.eq(userId)), orderFields, size);
     };
   }
@@ -111,24 +112,26 @@ public class PostQueryRepository {
     };
   }
 
-  public List<PostDto> getPostsByIds(List<Long> ids) {
-    return getPostsByIds(ids, POSTS.ID.in(ids).and(publicPublishedCondition()));
+  public List<PostDto> getPostsByIds(Long requesterId, List<Long> ids) {
+    return getPostsByIds(requesterId, ids, POSTS.ID.in(ids).and(publicPublishedCondition()));
   }
 
-  public List<PostDto> getPostsByIdsInProject(List<Long> ids, String projectHandle) {
+  public List<PostDto> getPostsByIdsInProject(
+      Long requesterId, List<Long> ids, String projectHandle) {
     return getPostsByIds(
+        requesterId,
         ids,
         POSTS.ID.in(ids).and(publicPublishedCondition()).and(PROJECTS.HANDLE.eq(projectHandle)));
   }
 
-  private List<PostDto> getPostsByIds(List<Long> ids, Condition condition) {
+  private List<PostDto> getPostsByIds(Long requesterId, List<Long> ids, Condition condition) {
     if (ids.isEmpty()) {
       return List.of();
     }
 
     Map<Long, PostDto> byId =
         dsl
-            .select(post(null))
+            .select(post(requesterId))
             .from(POSTS)
             .leftJoin(PROJECTS)
             .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
@@ -155,6 +158,16 @@ public class PostQueryRepository {
                         .where(POST_BOOKMARKS.POST_ID.eq(POSTS.ID))
                         .and(POST_BOOKMARKS.USER_ID.eq(requesterId))));
 
+    Field<Boolean> liked =
+        requesterId == null
+            ? DSL.value(false)
+            : DSL.field(
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(POST_LIKES)
+                        .where(POST_LIKES.POST_ID.eq(POSTS.ID))
+                        .and(POST_LIKES.USER_ID.eq(requesterId))));
+
     return List.of(
         POSTS.ID.as("id"),
         POSTS.POST_TYPE.as("type"),
@@ -173,6 +186,7 @@ public class PostQueryRepository {
         POSTS.UPDATED_AT.as("updatedAt"),
         POSTS.LIKE_COUNT.as("likeCount"),
         DSL.value(0L).as("commentCount"),
+        liked.as("liked"),
         bookmarked.as("bookmarked"),
         POSTS.RESOLVED.as("resolved"),
         bookmarkedAt.as("bookmarkedAt"));

@@ -11,7 +11,7 @@ export default defineConfig({
       schemas: './src/api/__generated__/types',
       namingConvention: 'PascalCase',
       client: 'react-query',
-      prettier: true,
+      formatter: 'prettier',
       override: {
         query: {
           useInfinite: false,

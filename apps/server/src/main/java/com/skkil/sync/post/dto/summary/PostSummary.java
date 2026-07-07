@@ -23,4 +23,7 @@ public record PostSummary(
     boolean isAuthor,
     OffsetDateTime createdAt,
     Long likeCount,
-    Long commentCount) {}
+    boolean liked,
+    Long commentCount,
+    boolean bookmarked,
+    @Nullable OffsetDateTime bookmarkedAt) {}

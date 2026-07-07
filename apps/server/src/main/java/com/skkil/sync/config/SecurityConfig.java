@@ -59,6 +59,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/posts/recommendations")
                     .authenticated()
+                    .requestMatchers("/search/**")
+                    .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/experiences/**",
@@ -84,8 +86,7 @@ public class SecurityConfig {
                         "/profiles/**",
                         "/auth/login",
                         "/auth/register",
-                        "/providers/**",
-                        "/search/**")
+                        "/providers/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

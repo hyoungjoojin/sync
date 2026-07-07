@@ -24,6 +24,7 @@ public record PostDto(
     OffsetDateTime updatedAt,
     Long likeCount,
     Long commentCount,
+    Boolean liked,
     Boolean bookmarked,
     Boolean resolved,
     @Nullable OffsetDateTime bookmarkedAt) {}

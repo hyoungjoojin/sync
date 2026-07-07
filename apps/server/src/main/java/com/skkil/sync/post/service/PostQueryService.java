@@ -47,7 +47,7 @@ public class PostQueryService {
   public GetPostsResponse getPosts(Long requesterId, CursorPaginationRequest pagination) {
     var posts =
         paginationService
-            .paginate(postQueryRepository.getPosts(), paginationProvider, pagination)
+            .paginate(postQueryRepository.getPosts(requesterId), paginationProvider, pagination)
             .mapWithLookup(
                 PostDto::authorId,
                 userAssembler::toUserSummaries,
@@ -75,7 +75,10 @@ public class PostQueryService {
       Long requesterId, Long userId, CursorPaginationRequest pagination) {
     var posts =
         paginationService
-            .paginate(postQueryRepository.getPostsByUser(userId), paginationProvider, pagination)
+            .paginate(
+                postQueryRepository.getPostsByUser(requesterId, userId),
+                paginationProvider,
+                pagination)
             .mapWithLookup(
                 PostDto::authorId,
                 userAssembler::toUserSummaries,

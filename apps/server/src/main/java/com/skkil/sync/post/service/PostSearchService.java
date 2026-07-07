@@ -30,7 +30,8 @@ public class PostSearchService {
     this.postAssembler = postAssembler;
   }
 
-  public SearchPostsResponse searchPosts(String query, @Nullable String projectHandle) {
+  public SearchPostsResponse searchPosts(
+      Long requesterId, String query, @Nullable String projectHandle) {
     int k = 60;
 
     float[] queryEmbedding = postEmbeddingService.computeEmbedding(query);
@@ -45,9 +46,9 @@ public class PostSearchService {
     List<Long> ids = RRFMerger.merge(k, topNByEmbeddingSimilarity, topNByFullTextSearch);
     List<PostDto> posts =
         projectHandle == null
-            ? postQueryRepository.getPostsByIds(ids)
-            : postQueryRepository.getPostsByIdsInProject(ids, projectHandle);
+            ? postQueryRepository.getPostsByIds(requesterId, ids)
+            : postQueryRepository.getPostsByIdsInProject(requesterId, ids, projectHandle);
 
-    return new SearchPostsResponse(postAssembler.toPostResponses(posts));
+    return new SearchPostsResponse(postAssembler.toPostResponses(posts, requesterId));
   }
 }

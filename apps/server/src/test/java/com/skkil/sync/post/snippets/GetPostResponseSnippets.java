@@ -22,7 +22,6 @@ public class GetPostResponseSnippets {
     return GetPostResponse.builder()
         .summary(PostSummarySnippets.getPostSummary())
         .content(content)
-        .bookmarked(true)
         .build();
   }
 
@@ -41,11 +40,6 @@ public class GetPostResponseSnippets {
         fieldWithPath("content.media[].id").type(JsonFieldType.NUMBER).description("Media ID"));
     fields.add(
         fieldWithPath("content.media[].url").type(JsonFieldType.STRING).description("Media URL"));
-    fields.add(
-        fieldWithPath("bookmarked")
-            .type(JsonFieldType.BOOLEAN)
-            .description("Whether the current user bookmarked this post"));
-
     return responseFields(fields.toArray(FieldDescriptor[]::new));
   }
 }

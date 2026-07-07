@@ -31,7 +31,10 @@ public class PostSummarySnippets {
         .isAuthor(false)
         .createdAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .likeCount(1L)
+        .liked(true)
         .commentCount(1L)
+        .bookmarked(true)
+        .bookmarkedAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .build();
   }
 
@@ -86,9 +89,22 @@ public class PostSummarySnippets {
             .type(JsonFieldType.NUMBER)
             .description("Number of Likes"));
     fields.add(
+        fieldWithPath(prefix + "liked")
+            .type(JsonFieldType.BOOLEAN)
+            .description("Whether the current user liked this post"));
+    fields.add(
         fieldWithPath(prefix + "commentCount")
             .type(JsonFieldType.NUMBER)
             .description("Number of Comments"));
+    fields.add(
+        fieldWithPath(prefix + "bookmarked")
+            .type(JsonFieldType.BOOLEAN)
+            .description("Whether the current user bookmarked this post"));
+    fields.add(
+        fieldWithPath(prefix + "bookmarkedAt")
+            .type(JsonFieldType.STRING)
+            .description("Bookmarked At")
+            .optional());
     return fields;
   }
 }
