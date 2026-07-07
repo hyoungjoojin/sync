@@ -44,10 +44,6 @@ public class Post extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private PostType type;
 
-  @Column(name = "scope", nullable = false)
-  @Enumerated(EnumType.STRING)
-  private PostScope scope = PostScope.PUBLIC;
-
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   private PostStatus status = PostStatus.PUBLISHED;
@@ -95,14 +91,12 @@ public class Post extends BaseEntity {
       String title,
       String content,
       PostType type,
-      PostScope scope,
       PostStatus status) {
     this.slug = slug;
     this.author = author;
     this.project = project;
     this.title = title;
     this.type = type == null ? PostType.SHORT : type;
-    this.scope = scope == null ? PostScope.PUBLIC : scope;
     this.status = status == null ? PostStatus.PUBLISHED : status;
     this.content = content;
   }
@@ -136,7 +130,7 @@ public class Post extends BaseEntity {
   }
 
   public boolean isPublic() {
-    return scope == PostScope.PUBLIC;
+    return project == null;
   }
 
   public void hide(User reviewer, String reason) {

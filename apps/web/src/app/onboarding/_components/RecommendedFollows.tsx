@@ -15,6 +15,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { OnboardingStepContentProps, OnboardingStepContentRef } from '../page';
 
+const MAX_RECOMMENDED_FOLLOWS_COUNT = 5;
+
 export const RecommendedFollows = forwardRef<
   OnboardingStepContentRef,
   OnboardingStepContentProps
@@ -69,7 +71,10 @@ export const RecommendedFollows = forwardRef<
     return <RecommendedFollowsSkeleton />;
   }
 
-  const users = data?.data.users ?? [];
+  const users = (data?.data.users ?? []).slice(
+    0,
+    MAX_RECOMMENDED_FOLLOWS_COUNT,
+  );
 
   if (users.length === 0) {
     return (

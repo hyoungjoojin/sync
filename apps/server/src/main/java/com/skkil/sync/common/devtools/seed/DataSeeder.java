@@ -1,10 +1,16 @@
 package com.skkil.sync.common.devtools.seed;
 
+import com.skkil.sync.common.util.text.Slugify;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import net.datafaker.Faker;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,6 +22,38 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 @Slf4j
 class DataSeeder implements ApplicationRunner {
+
+  private static final long RANDOM_SEED = 42L;
+  private static final int USER_COUNT = 60;
+  private static final int PROJECT_COUNT = 20;
+  private static final int POST_COUNT = 80;
+  private static final int LIKE_COUNT = 150;
+  private static final int COMMENT_COUNT = 100;
+  private static final int USER_FOLLOW_COUNT = 100;
+  private static final int PROJECT_FOLLOW_COUNT = 60;
+
+  private static final List<String> TAG_POOL =
+      List.of(
+          "spring-boot",
+          "react",
+          "typescript",
+          "postgresql",
+          "docker",
+          "kubernetes",
+          "next-js",
+          "java",
+          "python",
+          "machine-learning",
+          "design-system",
+          "ux",
+          "graphql",
+          "websocket",
+          "aws",
+          "ci-cd",
+          "testing",
+          "recipe-app",
+          "mobile",
+          "startup");
 
   private final UserRepository userRepository;
   private final UserSeeder userSeeder;
@@ -45,78 +83,128 @@ class DataSeeder implements ApplicationRunner {
 
     log.info("Seeding local dev data");
 
-    User alice =
-        userSeeder.seed(
-            "alice@example.com",
-            "password1234!",
-            "alicekim",
-            "앨리스 김",
-            "백엔드 엔지니어",
-            "분산 시스템에 관심이 많습니다.");
+    Faker faker = new Faker(new Random(RANDOM_SEED));
+    Random random = new Random(RANDOM_SEED);
 
-    User bob =
-        userSeeder.seed(
-            "bob@example.com",
-            "password1234!",
-            "bobleedev",
-            "밥 이",
-            "프론트엔드 엔지니어",
-            "React와 디자인 시스템을 좋아합니다.");
-
-    User carol =
-        userSeeder.seed(
-            "carol@example.com",
-            "password1234!",
-            "carolpark",
-            "캐롤 박",
-            "프로덕트 디자이너",
-            "UX 리서치를 담당하고 있습니다.");
-
-    User dave =
-        userSeeder.seed(
-            "dave@example.com", "password1234!", "davechoi", "데이브 최", "ML 엔지니어", "추천 시스템을 만듭니다.");
-
-    projectSeeder.seed(alice, "sync", "Sync", "팀 협업을 위한 소셜 프로젝트 플랫폼입니다.");
-    projectSeeder.addTeammate(alice, "sync", "bobleedev");
-
-    projectSeeder.seed(carol, "recipe-app", "Recipe App", "레시피 공유 커뮤니티 사이드 프로젝트입니다.");
-
-    String syncLaunchPost =
-        postSeeder.seed(
-            alice,
-            "Sync 프로젝트를 시작합니다",
-            PostType.LONG,
-            "Sync는 개발자들이 사이드 프로젝트를 함께 만들고 공유할 수 있는 플랫폼입니다.",
-            List.of("spring-boot"),
-            "sync");
-
-    postSeeder.seed(
-        carol,
-        "Recipe App 진행 상황",
-        PostType.SHORT,
-        "이번 주에는 검색 기능을 붙였습니다.",
-        List.of("recipe-app"),
-        "recipe-app");
-
-    String recruitmentPost =
-        postSeeder.seed(
-            dave,
-            "프론트엔드 개발자를 찾습니다",
-            PostType.QUESTION,
-            "React 경험이 있는 프론트엔드 개발자를 찾고 있습니다.",
-            List.of("react"),
-            null);
-
-    socialGraphSeeder.like(bob, syncLaunchPost);
-    socialGraphSeeder.comment(bob, recruitmentPost, "좋은 기회네요! 관심있는 분들께 공유할게요.");
-    socialGraphSeeder.comment(carol, recruitmentPost, "저도 참여하고 싶어요.");
-
-    socialGraphSeeder.followUser(bob, alice);
-    socialGraphSeeder.followUser(carol, alice);
-    socialGraphSeeder.followProject(dave, "sync");
-    socialGraphSeeder.followProject(bob, "recipe-app");
+    List<User> users = seedUsers(faker, random);
+    List<String> projectHandles = seedProjects(faker, random, users);
+    List<String> publicPostSlugs = seedPosts(faker, random, users, projectHandles);
+    seedSocialGraph(faker, random, users, projectHandles, publicPostSlugs);
 
     log.info("Finished seeding local dev data");
+  }
+
+  private List<User> seedUsers(Faker faker, Random random) {
+    List<User> users = new ArrayList<>(USER_COUNT);
+    for (int i = 0; i < USER_COUNT; i++) {
+      String email = "user" + i + "@example.com";
+      String handle = uniqueHandle(faker);
+      String fullName = faker.name().fullName();
+      String profession = faker.job().title();
+      String bio = faker.lorem().sentence(random.nextInt(8) + 5);
+
+      users.add(userSeeder.seed(email, "password1234!", handle, fullName, profession, bio));
+    }
+    return users;
+  }
+
+  private List<String> seedProjects(Faker faker, Random random, List<User> users) {
+    List<String> projectHandles = new ArrayList<>(PROJECT_COUNT);
+    for (int i = 0; i < PROJECT_COUNT; i++) {
+      User owner = randomElement(users, random);
+      String handle = "project" + i;
+      String name = faker.app().name();
+      String description = faker.lorem().sentence(random.nextInt(15) + 8);
+
+      projectSeeder.seed(owner, handle, name, description);
+      projectHandles.add(handle);
+
+      int teammateCount = random.nextInt(3) + 1;
+      Set<Long> teammateIds = new HashSet<>();
+      teammateIds.add(owner.getId());
+      for (int j = 0; j < teammateCount; j++) {
+        User teammate = randomElement(users, random);
+        if (teammateIds.add(teammate.getId())) {
+          projectSeeder.addTeammate(owner, handle, teammate.getHandle());
+        }
+      }
+    }
+    return projectHandles;
+  }
+
+  private List<String> seedPosts(
+      Faker faker, Random random, List<User> users, List<String> projectHandles) {
+    List<String> publicPostSlugs = new ArrayList<>(POST_COUNT);
+    PostType[] postTypes = PostType.values();
+
+    for (int i = 0; i < POST_COUNT; i++) {
+      User author = randomElement(users, random);
+      String title = faker.lorem().sentence(random.nextInt(6) + 3);
+      PostType type = postTypes[random.nextInt(postTypes.length)];
+      String content = faker.lorem().paragraph(random.nextInt(4) + 2);
+      List<String> tags = randomTags(random);
+      String projectHandle = random.nextBoolean() ? randomElement(projectHandles, random) : null;
+
+      String slug = postSeeder.seed(author, title, type, content, tags, projectHandle);
+      if (projectHandle == null) {
+        publicPostSlugs.add(slug);
+      }
+    }
+    return publicPostSlugs;
+  }
+
+  private void seedSocialGraph(
+      Faker faker,
+      Random random,
+      List<User> users,
+      List<String> projectHandles,
+      List<String> publicPostSlugs) {
+    for (int i = 0; i < LIKE_COUNT; i++) {
+      User user = randomElement(users, random);
+      String postSlug = randomElement(publicPostSlugs, random);
+      socialGraphSeeder.like(user, postSlug);
+    }
+
+    for (int i = 0; i < COMMENT_COUNT; i++) {
+      User author = randomElement(users, random);
+      String postSlug = randomElement(publicPostSlugs, random);
+      String content = faker.lorem().sentence(random.nextInt(10) + 4);
+      socialGraphSeeder.comment(author, postSlug, content);
+    }
+
+    for (int i = 0; i < USER_FOLLOW_COUNT; i++) {
+      User follower = randomElement(users, random);
+      User followee = randomElement(users, random);
+      if (!follower.getId().equals(followee.getId())) {
+        socialGraphSeeder.followUser(follower, followee);
+      }
+    }
+
+    for (int i = 0; i < PROJECT_FOLLOW_COUNT; i++) {
+      User follower = randomElement(users, random);
+      String projectHandle = randomElement(projectHandles, random);
+      socialGraphSeeder.followProject(follower, projectHandle);
+    }
+  }
+
+  private List<String> randomTags(Random random) {
+    int tagCount = random.nextInt(3) + 1;
+    List<String> tags = new ArrayList<>(tagCount);
+    for (int i = 0; i < tagCount; i++) {
+      String tag = randomElement(TAG_POOL, random);
+      if (!tags.contains(tag)) {
+        tags.add(tag);
+      }
+    }
+    return tags;
+  }
+
+  private String uniqueHandle(Faker faker) {
+    return Slugify.slugify(faker.name().firstName() + faker.name().lastName());
+  }
+
+  private <T> T randomElement(List<T> list, Random random) {
+    return list.get(random.nextInt(list.size()));
   }
 
   private boolean shouldRun() {

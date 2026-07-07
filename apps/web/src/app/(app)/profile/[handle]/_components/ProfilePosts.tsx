@@ -1,19 +1,11 @@
 'use client';
 
-import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
 
 import { useGetUserPostsInfinite } from '@/api/__generated__/post/post';
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
-import {
-  PostScope,
-  PostStatus,
-  PostType,
-} from '@/components/feature/post/types/post';
-import PostPreview from '@/components/feature/post/viewer/PostPreview';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
+
+import PostFeedList from './PostFeedList';
 
 const POSTS_PAGE_SIZE = '10';
 
@@ -58,18 +50,6 @@ export default function ProfilePosts({ handle }: ProfilePostsProps) {
     },
   );
 
-  const [ref, entry] = useIntersectionObserver({
-    threshold: 0.2,
-    root: null,
-    rootMargin: '400px',
-  });
-
-  useEffect(() => {
-    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [entry?.isIntersecting, fetchNextPage, hasNextPage, isFetchingNextPage]);
-
   const posts =
     data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
 
@@ -77,71 +57,18 @@ export default function ProfilePosts({ handle }: ProfilePostsProps) {
   const isError = isProfileError || isPostsError;
 
   return (
-    <section className="space-y-3">
-      {isPending && <ProfilePostsSkeleton />}
-
-      {!isPending && isError && (
-        <div className="rounded-md border px-4 py-8 text-center">
-          <p className="text-sm text-destructive">{t('list.error')}</p>
-        </div>
-      )}
-
-      {!isPending && !isError && posts.length === 0 && (
-        <div className="rounded-md border px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">{t('list.empty')}</p>
-        </div>
-      )}
-
-      {!isPending && !isError && posts.length > 0 && (
-        <>
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <PostPreview
-                key={post.content.summary.id}
-                id={post.content.summary.id}
-                slug={post.content.summary.slug}
-                type={post.content.summary.type as PostType}
-                scope={post.content.summary.scope as PostScope}
-                status={post.content.summary.status as PostStatus}
-                title={post.content.summary.title}
-                author={post.content.summary.author}
-                project={post.content.summary.project}
-                content={{ json: post.content.content, media: [] }}
-                liked={post.content.summary.liked}
-                likeCount={post.content.summary.likeCount}
-                commentCount={post.content.summary.commentCount}
-                bookmarked={post.content.summary.bookmarked}
-                isAuthor={post.content.summary.isAuthor}
-                createdAt={post.content.summary.createdAt}
-              />
-            ))}
-          </div>
-
-          <div ref={ref} className="py-4">
-            {isFetchingNextPage && (
-              <div className="flex justify-center">
-                <Spinner />
-              </div>
-            )}
-          </div>
-
-          {!hasNextPage && (
-            <div className="py-4 text-center">
-              <p className="text-xs text-muted-foreground">{t('list.end')}</p>
-            </div>
-          )}
-        </>
-      )}
-    </section>
-  );
-}
-
-function ProfilePostsSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <Skeleton key={index} className="h-32 w-full" />
-      ))}
-    </div>
+    <PostFeedList
+      posts={posts}
+      isPending={isPending}
+      isError={isError}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      fetchNextPage={fetchNextPage}
+      messages={{
+        empty: t('list.empty'),
+        error: t('list.error'),
+        end: t('list.end'),
+      }}
+    />
   );
 }

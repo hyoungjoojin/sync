@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { PostScope, PostStatus, PostType } from '../types/post';
+import { PostStatus, PostType } from '../types/post';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTemplates } from './components/EditorTemplates';
 import { PostTypeSelector } from './components/PostTypeSelector';
@@ -24,7 +24,6 @@ import { serialize } from './utils/serializer';
 
 interface PostEditorProps {
   type: PostType;
-  scope: PostScope;
   project?: {
     handle: string;
     name: string;
@@ -33,7 +32,6 @@ interface PostEditorProps {
   onSubmit: (data: {
     title: string;
     type: PostType;
-    scope: PostScope;
     status: PostStatus;
     tags: string[];
     project?: { handle: string };
@@ -64,7 +62,6 @@ function getContentPlaceholder(
 
 export default function PostEditor({
   type: initialType,
-  scope,
   project,
   isSubmitting = false,
   onSubmit,
@@ -150,7 +147,6 @@ export default function PostEditor({
     onSubmit({
       title,
       type,
-      scope,
       status,
       tags,
       project: project ? { handle: project.handle } : undefined,
@@ -163,12 +159,9 @@ export default function PostEditor({
     type === PostType.QUESTION
       ? t('placeholders.title-question')
       : t('placeholders.title-long');
-  const scopeLabel =
-    scope === PostScope.WORKSPACE
-      ? t('scope.workspace', {
-          workspace: project?.name ?? t('scope.workspace-loading'),
-        })
-      : t('scope.public');
+  const scopeLabel = project
+    ? t('scope.workspace', { workspace: project.name })
+    : t('scope.public');
 
   const main = (
     <div

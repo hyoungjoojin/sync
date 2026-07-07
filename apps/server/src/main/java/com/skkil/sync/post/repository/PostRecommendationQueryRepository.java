@@ -6,7 +6,6 @@ import static com.skkil.sync.jooq.tables.UserFollowRelationships.USER_FOLLOW_REL
 
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
 import com.skkil.sync.post.dto.data.PostRecommendationCandidate;
-import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostVisibility;
 import java.time.OffsetDateTime;
@@ -77,9 +76,6 @@ public class PostRecommendationQueryRepository {
   }
 
   private Condition publicPublishedCondition() {
-    return POSTS
-        .SCOPE
-        .eq(PostScope.PUBLIC.name())
-        .and(POSTS.STATUS.eq(PostStatus.PUBLISHED.name()));
+    return POSTS.PROJECT_ID.isNull().and(POSTS.STATUS.eq(PostStatus.PUBLISHED.name()));
   }
 }

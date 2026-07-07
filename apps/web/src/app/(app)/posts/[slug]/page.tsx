@@ -28,8 +28,7 @@ export default async function Post({ params }: PostProps) {
       getGetPostBySlugQueryOptions(slug),
     );
 
-    commentsEnabled =
-      post.summary.scope === 'PUBLIC' && post.summary.status === 'PUBLISHED';
+    commentsEnabled = post.summary.status === 'PUBLISHED';
 
     if (post.summary.project?.handle) {
       redirect(ROUTES.PROJECT_POST(post.summary.project.handle, slug));

@@ -88,7 +88,19 @@ const getUrl = (url: string) => {
 };
 
 export const api = async <T>(url: string, options: RequestInit): Promise<T> => {
-  const response = await server(getUrl(url), options);
+  let response: Response;
+  try {
+    response = await server(getUrl(url), options);
+  } catch (error) {
+    if (error instanceof SyncError) {
+      throw error;
+    }
+
+    throw new SyncError(
+      '서버에 연결할 수 없습니다. 나중에 다시 시도하세요.',
+      ErrorCode.NETWORK_ERROR,
+    );
+  }
 
   if (response.status === 204) {
     return {

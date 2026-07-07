@@ -2,14 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { useLogin } from '@/api/__generated__/auth/auth';
-import { Button } from '@/components/ui/button';
+import { Button, LinkButton } from '@/components/ui/button';
 import {
   Field,
   FieldError,
@@ -143,9 +142,13 @@ export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
               {t('submit.label')}
             </Button>
 
-            <Button className="w-full" variant="link" type="button">
-              <Link href={ROUTES.REGISTER()}>{t('links.register.label')}</Link>
-            </Button>
+            <LinkButton
+              className="w-full"
+              variant="link"
+              href={ROUTES.REGISTER()}
+            >
+              {t('links.register.label')}
+            </LinkButton>
           </div>
         </FieldGroup>
       </form>

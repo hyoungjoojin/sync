@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useCreatePost } from '@/api/__generated__/post/post';
 import PostEditor from '@/components/feature/post/editor/PostEditor';
-import { PostScope, PostType } from '@/components/feature/post/types/post';
+import { PostType } from '@/components/feature/post/types/post';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import ROUTES from '@/util/routes';
 
@@ -32,13 +32,11 @@ export default function CreatePostPage() {
   return (
     <PostEditor
       type={getInitialPostType(searchParams.get('type'))}
-      scope={PostScope.PUBLIC}
       isSubmitting={isCreatingPost}
-      onSubmit={({ title, type, scope, status, tags, content }) => {
+      onSubmit={({ title, type, status, tags, content }) => {
         createPost({
           data: {
             type,
-            scope,
             status,
             title,
             tags,

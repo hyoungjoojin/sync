@@ -3,7 +3,7 @@ package com.skkil.sync.common.devtools.seed;
 import com.skkil.sync.comment.dto.request.CreateCommentRequest;
 import com.skkil.sync.comment.service.CommentService;
 import com.skkil.sync.post.model.Post;
-import com.skkil.sync.post.service.PostService;
+import com.skkil.sync.post.service.PostInteractionService;
 import com.skkil.sync.project.service.ProjectFollowService;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.UserRelationshipService;
@@ -12,19 +12,19 @@ import org.springframework.stereotype.Component;
 @Component
 class SocialGraphSeeder {
 
-  private final PostService postService;
+  private final PostInteractionService postInteractionService;
   private final PostSeeder postSeeder;
   private final CommentService commentService;
   private final UserRelationshipService userRelationshipService;
   private final ProjectFollowService projectFollowService;
 
   SocialGraphSeeder(
-      PostService postService,
+      PostInteractionService postInteractionService,
       PostSeeder postSeeder,
       CommentService commentService,
       UserRelationshipService userRelationshipService,
       ProjectFollowService projectFollowService) {
-    this.postService = postService;
+    this.postInteractionService = postInteractionService;
     this.postSeeder = postSeeder;
     this.commentService = commentService;
     this.userRelationshipService = userRelationshipService;
@@ -33,7 +33,8 @@ class SocialGraphSeeder {
 
   void like(User user, String postSlug) {
     Post post = postSeeder.getBySlug(postSlug);
-    SeedSecurityContext.runAs(user, () -> postService.likePost(user.getId(), post.getId()));
+    SeedSecurityContext.runAs(
+        user, () -> postInteractionService.likePost(user.getId(), post.getId()));
   }
 
   void comment(User author, String postSlug, String content) {

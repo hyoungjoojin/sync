@@ -429,6 +429,7 @@ function EditProfileDialog() {
 
 function ProfileImageField() {
   const t = useTranslations('pages.profile.edit.form.image');
+  const tCommon = useTranslations();
 
   const { refetch: refetchSession } = useSession();
   const { data: profile } = useGetAuthenticatedUser();
@@ -500,7 +501,12 @@ function ProfileImageField() {
           setSelectedImage(null);
         },
         onError: (error) => {
-          if (error instanceof Error) {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.NETWORK_ERROR
+          ) {
+            setError(tCommon('errors.connection-failed'));
+          } else if (error instanceof SyncError) {
             setError(error.message);
           } else {
             setError(t('errors.uploadFailed'));

@@ -4,11 +4,7 @@ import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useEffect } from 'react';
 
 import { useGetPostRecommendationsInfinite } from '@/api/__generated__/post/post';
-import {
-  PostScope,
-  PostStatus,
-  PostType,
-} from '@/components/feature/post/types/post';
+import { PostStatus, PostType } from '@/components/feature/post/types/post';
 import PostPreview from '@/components/feature/post/viewer/PostPreview';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
@@ -68,7 +64,6 @@ export default function Posts() {
             id={post.content.summary.id}
             slug={post.content.summary.slug}
             type={post.content.summary.type as PostType}
-            scope={post.content.summary.scope as PostScope}
             status={post.content.summary.status as PostStatus}
             title={post.content.summary.title}
             author={post.content.summary.author}

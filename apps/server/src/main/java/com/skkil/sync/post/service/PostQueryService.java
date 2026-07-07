@@ -72,11 +72,11 @@ public class PostQueryService {
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#userId, 'PROFILE', 'READ')")
   public GetPostsResponse getUserPosts(
-      Long requesterId, Long userId, CursorPaginationRequest pagination) {
+      Long requesterId, Long userId, PostType type, CursorPaginationRequest pagination) {
     var posts =
         paginationService
             .paginate(
-                postQueryRepository.getPostsByUser(requesterId, userId),
+                postQueryRepository.getPostsByUser(requesterId, userId, type),
                 paginationProvider,
                 pagination)
             .mapWithLookup(

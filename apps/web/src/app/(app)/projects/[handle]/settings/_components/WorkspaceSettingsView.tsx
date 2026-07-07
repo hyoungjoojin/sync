@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { FileInput, FileInputError, Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 const PROJECT_ICON_ALLOWED_TYPES = 'image/*';
 const PROJECT_ICON_MAX_SIZE_BYTES = 5 * 1024 * 1024;
@@ -224,7 +225,12 @@ function ProjectIconField({
           setSelectedIcon(null);
         },
         onError: (error) => {
-          if (error instanceof Error) {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.NETWORK_ERROR
+          ) {
+            setError('서버에 연결할 수 없습니다. 나중에 다시 시도하세요.');
+          } else if (error instanceof SyncError) {
             setError(error.message);
           } else {
             setError('업로드에 실패했습니다.');

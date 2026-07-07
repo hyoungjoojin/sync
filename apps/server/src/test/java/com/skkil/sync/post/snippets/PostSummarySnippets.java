@@ -5,7 +5,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import com.skkil.sync.common.util.restdocs.RestDocsUtils;
 import com.skkil.sync.common.util.time.DateTimeTestUtils;
 import com.skkil.sync.post.dto.summary.PostSummary;
-import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.project.snippets.ProjectSummarySnippets;
@@ -23,7 +22,6 @@ public class PostSummarySnippets {
         .slug("test-slug")
         .title("Test Post Title")
         .type(PostType.SHORT)
-        .scope(PostScope.PUBLIC)
         .status(PostStatus.PUBLISHED)
         .author(UserSummarySnippets.getUserSummary())
         .project(ProjectSummarySnippets.getProjectSummary())
@@ -35,6 +33,7 @@ public class PostSummarySnippets {
         .commentCount(1L)
         .bookmarked(true)
         .bookmarkedAt(DateTimeTestUtils.defaultTestOffsetDateTime())
+        .likedAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .build();
   }
 
@@ -52,11 +51,6 @@ public class PostSummarySnippets {
             .type(RestDocsUtils.ENUM_TYPE)
             .description("Post Type")
             .attributes(RestDocsUtils.getEnumAttributes(PostType.class)));
-    fields.add(
-        fieldWithPath(prefix + "scope")
-            .type(RestDocsUtils.ENUM_TYPE)
-            .description("Post Scope")
-            .attributes(RestDocsUtils.getEnumAttributes(PostScope.class)));
     fields.add(
         fieldWithPath(prefix + "status")
             .type(RestDocsUtils.ENUM_TYPE)
@@ -104,6 +98,11 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "bookmarkedAt")
             .type(JsonFieldType.STRING)
             .description("Bookmarked At")
+            .optional());
+    fields.add(
+        fieldWithPath(prefix + "likedAt")
+            .type(JsonFieldType.STRING)
+            .description("Liked At")
             .optional());
     return fields;
   }

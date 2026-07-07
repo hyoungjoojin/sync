@@ -77,9 +77,13 @@ function Button({
       {asChild ? (
         children
       ) : (
-        <div className="flex items-center gap-2">
-          {isPending && <Spinner />}
-          {children}
+        <div className="relative flex items-center gap-2">
+          {isPending && <Spinner className="absolute inset-0 m-auto" />}
+          <div
+            className={cn('flex items-center gap-2', isPending && 'invisible')}
+          >
+            {children}
+          </div>
         </div>
       )}
     </Comp>

@@ -9,7 +9,6 @@ import static com.skkil.sync.jooq.tables.Users.USERS;
 
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
 import com.skkil.sync.post.dto.data.PostDto;
-import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.post.model.PostVisibility;
@@ -57,10 +56,16 @@ public class PostQueryRepository {
             .fetchInto(PostDto.class);
   }
 
-  public CursorPaginationDataFetcher<PostDto> getPostsByUser(Long requesterId, Long userId) {
+  public CursorPaginationDataFetcher<PostDto> getPostsByUser(
+      Long requesterId, Long userId, PostType type) {
     return (condition, orderFields, size) -> {
+      Condition userCondition = condition.and(POSTS.AUTHOR_ID.eq(userId));
+      if (type != null) {
+        userCondition = userCondition.and(POSTS.POST_TYPE.eq(type.name()));
+      }
+
       CursorPaginationDataFetcher<PostDto> base = getPosts(requesterId);
-      return base.fetch(condition.and(POSTS.AUTHOR_ID.eq(userId)), orderFields, size);
+      return base.fetch(userCondition, orderFields, size);
     };
   }
 
@@ -99,13 +104,35 @@ public class PostQueryRepository {
         bookmarkCondition = bookmarkCondition.and(PROJECTS.HANDLE.eq(projectHandle));
       }
 
-      return dsl.select(post(userId, POST_BOOKMARKS.CREATED_AT))
+      return dsl.select(post(userId, POST_BOOKMARKS.CREATED_AT, DSL.castNull(OffsetDateTime.class)))
           .from(POST_BOOKMARKS)
           .join(POSTS)
           .on(POST_BOOKMARKS.POST_ID.eq(POSTS.ID))
           .leftJoin(PROJECTS)
           .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
           .where(bookmarkCondition)
+          .orderBy(orderFields)
+          .limit(size)
+          .fetchInto(PostDto.class);
+    };
+  }
+
+  public CursorPaginationDataFetcher<PostDto> getLikedPosts(Long userId, String projectHandle) {
+    return (condition, orderFields, size) -> {
+      Condition likeCondition =
+          condition.and(POST_LIKES.USER_ID.eq(userId)).and(visibleCondition());
+
+      if (projectHandle != null) {
+        likeCondition = likeCondition.and(PROJECTS.HANDLE.eq(projectHandle));
+      }
+
+      return dsl.select(post(userId, DSL.castNull(OffsetDateTime.class), POST_LIKES.CREATED_AT))
+          .from(POST_LIKES)
+          .join(POSTS)
+          .on(POST_LIKES.POST_ID.eq(POSTS.ID))
+          .leftJoin(PROJECTS)
+          .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
+          .where(likeCondition)
           .orderBy(orderFields)
           .limit(size)
           .fetchInto(PostDto.class);
@@ -144,10 +171,12 @@ public class PostQueryRepository {
   }
 
   private List<SelectFieldOrAsterisk> post(Long requesterId) {
-    return post(requesterId, DSL.castNull(OffsetDateTime.class));
+    return post(
+        requesterId, DSL.castNull(OffsetDateTime.class), DSL.castNull(OffsetDateTime.class));
   }
 
-  private List<SelectFieldOrAsterisk> post(Long requesterId, Field<OffsetDateTime> bookmarkedAt) {
+  private List<SelectFieldOrAsterisk> post(
+      Long requesterId, Field<OffsetDateTime> bookmarkedAt, Field<OffsetDateTime> likedAt) {
     Field<Boolean> bookmarked =
         requesterId == null
             ? DSL.value(false)
@@ -171,7 +200,6 @@ public class PostQueryRepository {
     return List.of(
         POSTS.ID.as("id"),
         POSTS.POST_TYPE.as("type"),
-        POSTS.SCOPE.as("scope"),
         POSTS.STATUS.as("status"),
         POSTS.SLUG.as("slug"),
         POSTS.TITLE.as("title"),
@@ -189,7 +217,8 @@ public class PostQueryRepository {
         liked.as("liked"),
         bookmarked.as("bookmarked"),
         POSTS.RESOLVED.as("resolved"),
-        bookmarkedAt.as("bookmarkedAt"));
+        bookmarkedAt.as("bookmarkedAt"),
+        likedAt.as("likedAt"));
   }
 
   private Condition visibleCondition() {
@@ -198,13 +227,13 @@ public class PostQueryRepository {
 
   private Condition publicPublishedCondition() {
     return visibleCondition()
-        .and(POSTS.SCOPE.eq(PostScope.PUBLIC.name()))
+        .and(POSTS.PROJECT_ID.isNull())
         .and(POSTS.STATUS.eq(PostStatus.PUBLISHED.name()));
   }
 
   private Condition workspacePublishedCondition() {
     return visibleCondition()
-        .and(POSTS.SCOPE.eq(PostScope.WORKSPACE.name()))
+        .and(POSTS.PROJECT_ID.isNotNull())
         .and(POSTS.STATUS.eq(PostStatus.PUBLISHED.name()));
   }
 

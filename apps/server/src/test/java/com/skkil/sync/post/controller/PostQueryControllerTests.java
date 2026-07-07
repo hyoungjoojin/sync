@@ -109,15 +109,19 @@ class PostQueryControllerTests {
   @DisplayName("[getUserPosts] API 문서화 테스트")
   void getUserPosts() throws Exception {
     Long userId = 1L;
+    PostType type = PostType.SHORT;
+
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getUserPosts(any(), eq(userId), eq(pagination))).thenReturn(response);
+    when(postQueryService.getUserPosts(any(), eq(userId), eq(type), eq(pagination)))
+        .thenReturn(response);
 
     mockMvc
         .perform(
             get("/users/{userId}/posts", userId)
+                .queryParam("type", type.name())
                 .queryParams(
                     CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
         .andExpect(status().isOk())
@@ -133,7 +137,8 @@ class PostQueryControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("userId").description("User ID")),
-                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
+                    .and(parameterWithName("type").description("게시글 타입").optional()),
                 GetPostsResponseSnippets.getPostsResponseFields()));
   }
 
