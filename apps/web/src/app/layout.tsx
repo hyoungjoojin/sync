@@ -1,19 +1,14 @@
 import type { Metadata } from 'next';
-import { Figtree, Geist, Geist_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 
 import AppProvider from '@/components/providers/AppProvider';
 import { Toaster } from '@/components/ui/sonner';
 import '@/styles/globals.css';
 
-const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-mono',
   subsets: ['latin'],
 });
 
@@ -31,10 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={figtree.variable}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body className={`${jetbrainsMono.variable} antialiased`}>
         <AppProvider>{children}</AppProvider>
         <Toaster />
       </body>
