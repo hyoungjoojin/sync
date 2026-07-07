@@ -36,9 +36,8 @@ public interface PostSearchRepository extends Repository<PostEmbedding, Long> {
           SELECT r.id FROM posts r
           LEFT JOIN projects pr ON pr.id = r.project_id
           WHERE r.visibility = 'VISIBLE'
-          AND r.project_id IS NULL
           AND r.status = 'PUBLISHED'
-          AND (:projectHandle IS NULL OR pr.handle = :projectHandle)
+          AND ((:projectHandle IS NULL AND r.project_id IS NULL) OR pr.handle = :projectHandle)
           AND r.content ILIKE '%' || :query || '%'
           ORDER BY similarity(r.content, :query) DESC
           LIMIT :n
