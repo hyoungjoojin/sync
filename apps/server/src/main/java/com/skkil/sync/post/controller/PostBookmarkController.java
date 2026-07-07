@@ -4,6 +4,7 @@ import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.post.dto.response.GetPostsResponse;
 import com.skkil.sync.post.service.PostBookmarkService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +43,8 @@ public class PostBookmarkController {
   @ResponseStatus(HttpStatus.OK)
   public GetPostsResponse getBookmarkedPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
+      @RequestParam(required = false) @Nullable String projectHandle,
       @Validated CursorPaginationRequest pagination) {
-    return postBookmarkService.getBookmarkedPosts(user.userId(), pagination);
+    return postBookmarkService.getBookmarkedPosts(user.userId(), projectHandle, pagination);
   }
 }

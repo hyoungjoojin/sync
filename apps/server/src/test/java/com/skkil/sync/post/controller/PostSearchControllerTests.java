@@ -3,6 +3,7 @@ package com.skkil.sync.post.controller;
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
@@ -45,7 +46,7 @@ class PostSearchControllerTests {
     String query = "test query";
     SearchPostsResponse response = SearchPostsResponseSnippets.getSearchPostsResponse();
 
-    when(postSearchService.searchPosts(eq(query))).thenReturn(response);
+    when(postSearchService.searchPosts(eq(query), isNull())).thenReturn(response);
 
     mockMvc
         .perform(get("/search/posts").queryParam("query", query))
@@ -62,7 +63,10 @@ class PostSearchControllerTests {
                 null,
                 Function.identity(),
                 queryParameters(
-                    parameterWithName("query").description("Search query (1-100 characters)")),
+                    parameterWithName("query").description("Search query (1-100 characters)"),
+                    parameterWithName("projectHandle")
+                        .description("프로젝트로 검색 범위 제한 (선택)")
+                        .optional()),
                 SearchPostsResponseSnippets.getSearchPostsResponseFields()));
   }
 }

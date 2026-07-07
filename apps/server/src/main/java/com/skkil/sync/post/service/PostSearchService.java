@@ -7,7 +7,7 @@ import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.repository.PostQueryRepository;
 import com.skkil.sync.post.repository.PostSearchRepository;
 import java.util.List;
-import org.springframework.data.domain.Limit;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Vector;
 import org.springframework.stereotype.Service;
 
@@ -30,22 +30,23 @@ public class PostSearchService {
     this.postAssembler = postAssembler;
   }
 
-  public SearchPostsResponse searchPosts(String query) {
+  public SearchPostsResponse searchPosts(String query, @Nullable String projectHandle) {
     int k = 60;
 
     float[] queryEmbedding = postEmbeddingService.computeEmbedding(query);
 
     List<Long>
         topNByEmbeddingSimilarity =
-            postSearchRepository
-                .findByEmbeddingNear(Vector.of(queryEmbedding), Limit.of(k))
-                .stream()
-                .map(r -> r.getContent().getPost().getId())
-                .toList(),
-        topNByFullTextSearch = postSearchRepository.findTopNByFullTextSearch(query, k);
+            postSearchRepository.findTopNByEmbeddingNearAndProjectHandle(
+                Vector.of(queryEmbedding), projectHandle, k),
+        topNByFullTextSearch =
+            postSearchRepository.findTopNByFullTextSearch(query, projectHandle, k);
 
     List<Long> ids = RRFMerger.merge(k, topNByEmbeddingSimilarity, topNByFullTextSearch);
-    List<PostDto> posts = postQueryRepository.getPostsByIds(ids);
+    List<PostDto> posts =
+        projectHandle == null
+            ? postQueryRepository.getPostsByIds(ids)
+            : postQueryRepository.getPostsByIdsInProject(ids, projectHandle);
 
     return new SearchPostsResponse(postAssembler.toPostResponses(posts));
   }

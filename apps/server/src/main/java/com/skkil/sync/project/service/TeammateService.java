@@ -4,6 +4,7 @@ import com.skkil.sync.project.dto.request.AddTeammateRequest;
 import com.skkil.sync.project.dto.request.UpdateTeammateRequest;
 import com.skkil.sync.project.dto.response.GetProjectTeammatesResponse;
 import com.skkil.sync.project.exception.ProjectNotFoundException;
+import com.skkil.sync.project.exception.ProjectOwnerCannotBeModifiedException;
 import com.skkil.sync.project.exception.TeammateNotFoundException;
 import com.skkil.sync.project.mapper.ProjectAssembler;
 import com.skkil.sync.project.model.Project;
@@ -66,10 +67,13 @@ public class TeammateService {
     Project project =
         projectRepository.findByHandle(projectHandle).orElseThrow(ProjectNotFoundException::new);
 
-    if (!teammateRepository
-        .findByProjectIdAndUserHandle(project.getId(), teammateHandle)
-        .isPresent()) {
-      throw new TeammateNotFoundException();
+    Teammate teammate =
+        teammateRepository
+            .findByProjectIdAndUserHandle(project.getId(), teammateHandle)
+            .orElseThrow(TeammateNotFoundException::new);
+
+    if (teammate.isProjectOwner()) {
+      throw new ProjectOwnerCannotBeModifiedException();
     }
 
     teammateRepository.deleteByProjectIdAndUserHandle(project.getId(), teammateHandle);

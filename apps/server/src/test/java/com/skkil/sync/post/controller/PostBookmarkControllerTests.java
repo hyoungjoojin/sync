@@ -3,6 +3,7 @@ package com.skkil.sync.post.controller;
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -106,7 +107,7 @@ class PostBookmarkControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetBookmarkedPostsResponse();
 
-    when(postBookmarkService.getBookmarkedPosts(eq(user.userId()), eq(pagination)))
+    when(postBookmarkService.getBookmarkedPosts(eq(user.userId()), isNull(), eq(pagination)))
         .thenReturn(response);
 
     mockMvc
@@ -126,7 +127,11 @@ class PostBookmarkControllerTests {
                 null,
                 null,
                 Function.identity(),
-                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
+                    .and(
+                        parameterWithName("projectHandle")
+                            .description("프로젝트로 검색 범위 제한 (선택)")
+                            .optional()),
                 GetPostsResponseSnippets.getBookmarkedPostsResponseFields()));
   }
 }

@@ -9,6 +9,7 @@ import com.skkil.sync.post.repository.PostBookmarkRepository;
 import com.skkil.sync.post.repository.PostQueryRepository;
 import com.skkil.sync.post.repository.pagination.BookmarkedPostCursorPaginationProvider;
 import com.skkil.sync.user.mapper.UserAssembler;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,11 +53,14 @@ public class PostBookmarkService {
   }
 
   @Transactional(readOnly = true)
-  public GetPostsResponse getBookmarkedPosts(Long userId, CursorPaginationRequest pagination) {
+  public GetPostsResponse getBookmarkedPosts(
+      Long userId, @Nullable String projectHandle, CursorPaginationRequest pagination) {
     var bookmarkedPosts =
         paginationService
             .paginate(
-                postQueryRepository.getBookmarkedPosts(userId), paginationProvider, pagination)
+                postQueryRepository.getBookmarkedPosts(userId, projectHandle),
+                paginationProvider,
+                pagination)
             .mapWithLookup(
                 PostDto::authorId,
                 userAssembler::toUserSummaries,
