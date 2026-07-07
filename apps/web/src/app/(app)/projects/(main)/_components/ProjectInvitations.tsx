@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import {
   getGetMyProjectInvitationsQueryOptions,
+  getGetProjectTeammatesQueryKey,
   useAcceptProjectInvitation,
   useDeclineProjectInvitation,
   useGetMyProjectInvitations,
@@ -90,12 +91,17 @@ export default function ProjectInvitations() {
     );
   };
 
-  const handleAccept = (token: string) => {
+  const handleAccept = (token: string, projectHandle: string) => {
     acceptInvitation(
       { token },
       {
         onSuccess: async () => {
-          await invalidateInvitations();
+          await Promise.all([
+            invalidateInvitations(),
+            queryClient.invalidateQueries({
+              queryKey: getGetProjectTeammatesQueryKey(projectHandle),
+            }),
+          ]);
           toast.success('초대를 수락했습니다.');
         },
         onError: () => {
@@ -154,7 +160,9 @@ export default function ProjectInvitations() {
             <Button
               size="sm"
               disabled={isAccepting || isDeclining}
-              onClick={() => handleAccept(invitation.token)}
+              onClick={() =>
+                handleAccept(invitation.token, invitation.project.handle)
+              }
             >
               수락
             </Button>

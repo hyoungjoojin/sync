@@ -74,9 +74,10 @@ export default function Posts() {
             author={post.content.summary.author}
             project={post.content.summary.project}
             content={{ json: post.content.content, media: [] }}
-            likeCount={0}
-            commentCount={0}
-            bookmarked={false}
+            liked={post.content.summary.liked}
+            likeCount={post.content.summary.likeCount}
+            commentCount={post.content.summary.commentCount}
+            bookmarked={post.content.summary.bookmarked}
             isAuthor={post.content.summary.isAuthor}
             createdAt={post.content.summary.createdAt}
           />

@@ -25,13 +25,14 @@ export default function SearchPage() {
   const t = useTranslations('pages.search');
   const searchParams = useSearchParams();
   const query = searchParams.get('q')?.trim() ?? '';
+  const projectHandle = searchParams.get('projectHandle')?.trim() || undefined;
 
   const [category, setCategory] = useState<SearchCategory>('posts');
 
   if (!query) {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-        <SearchQueryInput query={query} />
+        <SearchQueryInput query={query} projectHandle={projectHandle} />
 
         <Empty className="min-h-80">
           <EmptyMedia variant="icon">
@@ -51,12 +52,14 @@ export default function SearchPage() {
         {t('results.title', { query })}
       </h1>
 
-      <SearchQueryInput query={query} />
+      <SearchQueryInput query={query} projectHandle={projectHandle} />
 
       <TwoColumnLayout
         main={
           <>
-            {category === 'posts' && <SearchPostResults query={query} />}
+            {category === 'posts' && (
+              <SearchPostResults query={query} projectHandle={projectHandle} />
+            )}
             {category === 'users' && <SearchUserResults query={query} />}
             {category === 'projects' && <SearchProjectResults query={query} />}
           </>

@@ -1,16 +1,14 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
-
 import {
-  getGetFollowedProjectsQueryOptions,
-  getGetProjectByHandleQueryOptions,
-  useFollowProject,
   useGetFollowedProjects,
   useGetProjectByHandle,
-  useUnfollowProject,
 } from '@/api/__generated__/project/project';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
+import {
+  useFollowProject,
+  useUnfollowProject,
+} from '@/components/feature/project/hooks/useFollowProject';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRequireAuth } from '@/hooks/use-require-auth';
@@ -25,7 +23,6 @@ export default function ProjectInfoSidebar({
   handle,
 }: ProjectInfoSidebarProps) {
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
   const { requireAuth } = useRequireAuth();
 
   const { data, isPending } = useGetProjectByHandle(handle);
@@ -58,26 +55,17 @@ export default function ProjectInfoSidebar({
     followedProjectsData?.data.projects.some((p) => p.handle === handle) ??
     false;
 
-  const invalidateFollowQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries(getGetProjectByHandleQueryOptions(handle)),
-      queryClient.invalidateQueries(
-        getGetFollowedProjectsQueryOptions(session?.user.handle || ''),
-      ),
-    ]);
-  };
-
   const handleFollowToggle = () => {
     if (!requireAuth({ intent: 'follow' })) {
       return;
     }
 
     if (isFollowing) {
-      unfollowProject({ handle }, { onSuccess: invalidateFollowQueries });
+      unfollowProject({ handle });
       return;
     }
 
-    followProject({ handle }, { onSuccess: invalidateFollowQueries });
+    followProject({ handle });
   };
 
   return (

@@ -31,9 +31,10 @@ export default function PostCardContainer({ slug }: PostCardContainerProps) {
       author={summary.author}
       project={summary.project}
       content={post.content}
+      liked={summary.liked}
       likeCount={summary.likeCount}
       commentCount={summary.commentCount}
-      bookmarked={post.bookmarked}
+      bookmarked={summary.bookmarked}
       isAuthor={summary.isAuthor}
       createdAt={summary.createdAt}
     />

@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import { LinkButton } from '@/components/ui/button';
 import { Copyright } from '@/components/ui/copyright';
 import { Logo } from '@/components/ui/logo';
-import { auth, isAuthenticated } from '@/lib/auth';
+import { isAuthenticated } from '@/lib/auth';
+import { getSession } from '@/lib/auth/session';
 import ROUTES from '@/util/routes';
 
 interface LegalLayoutProps {
@@ -14,7 +14,7 @@ interface LegalLayoutProps {
 
 export default async function LegalLayout({ children }: LegalLayoutProps) {
   const t = await getTranslations('pages.about');
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   const loggedIn = isAuthenticated(session);
 
   return (

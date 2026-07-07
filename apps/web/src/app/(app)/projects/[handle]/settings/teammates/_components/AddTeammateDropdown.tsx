@@ -5,12 +5,9 @@ import { useDebounce } from '@uidotdev/usehooks';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  getGetProjectInvitationsQueryOptions,
-  useCreateProjectInvitation,
-} from '@/api/__generated__/project/project';
 import { CreateProjectInvitationRequestRole } from '@/api/__generated__/types';
 import { useSearchUsers } from '@/api/__generated__/user/user';
+import { useCreateProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,10 +54,7 @@ export default function AddTeammateDropdown({
         },
       },
       {
-        onSuccess: async (_data, _variables, _onMutateResult, context) => {
-          await context.client.invalidateQueries(
-            getGetProjectInvitationsQueryOptions(projectHandle),
-          );
+        onSuccess: () => {
           toast.success('초대를 보냈습니다.');
           setQuery('');
           setOpen(false);

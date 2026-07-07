@@ -1,18 +1,12 @@
 'use client';
 
-import {
-  redirect,
-  useParams,
-  useRouter,
-  useSearchParams,
-} from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 import { useCreatePost } from '@/api/__generated__/post/post';
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
 import PostEditor from '@/components/feature/post/editor/PostEditor';
 import { PostScope, PostType } from '@/components/feature/post/types/post';
-import { isAuthenticated, isOnboarded } from '@/lib/auth';
-import { useSession } from '@/lib/auth/client';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 import ROUTES from '@/util/routes';
 
 function getInitialPostType(value: string | null): PostType {
@@ -27,7 +21,7 @@ export default function CreateProjectPostPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { handle } = useParams<{ handle: string }>();
-  const { data: session, isPending } = useSession();
+  useAuthGuard();
   const { data: projectData } = useGetProjectByHandle(handle);
 
   const { mutate: createPost, isPending: isCreatingPost } = useCreatePost({
@@ -37,16 +31,6 @@ export default function CreateProjectPostPage() {
       },
     },
   });
-
-  if (!isPending) {
-    if (isAuthenticated(session) && !isOnboarded(session)) {
-      redirect(ROUTES.ONBOARDING());
-    }
-
-    if (!isAuthenticated(session)) {
-      redirect(ROUTES.LOGIN());
-    }
-  }
 
   return (
     <PostEditor

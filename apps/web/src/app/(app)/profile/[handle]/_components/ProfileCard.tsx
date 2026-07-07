@@ -1,7 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EnvelopeIcon, PencilIcon } from '@phosphor-icons/react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -12,15 +11,16 @@ import z from 'zod';
 
 import { useUploadMedia } from '@/api/__generated__/media/media';
 import {
-  getGetAuthenticatedUserQueryOptions,
-  getGetProfileByHandleQueryOptions,
   useGetAuthenticatedUser,
   useGetProfileByHandle,
-  useUpdateProfile,
 } from '@/api/__generated__/profile/profile';
-import { useFollowUser, useUnfollowUser } from '@/api/__generated__/user/user';
 import { uploadFileToS3 } from '@/api/s3';
 import { ContactFields } from '@/components/feature/profile/contacts';
+import { useUpdateProfile } from '@/components/feature/profile/hooks/useUpdateProfile';
+import {
+  useFollowUser,
+  useUnfollowUser,
+} from '@/components/feature/user/hooks/useFollowUser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -253,21 +253,11 @@ function EditProfileDialog() {
 
   const { mutate: updateProfile, isPending: isUpdateProfilePending } =
     useUpdateProfile({
-      mutation: {
-        onSuccess: async (_data, _variables, _onMutateResult, context) => {
-          await refetchSession();
-
-          await context.client.invalidateQueries(
-            getGetAuthenticatedUserQueryOptions(),
-          );
-
-          await context.client.invalidateQueries(
-            getGetProfileByHandleQueryOptions(profile?.data.handle || ''),
-          );
-
-          toast.success(t('messages.success'));
-          closeDialog();
-        },
+      handle: profile?.data.handle || '',
+      onSuccess: async () => {
+        await refetchSession();
+        toast.success(t('messages.success'));
+        closeDialog();
       },
     });
 
@@ -444,19 +434,8 @@ function ProfileImageField() {
   const { data: profile } = useGetAuthenticatedUser();
 
   const { mutate: updateProfile } = useUpdateProfile({
-    mutation: {
-      onSuccess: async (_data, _variables, _onMutateResult, context) => {
-        await refetchSession();
-
-        await context.client.invalidateQueries(
-          getGetAuthenticatedUserQueryOptions(),
-        );
-
-        await context.client.invalidateQueries(
-          getGetProfileByHandleQueryOptions(profile?.data.handle || ''),
-        );
-      },
-    },
+    handle: profile?.data.handle || '',
+    onSuccess: refetchSession,
   });
 
   const { mutateAsync: uploadMedia, isPending: isUploadMediaPending } =
@@ -606,20 +585,12 @@ interface FollowButtonProps {
 function FollowButton({ handle }: FollowButtonProps) {
   const t = useTranslations('pages.profile.header');
 
-  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const { requireAuth } = useRequireAuth();
   const { data: profile, isPending } = useGetProfileByHandle(handle);
 
-  const invalidateProfile = () =>
-    queryClient.invalidateQueries(getGetProfileByHandleQueryOptions(handle));
-
-  const { mutate: followUser } = useFollowUser({
-    mutation: { onSuccess: invalidateProfile },
-  });
-  const { mutate: unfollowUser } = useUnfollowUser({
-    mutation: { onSuccess: invalidateProfile },
-  });
+  const { mutate: followUser } = useFollowUser();
+  const { mutate: unfollowUser } = useUnfollowUser();
 
   if (isPending || !profile) {
     return null;

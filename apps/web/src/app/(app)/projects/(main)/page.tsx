@@ -1,19 +1,9 @@
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-
-import { auth, isAuthenticated } from '@/lib/auth';
-import ROUTES from '@/util/routes';
+import { requireSession } from '@/lib/auth/guards';
 
 import ProjectsTabs from './_components/ProjectsTabs';
 
 export default async function Projects() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!isAuthenticated(session)) {
-    redirect(ROUTES.HOME());
-  }
+  await requireSession();
 
   return (
     <div className="space-y-6">

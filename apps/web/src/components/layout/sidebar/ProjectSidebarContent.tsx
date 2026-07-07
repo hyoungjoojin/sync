@@ -35,7 +35,7 @@ export default function ProjectSidebarContent({
   handle,
 }: ProjectSidebarContentProps) {
   const pathname = usePathname();
-  const { requireAuth } = useRequireAuth();
+  const { requireAuth, isAuthenticated } = useRequireAuth();
   const { data } = useGetProjectByHandle(handle);
 
   const projectName = data?.data.summary.name ?? handle;
@@ -49,13 +49,17 @@ export default function ProjectSidebarContent({
     <>
       <SidebarHeader className="flex flex-col gap-3 p-4">
         <div className="flex items-center justify-between">
-          <Link
-            href={ROUTES.HOME()}
-            className="flex items-center gap-1 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
-          >
-            <ArrowLeftIcon size={12} />
-            Home
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href={ROUTES.HOME()}
+              className="flex items-center gap-1 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            >
+              <ArrowLeftIcon size={12} />
+              Home
+            </Link>
+          ) : (
+            <div />
+          )}
           <SidebarCloseButton />
         </div>
 
@@ -118,27 +122,31 @@ export default function ProjectSidebarContent({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
+        {isAuthenticated && (
+          <>
+            <SidebarSeparator />
 
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname.startsWith(
-                    ROUTES.PROJECT_SETTINGS(handle),
-                  )}
-                >
-                  <Link href={ROUTES.PROJECT_SETTINGS(handle)}>
-                    <GearIcon />
-                    Settings
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith(
+                        ROUTES.PROJECT_SETTINGS(handle),
+                      )}
+                    >
+                      <Link href={ROUTES.PROJECT_SETTINGS(handle)}>
+                        <GearIcon />
+                        Settings
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
     </>
   );

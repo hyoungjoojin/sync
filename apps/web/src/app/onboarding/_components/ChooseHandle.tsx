@@ -5,11 +5,8 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import z from 'zod';
 
-import {
-  getGetAuthenticatedUserQueryKey,
-  useUpdateProfile,
-} from '@/api/__generated__/profile/profile';
 import { useGetHandleAvailability } from '@/api/__generated__/user/user';
+import { useUpdateProfile } from '@/components/feature/profile/hooks/useUpdateProfile';
 import { FieldError } from '@/components/ui/field';
 import {
   InputGroup,
@@ -86,15 +83,7 @@ export const ChooseHandle = forwardRef<
     },
   );
 
-  const { mutate: updateProfile } = useUpdateProfile({
-    mutation: {
-      onSuccess: (_data, _variables, _onMutateResult, context) => {
-        context.client.invalidateQueries({
-          queryKey: getGetAuthenticatedUserQueryKey(),
-        });
-      },
-    },
-  });
+  const { mutate: updateProfile } = useUpdateProfile();
 
   useEffect(() => {
     if (handleAvailabilityData) {

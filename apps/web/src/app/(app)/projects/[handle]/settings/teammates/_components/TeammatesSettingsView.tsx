@@ -5,8 +5,6 @@ import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import {
-  getGetProjectInvitationsQueryOptions,
-  useCancelProjectInvitation,
   useGetProjectByHandle,
   useGetProjectInvitations,
   useGetProjectTeammates,
@@ -15,6 +13,7 @@ import {
   GetProjectResponseRole,
   GetProjectTeammatesResponseTeammatesItemRole,
 } from '@/api/__generated__/types';
+import { useCancelProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -166,10 +165,7 @@ function PendingInvitationRow({
         invitationId: invitationId.toString(),
       },
       {
-        onSuccess: async (_data, _variables, _onMutateResult, context) => {
-          await context.client.invalidateQueries(
-            getGetProjectInvitationsQueryOptions(projectHandle),
-          );
+        onSuccess: () => {
           toast.success('초대를 취소했습니다.');
         },
         onError: () => {

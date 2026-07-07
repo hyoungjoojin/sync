@@ -996,7 +996,11 @@
       }
     },
     "not-found": {
-      "title": "페이지를 찾을 수 없습니다"
+      "eyebrow": "sync status",
+      "title": "요청하신 주소를 찾을 수 없습니다.",
+      "description": "삭제되었거나 잘못 입력된 링크일 수 있어요.",
+      "back": "홈으로 돌아가기",
+      "explore": "탐색하기"
     }
   },
   "modals": {
@@ -1089,7 +1093,8 @@
     },
     "navigation": {
       "search": {
-        "placeholder": "검색..."
+        "placeholder": "검색...",
+        "placeholder-scoped": "이 프로젝트에서 검색..."
       },
       "menu": {
         "bookmarks": "북마크",

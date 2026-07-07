@@ -1,14 +1,13 @@
 'use client';
 
 import { DotsThreeIcon, SirenIcon } from '@phosphor-icons/react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { useDeletePost } from '@/api/__generated__/post/post';
 import type { GetPostResponse } from '@/api/__generated__/types';
+import { useDeletePost } from '@/components/feature/post/hooks/useDeletePost';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import {
   AlertDialog,
@@ -59,6 +58,7 @@ export interface PostViewCardProps {
   author: PostAuthorSummary;
   project?: PostProjectSummary;
   content: GetPostResponse['content'];
+  liked: boolean;
   likeCount: number;
   commentCount: number;
   bookmarked: boolean;
@@ -85,6 +85,7 @@ function PostViewCardContent({
   author,
   project,
   content,
+  liked,
   likeCount,
   commentCount,
   bookmarked,
@@ -127,6 +128,7 @@ function PostViewCardContent({
         {showActions && (
           <PostCardActions
             postId={id}
+            liked={liked}
             likeCount={likeCount}
             commentCount={commentCount}
             bookmarked={bookmarked}
@@ -165,7 +167,6 @@ function PostViewCardHeader({
   const tDelete = useTranslations('pages.posts.delete');
   const tCopyLink = useTranslations('pages.posts.copy-link');
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [reportOpen, setReportOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
@@ -189,13 +190,7 @@ function PostViewCardHeader({
           toast.success(tDelete('messages.success'));
           setDeleteOpen(false);
 
-          if (isPreview) {
-            queryClient.invalidateQueries({
-              predicate: (query) =>
-                typeof query.queryKey[1] === 'string' &&
-                query.queryKey[1].startsWith('/posts'),
-            });
-          } else {
+          if (!isPreview) {
             router.push(ROUTES.HOME());
           }
         },
@@ -279,11 +274,13 @@ function PostViewCardHeader({
       </div>
 
       {!isPreview && (
-        <ReportPostDialog
-          postId={postId}
-          open={reportOpen}
-          onOpenChange={setReportOpen}
-        />
+        <div onClick={stopPropagation}>
+          <ReportPostDialog
+            postId={postId}
+            open={reportOpen}
+            onOpenChange={setReportOpen}
+          />
+        </div>
       )}
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

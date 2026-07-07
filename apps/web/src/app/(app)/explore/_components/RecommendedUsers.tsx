@@ -1,12 +1,10 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
-
+import { useGetRecommendations } from '@/api/__generated__/user/user';
 import {
-  getGetRecommendationsQueryOptions,
   useFollowUser,
-  useGetRecommendations,
-} from '@/api/__generated__/user/user';
+  useFollowedRecommendedUserIds,
+} from '@/components/feature/user/hooks/useFollowUser';
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
@@ -17,8 +15,10 @@ import {
 } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const MAX_USERS_PER_PAGE = 5;
+
 export default function RecommendedUsers() {
-  const queryClient = useQueryClient();
+  const followedUserIds = useFollowedRecommendedUserIds();
 
   const { data, isPending } = useGetRecommendations();
   const { mutate: followUser, isPending: isFollowPending } = useFollowUser();
@@ -32,10 +32,6 @@ export default function RecommendedUsers() {
   if (users.length === 0) {
     return null;
   }
-
-  const invalidateRecommendations = async () => {
-    await queryClient.invalidateQueries(getGetRecommendationsQueryOptions());
-  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,23 +61,29 @@ export default function RecommendedUsers() {
                 <Button
                   className="w-full"
                   size="sm"
-                  disabled={isFollowPending}
-                  onClick={() =>
-                    followUser(
-                      { followeeId: user.userId },
-                      { onSuccess: invalidateRecommendations },
-                    )
+                  variant={
+                    followedUserIds.includes(user.userId)
+                      ? 'outline'
+                      : 'default'
                   }
+                  disabled={
+                    isFollowPending || followedUserIds.includes(user.userId)
+                  }
+                  onClick={() => followUser({ followeeId: user.userId })}
                 >
-                  팔로우
+                  {followedUserIds.includes(user.userId) ? '팔로잉' : '팔로우'}
                 </Button>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
 
-        <CarouselPrevious />
-        <CarouselNext />
+        {users.length > MAX_USERS_PER_PAGE && (
+          <>
+            <CarouselPrevious />
+            <CarouselNext />
+          </>
+        )}
       </Carousel>
     </div>
   );

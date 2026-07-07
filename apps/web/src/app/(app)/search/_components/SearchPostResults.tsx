@@ -18,12 +18,16 @@ import ROUTES from '@/util/routes';
 
 interface SearchPostResultsProps {
   query: string;
+  projectHandle?: string;
 }
 
-export default function SearchPostResults({ query }: SearchPostResultsProps) {
+export default function SearchPostResults({
+  query,
+  projectHandle,
+}: SearchPostResultsProps) {
   const t = useTranslations('pages.search');
   const { data, isPending } = useSearchPosts(
-    { query },
+    { query, projectHandle },
     { query: { enabled: !!query } },
   );
 

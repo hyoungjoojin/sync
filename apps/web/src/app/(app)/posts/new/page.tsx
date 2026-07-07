@@ -1,12 +1,11 @@
 'use client';
 
-import { redirect, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useCreatePost } from '@/api/__generated__/post/post';
 import PostEditor from '@/components/feature/post/editor/PostEditor';
 import { PostScope, PostType } from '@/components/feature/post/types/post';
-import { isAuthenticated, isOnboarded } from '@/lib/auth';
-import { useSession } from '@/lib/auth/client';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 import ROUTES from '@/util/routes';
 
 function getInitialPostType(value: string | null): PostType {
@@ -20,7 +19,7 @@ function getInitialPostType(value: string | null): PostType {
 export default function CreatePostPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, isPending } = useSession();
+  useAuthGuard();
 
   const { mutate: createPost, isPending: isCreatingPost } = useCreatePost({
     mutation: {
@@ -29,16 +28,6 @@ export default function CreatePostPage() {
       },
     },
   });
-
-  if (!isPending) {
-    if (isAuthenticated(session) && !isOnboarded(session)) {
-      redirect(ROUTES.ONBOARDING());
-    }
-
-    if (!isAuthenticated(session)) {
-      redirect(ROUTES.LOGIN());
-    }
-  }
 
   return (
     <PostEditor

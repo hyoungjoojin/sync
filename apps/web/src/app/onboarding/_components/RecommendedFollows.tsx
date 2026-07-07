@@ -3,11 +3,12 @@
 import { useTranslations } from 'next-intl';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
+import { useGetRecommendations } from '@/api/__generated__/user/user';
 import {
   useFollowUser,
-  useGetRecommendations,
+  useFollowedRecommendedUserIds,
   useUnfollowUser,
-} from '@/api/__generated__/user/user';
+} from '@/components/feature/user/hooks/useFollowUser';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,10 +22,10 @@ export const RecommendedFollows = forwardRef<
   const t = useTranslations('pages.onboarding.steps.follow');
 
   const { data, isPending } = useGetRecommendations();
+  const followedIds = useFollowedRecommendedUserIds();
   const { mutate: followUser } = useFollowUser();
   const { mutate: unfollowUser } = useUnfollowUser();
 
-  const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
   useImperativeHandle(ref, () => ({
@@ -50,31 +51,17 @@ export const RecommendedFollows = forwardRef<
   const toggleFollow = (userId: string) => {
     setPending(userId, true);
 
-    if (followedIds.has(userId)) {
+    if (followedIds.includes(userId)) {
       unfollowUser(
         { followeeId: userId },
-        {
-          onSuccess: () => {
-            setFollowedIds((prev) => {
-              const next = new Set(prev);
-              next.delete(userId);
-              return next;
-            });
-          },
-          onSettled: () => setPending(userId, false),
-        },
+        { onSettled: () => setPending(userId, false) },
       );
       return;
     }
 
     followUser(
       { followeeId: userId },
-      {
-        onSuccess: () => {
-          setFollowedIds((prev) => new Set(prev).add(userId));
-        },
-        onSettled: () => setPending(userId, false),
-      },
+      { onSettled: () => setPending(userId, false) },
     );
   };
 
@@ -95,7 +82,7 @@ export const RecommendedFollows = forwardRef<
   return (
     <ul className="flex flex-col gap-1 -mx-2">
       {users.map((user, index) => {
-        const isFollowing = followedIds.has(user.userId);
+        const isFollowing = followedIds.includes(user.userId);
 
         return (
           <li

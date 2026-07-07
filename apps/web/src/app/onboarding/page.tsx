@@ -5,10 +5,7 @@ import { useRouter } from 'next/navigation';
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  getGetAuthenticatedUserQueryKey,
-  useUpdateProfile,
-} from '@/api/__generated__/profile/profile';
+import { useUpdateProfile } from '@/components/feature/profile/hooks/useUpdateProfile';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
@@ -63,21 +60,9 @@ export default function Onboarding() {
   });
 
   const { mutate: updateProfile, isPending: isFinishing } = useUpdateProfile({
-    mutation: {
-      onSuccess: async (_data, _variables, _onMutateResult, context) => {
-        try {
-          await refetchSession();
-          context.client.invalidateQueries({
-            queryKey: getGetAuthenticatedUserQueryKey(),
-          });
-          router.replace(ROUTES.HOME());
-        } catch {
-          toast.error(t('errors.finish'));
-        }
-      },
-      onError: () => {
-        toast.error(t('errors.finish'));
-      },
+    onSuccess: async () => {
+      await refetchSession();
+      router.replace(ROUTES.HOME());
     },
   });
 
@@ -122,11 +107,18 @@ export default function Onboarding() {
   };
 
   const finishedButtonClickHandler = () => {
-    updateProfile({
-      data: {
-        isOnboarded: true,
+    updateProfile(
+      {
+        data: {
+          isOnboarded: true,
+        },
       },
-    });
+      {
+        onError: () => {
+          toast.error(t('errors.finish'));
+        },
+      },
+    );
   };
 
   const step = steps[stepIndex];

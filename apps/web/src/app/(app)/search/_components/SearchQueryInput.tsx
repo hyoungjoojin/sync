@@ -12,16 +12,22 @@ import {
 
 interface SearchQueryInputProps {
   query: string;
+  projectHandle?: string;
 }
 
-export default function SearchQueryInput({ query }: SearchQueryInputProps) {
+export default function SearchQueryInput({
+  query,
+  projectHandle,
+}: SearchQueryInputProps) {
   const router = useRouter();
   const [value, setValue] = useState(query);
 
   const handleSearch = () => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    const params = new URLSearchParams({ q: trimmed });
+    if (projectHandle) params.set('projectHandle', projectHandle);
+    router.push(`/search?${params.toString()}`);
   };
 
   return (
