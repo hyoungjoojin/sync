@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 
+import { PostRecommendationType } from '@/components/feature/post/types/post';
 import { requireOnboardedSession } from '@/lib/auth/guards';
 
-import Posts from '../(home)/_components/Posts';
-import RecommendedUsers from './_components/RecommendedUsers';
+import ExplorePosts from '../_components/ExplorePosts';
+import RecommendedUsers from '../_components/RecommendedUsers';
 
-export default async function ExplorePage() {
+export default async function ExploreFollowingPage() {
   await requireOnboardedSession();
 
   const t = await getTranslations('pages.explore');
@@ -19,7 +20,7 @@ export default async function ExplorePage() {
 
       <RecommendedUsers />
 
-      <Posts />
+      <ExplorePosts type={PostRecommendationType.FOLLOWING} />
     </div>
   );
 }

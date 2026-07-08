@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
@@ -43,9 +44,18 @@ function LeftSection({ showSidebarTrigger }: { showSidebarTrigger: boolean }) {
 function RightSection() {
   const t = useTranslations('components.navigation');
 
+  // `useSession` can resolve synchronously from its client-side cache before
+  // hydration, while SSR always renders the pending state. Gating on
+  // `mounted` keeps the first client render identical to the server-rendered
+  // HTML so this subtree doesn't diverge and trigger a hydration mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { data: session, isPending } = useSession();
 
-  if (isPending) {
+  if (!mounted || isPending) {
     return <div className="flex items-center gap-1" />;
   }
 

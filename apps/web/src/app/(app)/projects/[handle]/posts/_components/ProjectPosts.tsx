@@ -1,19 +1,17 @@
 'use client';
 
-import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
 
 import {
   useGetPostsByProjectInfinite,
   useGetPostsByTagInfinite,
 } from '@/api/__generated__/post/post';
 import { useGetProjectTags } from '@/api/__generated__/tag/tag';
-import { PostStatus, PostType } from '@/components/feature/post/types/post';
-import PostPreview from '@/components/feature/post/viewer/PostPreview';
+import { PostType } from '@/components/feature/post/types/post';
+import InfinitePostList from '@/components/feature/post/viewer/InfinitePostList';
+import PostListMessage from '@/components/feature/post/viewer/PostListMessage';
+import { toPostPreviewProps } from '@/components/feature/post/viewer/PostPreview';
 import { Button, LinkButton } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import ROUTES from '@/util/routes';
 
@@ -80,18 +78,6 @@ export default function ProjectPosts({
   const posts =
     data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
 
-  const [ref, entry] = useIntersectionObserver({
-    threshold: 0.2,
-    root: null,
-    rootMargin: '400px',
-  });
-
-  useEffect(() => {
-    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [entry?.isIntersecting, fetchNextPage, hasNextPage, isFetchingNextPage]);
-
   const { data: tagsData } = useGetProjectTags(handle, {
     query: { enabled: !!tagId },
   });
@@ -109,83 +95,28 @@ export default function ProjectPosts({
           ? t('views.guides')
           : t('views.feed');
 
-  if (isPending) {
-    return (
-      <section className="space-y-3">
-        <h1 className="text-xl font-semibold">{viewTitle}</h1>
-        <ProjectPostsSkeleton />
-      </section>
-    );
-  }
-
-  if (isError) {
-    return (
-      <section className="space-y-3">
-        <h1 className="text-xl font-semibold">{viewTitle}</h1>
-
-        <div className="rounded-md border px-4 py-8 text-center">
-          <p className="text-sm text-destructive">{t('list.error')}</p>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="space-y-3">
       <h1 className="text-xl font-semibold">{viewTitle}</h1>
 
-      {posts.length === 0 ? (
-        <ProjectPostsEmpty handle={handle} />
-      ) : (
-        <>
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <PostPreview
-                key={post.content.summary.id}
-                id={post.content.summary.id}
-                slug={post.content.summary.slug}
-                type={post.content.summary.type as PostType}
-                status={post.content.summary.status as PostStatus}
-                title={post.content.summary.title}
-                author={post.content.summary.author}
-                project={post.content.summary.project}
-                content={{ json: post.content.content, media: [] }}
-                liked={post.content.summary.liked}
-                likeCount={post.content.summary.likeCount}
-                commentCount={post.content.summary.commentCount}
-                bookmarked={post.content.summary.bookmarked}
-                isAuthor={post.content.summary.isAuthor}
-                createdAt={post.content.summary.createdAt}
-              />
-            ))}
+      <InfinitePostList
+        posts={posts.map((post) => toPostPreviewProps(post.content))}
+        isPending={isPending}
+        isError={isError}
+        hasNextPage={!!hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
+        empty={<ProjectPostsEmpty handle={handle} />}
+        error={
+          <PostListMessage message={t('list.error')} variant="destructive" />
+        }
+        end={
+          <div className="py-4 text-center">
+            <p className="text-xs text-muted-foreground">{t('list.end')}</p>
           </div>
-
-          <div ref={ref} className="py-4">
-            {isFetchingNextPage && (
-              <div className="flex justify-center">
-                <Spinner />
-              </div>
-            )}
-          </div>
-
-          {!hasNextPage && (
-            <div className="py-4 text-center">
-              <p className="text-xs text-muted-foreground">{t('list.end')}</p>
-            </div>
-          )}
-        </>
-      )}
+        }
+      />
     </section>
-  );
-}
-
-function ProjectPostsSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <Skeleton key={index} className="h-32 w-full" />
-      ))}
-    </div>
   );
 }
 

@@ -4,6 +4,7 @@ import {
   BookOpenIcon,
   CaretDownIcon,
   ChatCircleIcon,
+  DotsThreeIcon,
   GearIcon,
   HouseIcon,
   NotePencilIcon,
@@ -87,6 +88,8 @@ interface SectionProps {
   handle: string;
 }
 
+const PROJECT_SWITCHER_VISIBLE_COUNT = 5;
+
 function ProjectSwitcher({ handle }: SectionProps) {
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const { isAuthenticated } = useRequireAuth();
@@ -99,6 +102,8 @@ function ProjectSwitcher({ handle }: SectionProps) {
   const projectName = data?.data.summary.name ?? handle;
   const projectIconUrl = data?.data.summary.iconUrl;
   const myProjects = myProjectsData?.data.projects ?? [];
+  const visibleProjects = myProjects.slice(0, PROJECT_SWITCHER_VISIBLE_COUNT);
+  const hasMoreProjects = myProjects.length > PROJECT_SWITCHER_VISIBLE_COUNT;
 
   return (
     <SidebarMenu>
@@ -124,7 +129,7 @@ function ProjectSwitcher({ handle }: SectionProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
             <DropdownMenuLabel>Your Projects</DropdownMenuLabel>
-            {myProjects.map((project) => (
+            {visibleProjects.map((project) => (
               <DropdownMenuItem key={project.handle} asChild>
                 <Link href={ROUTES.PROJECT(project.handle)}>
                   <ProjectAvatar
@@ -136,6 +141,14 @@ function ProjectSwitcher({ handle }: SectionProps) {
                 </Link>
               </DropdownMenuItem>
             ))}
+            {hasMoreProjects && (
+              <DropdownMenuItem asChild>
+                <Link href={ROUTES.PROJECTS()}>
+                  <DotsThreeIcon />
+                  <span className="truncate">더보기</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
@@ -244,7 +257,6 @@ function Browse({ handle }: SectionProps) {
 
 function MyContributions({ handle }: SectionProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { data: session } = useSession();
 
   const myHandle = session?.user.handle;
@@ -252,17 +264,12 @@ function MyContributions({ handle }: SectionProps) {
     return null;
   }
 
-  const isPostsPath = pathname === ROUTES.PROJECT_POSTS(handle);
-
   const items = [
     {
       label: 'My Posts',
-      href: ROUTES.PROJECT_MY_POSTS(handle, myHandle),
+      href: ROUTES.PROJECT_MY_POSTS(handle),
       icon: NotePencilIcon,
-      isActive:
-        isPostsPath &&
-        !searchParams.get('type') &&
-        searchParams.get('authorHandle') === myHandle,
+      isActive: pathname === ROUTES.PROJECT_MY_POSTS(handle),
     },
     {
       label: 'My Comments',

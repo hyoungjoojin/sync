@@ -529,6 +529,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: type
+        in: query
+        description: 추천 게시글 종류
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: "200"
@@ -3735,6 +3741,22 @@ components:
         isOnboarded:
           type: boolean
           description: Is Onboarded
+    CreateProjectInvitationRequest:
+      title: CreateProjectInvitationRequest
+      required:
+      - inviteeHandle
+      - role
+      type: object
+      properties:
+        role:
+          type: string
+          description: 초대받는 유저의 역할
+          enum:
+          - ADMIN
+          - MEMBER
+        inviteeHandle:
+          type: string
+          description: 초대할 유저의 핸들
     GetPostRecommendationsResponse:
       title: GetPostRecommendationsResponse
       type: object
@@ -3908,19 +3930,3 @@ components:
                   description: Start Cursor
                   nullable: true
               description: Page Info
-    CreateProjectInvitationRequest:
-      title: CreateProjectInvitationRequest
-      required:
-      - inviteeHandle
-      - role
-      type: object
-      properties:
-        role:
-          type: string
-          description: 초대받는 유저의 역할
-          enum:
-          - ADMIN
-          - MEMBER
-        inviteeHandle:
-          type: string
-          description: 초대할 유저의 핸들

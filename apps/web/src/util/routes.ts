@@ -3,7 +3,9 @@ const ROUTES = {
   ABOUT: () => '/about',
   TERMS: () => '/terms',
   PRIVACY: () => '/privacy',
-  EXPLORE: () => '/explore',
+  EXPLORE_FOLLOWING: () => '/explore/following',
+  EXPLORE_TRENDING: () => '/explore/trending',
+  DRAFTS: () => '/posts/drafts',
   LOGIN: () => '/auth/login',
   REGISTER: () => '/auth/register',
   ONBOARDING: () => '/onboarding',
@@ -33,8 +35,7 @@ const ROUTES = {
     ROUTES.PROJECT_POSTS(handle, { type: 'QUESTION' }),
   PROJECT_GUIDES: (handle: string) =>
     ROUTES.PROJECT_POSTS(handle, { type: 'LONG' }),
-  PROJECT_MY_POSTS: (handle: string, authorHandle: string) =>
-    ROUTES.PROJECT_POSTS(handle, { authorHandle }),
+  PROJECT_MY_POSTS: (handle: string) => ROUTES.PROJECT(handle) + '/posts/my',
   PROJECT_TAG_POSTS: (handle: string, tagId: string) =>
     ROUTES.PROJECT_POSTS(handle, { tagId }),
   PROJECT_TAGS: (handle: string) => ROUTES.PROJECT(handle) + '/tags',
