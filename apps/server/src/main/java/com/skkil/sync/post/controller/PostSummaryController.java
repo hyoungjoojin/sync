@@ -3,7 +3,7 @@ package com.skkil.sync.post.controller;
 import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.post.dto.response.GetSummariesResponse;
-import com.skkil.sync.post.service.PostSummaryQueryService;
+import com.skkil.sync.post.service.PostSummaryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PostSummaryController {
 
-  private final PostSummaryQueryService postSummaryQueryService;
+  private final PostSummaryService postSummaryService;
 
-  public PostSummaryController(PostSummaryQueryService postSummaryQueryService) {
-    this.postSummaryQueryService = postSummaryQueryService;
+  public PostSummaryController(PostSummaryService postSummaryService) {
+    this.postSummaryService = postSummaryService;
   }
 
   @GetMapping("/summaries")
@@ -25,6 +25,6 @@ public class PostSummaryController {
   public GetSummariesResponse getSummaries(
       @AuthenticationPrincipal AuthenticatedUser user,
       @Validated CursorPaginationRequest pagination) {
-    return postSummaryQueryService.getSummaries(user.userId(), pagination);
+    return postSummaryService.getSummaries(user.userId(), pagination);
   }
 }
