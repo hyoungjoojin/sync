@@ -50,6 +50,15 @@ public class PostQueryController {
         user == null ? null : user.userId(), userId, type, pagination);
   }
 
+  @GetMapping("/tags/{tagId}/posts")
+  @ResponseStatus(HttpStatus.OK)
+  public GetPostsResponse getPostsByTag(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable Long tagId,
+      @Validated CursorPaginationRequest pagination) {
+    return postQueryService.getPostsByTag(user == null ? null : user.userId(), tagId, pagination);
+  }
+
   @GetMapping("/projects/{handle}/posts")
   @ResponseStatus(HttpStatus.OK)
   public GetPostsResponse getPostsByProject(

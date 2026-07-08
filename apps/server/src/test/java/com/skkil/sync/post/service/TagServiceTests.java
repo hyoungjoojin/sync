@@ -12,6 +12,7 @@ import com.skkil.sync.post.exception.PostTagLimitExceededException;
 import com.skkil.sync.post.model.Post;
 import com.skkil.sync.post.model.Tag;
 import com.skkil.sync.post.repository.TagRepository;
+import com.skkil.sync.project.model.Project;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +35,7 @@ class TagServiceTests {
     Post post = Post.builder().slug("slug").title("제목").content("내용").build();
     List<String> tags = List.of("tag1", "tag2", "tag3", "tag4", "tag5", "tag6");
 
-    assertThatThrownBy(() -> tagService.addTagsToPost(post, tags))
+    assertThatThrownBy(() -> tagService.addTagsToPost(post, null, tags))
         .isInstanceOf(PostTagLimitExceededException.class);
   }
 
@@ -44,9 +45,9 @@ class TagServiceTests {
     Post post = Post.builder().slug("slug").title("제목").content("내용").build();
     Tag existingTag = Tag.builder().name("java").build();
 
-    when(tagRepository.findByName("java")).thenReturn(Optional.of(existingTag));
+    when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(existingTag));
 
-    tagService.addTagsToPost(post, List.of("java"));
+    tagService.addTagsToPost(post, null, List.of("java"));
 
     verify(tagRepository, never()).save(any(Tag.class));
   }
@@ -57,10 +58,10 @@ class TagServiceTests {
     Post post = Post.builder().slug("slug").title("제목").content("내용").build();
     Tag newTag = Tag.builder().name("spring").build();
 
-    when(tagRepository.findByName("spring")).thenReturn(Optional.empty());
+    when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.empty());
     when(tagRepository.save(any(Tag.class))).thenReturn(newTag);
 
-    tagService.addTagsToPost(post, List.of("spring"));
+    tagService.addTagsToPost(post, null, List.of("spring"));
 
     verify(tagRepository, times(1)).save(any(Tag.class));
   }
@@ -72,10 +73,10 @@ class TagServiceTests {
     Tag tag1 = Tag.builder().name("java").build();
     Tag tag2 = Tag.builder().name("spring").build();
 
-    when(tagRepository.findByName("java")).thenReturn(Optional.of(tag1));
-    when(tagRepository.findByName("spring")).thenReturn(Optional.of(tag2));
+    when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(tag1));
+    when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.of(tag2));
 
-    tagService.addTagsToPost(post, List.of("java", "spring"));
+    tagService.addTagsToPost(post, null, List.of("java", "spring"));
 
     verify(tagRepository, times(1)).incrementPostCount(tag1);
     verify(tagRepository, times(1)).incrementPostCount(tag2);
@@ -88,11 +89,27 @@ class TagServiceTests {
     Tag tag1 = Tag.builder().name("java").build();
     Tag tag2 = Tag.builder().name("spring").build();
 
-    when(tagRepository.findByName("java")).thenReturn(Optional.of(tag1));
-    when(tagRepository.findByName("spring")).thenReturn(Optional.of(tag2));
+    when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(tag1));
+    when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.of(tag2));
 
-    tagService.addTagsToPost(post, List.of("java", "spring"));
+    tagService.addTagsToPost(post, null, List.of("java", "spring"));
 
     assertThat(post.getTags()).hasSize(2);
+  }
+
+  @Test
+  @DisplayName("[addTagsToPost] 프로젝트가 주어지면 프로젝트에 속한 태그로 조회 및 생성")
+  void addTagsToPost_withProject_usesProjectScopedTag() {
+    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Project project = Project.builder().handle("my-project").name("My Project").build();
+    Tag newTag = Tag.builder().name("java").project(project).build();
+
+    when(tagRepository.findByNameAndProject("java", project)).thenReturn(Optional.empty());
+    when(tagRepository.save(any(Tag.class))).thenReturn(newTag);
+
+    tagService.addTagsToPost(post, project, List.of("java"));
+
+    verify(tagRepository, never()).findByNameAndProjectIsNull(any());
+    verify(tagRepository, times(1)).save(any(Tag.class));
   }
 }

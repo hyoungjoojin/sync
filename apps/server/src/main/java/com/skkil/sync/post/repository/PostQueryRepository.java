@@ -2,6 +2,7 @@ package com.skkil.sync.post.repository;
 
 import static com.skkil.sync.jooq.tables.PostBookmarks.POST_BOOKMARKS;
 import static com.skkil.sync.jooq.tables.PostLikes.POST_LIKES;
+import static com.skkil.sync.jooq.tables.PostTags.POST_TAGS;
 import static com.skkil.sync.jooq.tables.Posts.POSTS;
 import static com.skkil.sync.jooq.tables.Projects.PROJECTS;
 import static com.skkil.sync.jooq.tables.Teammates.TEAMMATES;
@@ -66,6 +67,23 @@ public class PostQueryRepository {
 
       CursorPaginationDataFetcher<PostDto> base = getPosts(requesterId);
       return base.fetch(userCondition, orderFields, size);
+    };
+  }
+
+  public CursorPaginationDataFetcher<PostDto> getPostsByTag(Long requesterId, Long tagId) {
+    return (condition, orderFields, size) -> {
+      Condition tagCondition = condition.and(POST_TAGS.TAG_ID.eq(tagId));
+
+      return dsl.select(post(requesterId))
+          .from(POSTS)
+          .join(POST_TAGS)
+          .on(POST_TAGS.POST_ID.eq(POSTS.ID))
+          .leftJoin(PROJECTS)
+          .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
+          .where(tagCondition.and(publicPublishedCondition()))
+          .orderBy(orderFields)
+          .limit(size)
+          .fetchInto(PostDto.class);
     };
   }
 

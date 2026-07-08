@@ -143,6 +143,39 @@ class PostQueryControllerTests {
   }
 
   @Test
+  @DisplayName("[getPostsByTag] API 문서화 테스트")
+  void getPostsByTag() throws Exception {
+    Long tagId = 1L;
+
+    CursorPaginationRequest pagination =
+        CursorPaginationRequestSnippets.getCursorPaginationRequest();
+    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+
+    when(postQueryService.getPostsByTag(any(), eq(tagId), eq(pagination))).thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/tags/{tagId}/posts", tagId)
+                .queryParams(
+                    CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetPostsByTag",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Get Posts By Tag")
+                    .description("Get Posts By Tag")
+                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("tagId").description("태그 ID")),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                GetPostsResponseSnippets.getPostsResponseFields()));
+  }
+
+  @Test
   @DisplayName("[getPostsByProject] API 문서화 테스트")
   void getPostsByProject() throws Exception {
     String handle = "project";

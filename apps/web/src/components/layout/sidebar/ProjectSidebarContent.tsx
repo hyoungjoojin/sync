@@ -1,16 +1,31 @@
 'use client';
 
 import {
-  ArrowLeftIcon,
+  BookOpenIcon,
+  CaretDownIcon,
   GearIcon,
+  HouseIcon,
   PencilIcon,
+  QuestionIcon,
   RssIcon,
+  TagIcon,
 } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
-import { useGetProjectByHandle } from '@/api/__generated__/project/project';
+import {
+  useGetProjectByHandle,
+  useSearchMyProjects,
+} from '@/api/__generated__/project/project';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarContent,
   SidebarGroup,
@@ -34,120 +49,206 @@ interface ProjectSidebarContentProps {
 export default function ProjectSidebarContent({
   handle,
 }: ProjectSidebarContentProps) {
-  const pathname = usePathname();
-  const { requireAuth, isAuthenticated } = useRequireAuth();
-  const { data } = useGetProjectByHandle(handle);
-
-  const projectName = data?.data.summary.name ?? handle;
-  const projectIconUrl = data?.data.summary.iconUrl;
-
-  const workspaceNavItems = [
-    { label: 'Feed', href: ROUTES.PROJECT_POSTS(handle), icon: RssIcon },
-  ];
+  const { isAuthenticated } = useRequireAuth();
 
   return (
     <>
-      <SidebarHeader className="flex flex-col gap-3 p-4">
-        <div className="flex items-center justify-between">
-          {isAuthenticated ? (
-            <Link
-              href={ROUTES.HOME()}
-              className="flex items-center gap-1 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
-            >
-              <ArrowLeftIcon size={12} />
-              Home
-            </Link>
-          ) : (
-            <div />
-          )}
+      <SidebarHeader>
+        <div className="flex items-center justify-end">
           <SidebarCloseButton />
         </div>
 
-        <SidebarMenu>
-          <SidebarMenuButton
-            asChild
-            size="lg"
-            isActive={pathname === ROUTES.PROJECT(handle)}
-          >
-            <Link href={ROUTES.PROJECT(handle)}>
-              <ProjectAvatar name={projectName} iconUrl={projectIconUrl} />
-              <span className="truncate font-medium">{projectName}</span>
-            </Link>
-          </SidebarMenuButton>
+        <ProjectSwitcher handle={handle} />
 
-          <SidebarMenuButton
-            asChild
-            isActive={pathname === ROUTES.NEW_PROJECT_POST(handle)}
-          >
-            <Link
-              href={ROUTES.NEW_PROJECT_POST(handle)}
-              onClick={(event) => {
-                if (
-                  !requireAuth({
-                    intent: 'write',
-                    redirectTo: ROUTES.NEW_PROJECT_POST(handle),
-                  })
-                ) {
-                  event.preventDefault();
-                }
-              }}
-            >
-              <PencilIcon />
-              Write a new post
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenu>
+        <AskOrWriteButton handle={handle} />
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {workspaceNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href.split('?')[0];
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href}>
-                        <Icon />
-                        {item.label}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Browse handle={handle} />
 
         {isAuthenticated && (
           <>
             <SidebarSeparator />
-
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname.startsWith(
-                        ROUTES.PROJECT_SETTINGS(handle),
-                      )}
-                    >
-                      <Link href={ROUTES.PROJECT_SETTINGS(handle)}>
-                        <GearIcon />
-                        Settings
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            <Settings handle={handle} />
           </>
         )}
       </SidebarContent>
     </>
+  );
+}
+
+interface SectionProps {
+  handle: string;
+}
+
+function ProjectSwitcher({ handle }: SectionProps) {
+  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
+  const { isAuthenticated } = useRequireAuth();
+  const { data } = useGetProjectByHandle(handle);
+  const { data: myProjectsData } = useSearchMyProjects(
+    { query: '' },
+    { query: { enabled: isAuthenticated } },
+  );
+
+  const projectName = data?.data.summary.name ?? handle;
+  const projectIconUrl = data?.data.summary.iconUrl;
+  const myProjects = myProjectsData?.data.projects ?? [];
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu
+          open={isProjectMenuOpen}
+          onOpenChange={setIsProjectMenuOpen}
+        >
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="rounded-lg border border-sidebar-border"
+              data-state={isProjectMenuOpen ? 'open' : 'closed'}
+            >
+              <ProjectAvatar name={projectName} iconUrl={projectIconUrl} />
+              <span className="truncate font-medium">{projectName}</span>
+              <CaretDownIcon
+                className={`ml-auto transition-transform ${
+                  isProjectMenuOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuLabel>Your Projects</DropdownMenuLabel>
+            {myProjects.map((project) => (
+              <DropdownMenuItem key={project.handle} asChild>
+                <Link href={ROUTES.PROJECT(project.handle)}>
+                  <ProjectAvatar
+                    name={project.name}
+                    iconUrl={project.iconUrl}
+                    size="sm"
+                  />
+                  <span className="truncate">{project.name}</span>
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+function AskOrWriteButton({ handle }: SectionProps) {
+  const pathname = usePathname();
+  const { requireAuth } = useRequireAuth();
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuButton
+        asChild
+        isActive={pathname === ROUTES.NEW_PROJECT_POST(handle)}
+        className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary data-[active=true]:bg-primary/20 data-[active=true]:text-primary"
+      >
+        <Link
+          href={ROUTES.NEW_PROJECT_POST(handle)}
+          onClick={(event) => {
+            if (
+              !requireAuth({
+                intent: 'write',
+                redirectTo: ROUTES.NEW_PROJECT_POST(handle),
+              })
+            ) {
+              event.preventDefault();
+            }
+          }}
+        >
+          <PencilIcon />
+          Ask / Write
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenu>
+  );
+}
+
+function Browse({ handle }: SectionProps) {
+  const pathname = usePathname();
+
+  const items = [
+    {
+      label: 'Home',
+      href: ROUTES.PROJECT(handle),
+      icon: HouseIcon,
+      isActive: pathname === ROUTES.PROJECT(handle),
+    },
+    {
+      label: 'Feed',
+      href: ROUTES.PROJECT_POSTS(handle),
+      icon: RssIcon,
+      isActive: pathname === ROUTES.PROJECT_POSTS(handle),
+    },
+    {
+      label: 'Questions',
+      href: ROUTES.PROJECT(handle),
+      icon: QuestionIcon,
+      isActive: false,
+    },
+    {
+      label: 'Guides',
+      href: ROUTES.PROJECT(handle),
+      icon: BookOpenIcon,
+      isActive: false,
+    },
+    {
+      label: 'Tags',
+      href: ROUTES.PROJECT_TAGS(handle),
+      icon: TagIcon,
+      isActive: pathname === ROUTES.PROJECT_TAGS(handle),
+    },
+  ];
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Browse</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton asChild isActive={item.isActive}>
+                  <Link href={item.href}>
+                    <Icon />
+                    {item.label}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
+function Settings({ handle }: SectionProps) {
+  const pathname = usePathname();
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith(ROUTES.PROJECT_SETTINGS(handle))}
+            >
+              <Link href={ROUTES.PROJECT_SETTINGS(handle)}>
+                <GearIcon />
+                Settings
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }
