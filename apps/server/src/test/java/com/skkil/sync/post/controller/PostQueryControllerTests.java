@@ -180,18 +180,21 @@ class PostQueryControllerTests {
   void getPostsByProject() throws Exception {
     String handle = "project";
     PostType type = PostType.SHORT;
+    String authorHandle = "author";
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getPostsByProject(any(), eq(handle), eq(type), eq(pagination)))
+    when(postQueryService.getPostsByProject(
+            any(), eq(handle), eq(type), eq(authorHandle), eq(pagination)))
         .thenReturn(response);
 
     mockMvc
         .perform(
             get("/projects/{handle}/posts", handle)
                 .queryParam("type", type.name())
+                .queryParam("authorHandle", authorHandle)
                 .queryParams(
                     CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
         .andExpect(status().isOk())
@@ -208,7 +211,8 @@ class PostQueryControllerTests {
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
-                    .and(parameterWithName("type").description("게시글 타입").optional()),
+                    .and(parameterWithName("type").description("게시글 타입").optional())
+                    .and(parameterWithName("authorHandle").description("작성자 핸들").optional()),
                 GetPostsResponseSnippets.getPostsResponseFields()));
   }
 }

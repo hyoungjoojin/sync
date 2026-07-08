@@ -6,6 +6,7 @@ import {
   UserGearIcon,
   UserIcon,
 } from '@phosphor-icons/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -34,6 +35,7 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { mutateAsync: logout } = useLogout();
 
@@ -100,6 +102,7 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
         }
 
         await signOut();
+        queryClient.clear();
         router.replace(ROUTES.HOME());
       },
     },

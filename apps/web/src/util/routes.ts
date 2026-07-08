@@ -11,8 +11,35 @@ const ROUTES = {
   NEW_POST: () => `/posts/new`,
   PROJECT: (handle: string) => `/projects/${handle}`,
   NEW_PROJECT: () => '/projects/new',
-  PROJECT_POSTS: (handle: string) => ROUTES.PROJECT(handle) + '/posts',
+  PROJECT_POSTS: (
+    handle: string,
+    params?: { type?: string; authorHandle?: string; tagId?: string },
+  ) => {
+    const base = ROUTES.PROJECT(handle) + '/posts';
+    if (!params) return base;
+
+    const searchParams = new URLSearchParams();
+    if (params.type) searchParams.set('type', params.type);
+    if (params.authorHandle) {
+      searchParams.set('authorHandle', params.authorHandle);
+    }
+    if (params.tagId) searchParams.set('tagId', params.tagId);
+
+    const query = searchParams.toString();
+    return query ? `${base}?${query}` : base;
+  },
+  PROJECT_FEED: (handle: string) => ROUTES.PROJECT_POSTS(handle),
+  PROJECT_QUESTIONS: (handle: string) =>
+    ROUTES.PROJECT_POSTS(handle, { type: 'QUESTION' }),
+  PROJECT_GUIDES: (handle: string) =>
+    ROUTES.PROJECT_POSTS(handle, { type: 'LONG' }),
+  PROJECT_MY_POSTS: (handle: string, authorHandle: string) =>
+    ROUTES.PROJECT_POSTS(handle, { authorHandle }),
+  PROJECT_TAG_POSTS: (handle: string, tagId: string) =>
+    ROUTES.PROJECT_POSTS(handle, { tagId }),
   PROJECT_TAGS: (handle: string) => ROUTES.PROJECT(handle) + '/tags',
+  PROJECT_TAGS_MANAGE: (handle: string) =>
+    ROUTES.PROJECT_TAGS(handle) + '/manage',
   PROJECT_POST: (projectHandle: string, postHandle: string) =>
     ROUTES.PROJECT(projectHandle) + `/posts/${postHandle}`,
   NEW_PROJECT_POST: (handle: string) => ROUTES.PROJECT(handle) + '/posts/new',

@@ -4,7 +4,11 @@ import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
-import { useGetPostsByProjectInfinite } from '@/api/__generated__/post/post';
+import {
+  useGetPostsByProjectInfinite,
+  useGetPostsByTagInfinite,
+} from '@/api/__generated__/post/post';
+import { useGetProjectTags } from '@/api/__generated__/tag/tag';
 import { PostStatus, PostType } from '@/components/feature/post/types/post';
 import PostPreview from '@/components/feature/post/viewer/PostPreview';
 import { Button, LinkButton } from '@/components/ui/button';
@@ -19,23 +23,25 @@ const PAGE_SIZE = '10';
 
 interface ProjectPostsProps {
   handle: string;
+  type?: string;
+  authorHandle?: string;
+  tagId?: string;
 }
 
-export default function ProjectPosts({ handle }: ProjectPostsProps) {
+export default function ProjectPosts({
+  handle,
+  type,
+  authorHandle,
+  tagId,
+}: ProjectPostsProps) {
   const t = useTranslations('pages.projects.project.posts');
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isPending,
-    isError,
-  } = useGetPostsByProjectInfinite(
+  const byProjectQuery = useGetPostsByProjectInfinite(
     handle,
-    { first: PAGE_SIZE },
+    { first: PAGE_SIZE, type, authorHandle },
     {
       query: {
+        enabled: !tagId,
         getNextPageParam: (lastPage) => {
           const pageInfo = lastPage.data.posts?.pageInfo;
           return pageInfo?.hasNextPage
@@ -45,6 +51,31 @@ export default function ProjectPosts({ handle }: ProjectPostsProps) {
       },
     },
   );
+
+  const byTagQuery = useGetPostsByTagInfinite(
+    tagId ?? '',
+    { first: PAGE_SIZE },
+    {
+      query: {
+        enabled: !!tagId,
+        getNextPageParam: (lastPage) => {
+          const pageInfo = lastPage.data.posts?.pageInfo;
+          return pageInfo?.hasNextPage
+            ? (pageInfo.endCursor ?? undefined)
+            : undefined;
+        },
+      },
+    },
+  );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+    isError,
+  } = tagId ? byTagQuery : byProjectQuery;
 
   const posts =
     data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
@@ -61,20 +92,48 @@ export default function ProjectPosts({ handle }: ProjectPostsProps) {
     }
   }, [entry?.isIntersecting, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+  const { data: tagsData } = useGetProjectTags(handle, {
+    query: { enabled: !!tagId },
+  });
+  const tagName = tagsData?.data.tags?.find(
+    (tag) => String(tag.id) === tagId,
+  )?.name;
+
+  const viewTitle = tagId
+    ? t('views.tag', { name: tagName ?? '' })
+    : authorHandle
+      ? t('views.my-posts')
+      : type === PostType.QUESTION
+        ? t('views.questions')
+        : type === PostType.LONG
+          ? t('views.guides')
+          : t('views.feed');
+
   if (isPending) {
-    return <ProjectPostsSkeleton />;
+    return (
+      <section className="space-y-3">
+        <h1 className="text-xl font-semibold">{viewTitle}</h1>
+        <ProjectPostsSkeleton />
+      </section>
+    );
   }
 
   if (isError) {
     return (
-      <div className="rounded-md border px-4 py-8 text-center">
-        <p className="text-sm text-destructive">{t('list.error')}</p>
-      </div>
+      <section className="space-y-3">
+        <h1 className="text-xl font-semibold">{viewTitle}</h1>
+
+        <div className="rounded-md border px-4 py-8 text-center">
+          <p className="text-sm text-destructive">{t('list.error')}</p>
+        </div>
+      </section>
     );
   }
 
   return (
     <section className="space-y-3">
+      <h1 className="text-xl font-semibold">{viewTitle}</h1>
+
       {posts.length === 0 ? (
         <ProjectPostsEmpty handle={handle} />
       ) : (

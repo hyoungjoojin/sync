@@ -5,7 +5,7 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type GetPostsByProjectParams = {
+export type GetPostsByTagParams = {
   /**
    * Number of items to return from the beginning of the list
    */
@@ -22,12 +22,4 @@ export type GetPostsByProjectParams = {
    * Cursor for pagination, indicating the position before which to return items
    */
   before?: string;
-  /**
-   * 게시글 타입
-   */
-  type?: string;
-  /**
-   * 작성자 핸들
-   */
-  authorHandle?: string;
 };

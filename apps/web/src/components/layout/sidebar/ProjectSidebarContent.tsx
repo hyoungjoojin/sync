@@ -3,15 +3,17 @@
 import {
   BookOpenIcon,
   CaretDownIcon,
+  ChatCircleIcon,
   GearIcon,
   HouseIcon,
+  NotePencilIcon,
   PencilIcon,
   QuestionIcon,
   RssIcon,
   TagIcon,
 } from '@phosphor-icons/react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import {
@@ -38,6 +40,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { useRequireAuth } from '@/hooks/use-require-auth';
+import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
 
 import SidebarCloseButton from './SidebarCloseButton';
@@ -68,6 +71,9 @@ export default function ProjectSidebarContent({
 
         {isAuthenticated && (
           <>
+            <SidebarSeparator />
+            <MyContributions handle={handle} />
+
             <SidebarSeparator />
             <Settings handle={handle} />
           </>
@@ -171,6 +177,12 @@ function AskOrWriteButton({ handle }: SectionProps) {
 
 function Browse({ handle }: SectionProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const isPostsPath = pathname === ROUTES.PROJECT_POSTS(handle);
+  const type = searchParams.get('type');
+  const authorHandle = searchParams.get('authorHandle');
+  const tagId = searchParams.get('tagId');
 
   const items = [
     {
@@ -181,33 +193,88 @@ function Browse({ handle }: SectionProps) {
     },
     {
       label: 'Feed',
-      href: ROUTES.PROJECT_POSTS(handle),
+      href: ROUTES.PROJECT_FEED(handle),
       icon: RssIcon,
-      isActive: pathname === ROUTES.PROJECT_POSTS(handle),
+      isActive: isPostsPath && !type && !authorHandle && !tagId,
     },
     {
       label: 'Questions',
-      href: ROUTES.PROJECT(handle),
+      href: ROUTES.PROJECT_QUESTIONS(handle),
       icon: QuestionIcon,
-      isActive: false,
+      isActive: isPostsPath && type === 'QUESTION',
     },
     {
       label: 'Guides',
-      href: ROUTES.PROJECT(handle),
+      href: ROUTES.PROJECT_GUIDES(handle),
       icon: BookOpenIcon,
-      isActive: false,
+      isActive: isPostsPath && type === 'LONG',
     },
     {
       label: 'Tags',
       href: ROUTES.PROJECT_TAGS(handle),
       icon: TagIcon,
-      isActive: pathname === ROUTES.PROJECT_TAGS(handle),
+      isActive:
+        pathname === ROUTES.PROJECT_TAGS(handle) || (isPostsPath && !!tagId),
     },
   ];
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Browse</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton asChild isActive={item.isActive}>
+                  <Link href={item.href}>
+                    <Icon />
+                    {item.label}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
+function MyContributions({ handle }: SectionProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
+
+  const myHandle = session?.user.handle;
+  if (!myHandle) {
+    return null;
+  }
+
+  const isPostsPath = pathname === ROUTES.PROJECT_POSTS(handle);
+
+  const items = [
+    {
+      label: 'My Posts',
+      href: ROUTES.PROJECT_MY_POSTS(handle, myHandle),
+      icon: NotePencilIcon,
+      isActive:
+        isPostsPath &&
+        !searchParams.get('type') &&
+        searchParams.get('authorHandle') === myHandle,
+    },
+    {
+      label: 'My Comments',
+      href: ROUTES.PROFILE(myHandle),
+      icon: ChatCircleIcon,
+      isActive: false,
+    },
+  ];
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>My Contributions</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => {

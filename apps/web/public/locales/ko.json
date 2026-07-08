@@ -153,11 +153,27 @@
         },
         "posts": {
           "label": "게시물",
+          "views": {
+            "feed": "피드",
+            "questions": "질문",
+            "guides": "가이드",
+            "my-posts": "내 게시물",
+            "tag": "#{name}"
+          },
           "list": {
             "empty": "게시물이 없습니다.",
             "end": "게시물이 더 이상 없습니다.",
             "error": "게시물을 불러오는 중 오류가 발생했습니다."
           }
+        },
+        "tags": {
+          "label": "태그",
+          "list": {
+            "empty": "태그가 없습니다.",
+            "error": "태그를 불러오는 중 오류가 발생했습니다."
+          },
+          "post-count": "게시물 {count}개",
+          "no-description": "설명이 없습니다."
         },
         "about": {
           "label": "소개"

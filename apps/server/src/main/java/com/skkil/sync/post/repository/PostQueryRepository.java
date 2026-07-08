@@ -88,7 +88,7 @@ public class PostQueryRepository {
   }
 
   public CursorPaginationDataFetcher<PostDto> getPostsByProject(
-      Long requesterId, String handle, PostType type) {
+      Long requesterId, String handle, PostType type, String authorHandle) {
     return (condition, orderFields, size) -> {
       Condition projectCondition =
           condition
@@ -97,6 +97,9 @@ public class PostQueryRepository {
               .and(workspaceReadableCondition(requesterId));
       if (type != null) {
         projectCondition = projectCondition.and(POSTS.POST_TYPE.eq(type.name()));
+      }
+      if (authorHandle != null) {
+        projectCondition = projectCondition.and(USERS.HANDLE.eq(authorHandle));
       }
 
       return dsl.select(post(requesterId))

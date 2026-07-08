@@ -5,25 +5,18 @@ import { getGetProjectByHandleQueryOptions } from '@/api/__generated__/project/p
 import SyncError, { ErrorCode } from '@/lib/error';
 import { getQueryClient } from '@/lib/query';
 
-import ProjectPosts from './_components/ProjectPosts';
+import ProjectTags from './_components/ProjectTags';
 
-interface ProjectPostsPageProps {
+interface ProjectTagsPageProps {
   params: Promise<{
     handle: string;
   }>;
-  searchParams: Promise<{
-    type?: string;
-    authorHandle?: string;
-    tagId?: string;
-  }>;
 }
 
-export default async function ProjectPostsPage({
+export default async function ProjectTagsPage({
   params,
-  searchParams,
-}: ProjectPostsPageProps) {
+}: ProjectTagsPageProps) {
   const { handle } = await params;
-  const { type, authorHandle, tagId } = await searchParams;
 
   const queryClient = getQueryClient();
 
@@ -40,12 +33,7 @@ export default async function ProjectPostsPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProjectPosts
-        handle={handle}
-        type={type}
-        authorHandle={authorHandle}
-        tagId={tagId}
-      />
+      <ProjectTags />
     </HydrationBoundary>
   );
 }

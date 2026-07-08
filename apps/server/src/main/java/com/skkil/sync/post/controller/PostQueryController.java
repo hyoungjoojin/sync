@@ -65,8 +65,9 @@ public class PostQueryController {
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable String handle,
       @RequestParam(required = false) PostType type,
+      @RequestParam(required = false) String authorHandle,
       @Validated CursorPaginationRequest pagination) {
     return postQueryService.getPostsByProject(
-        user == null ? null : user.userId(), handle, type, pagination);
+        user == null ? null : user.userId(), handle, type, authorHandle, pagination);
   }
 }

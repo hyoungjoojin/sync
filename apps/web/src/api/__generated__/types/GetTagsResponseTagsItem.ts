@@ -5,11 +5,13 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type SearchTagsResponseTagsItem = {
+export type GetTagsResponseTagsItem = {
   /** 태그 이름 */
   name: string;
   /** 태그가 사용된 게시물 수 */
   postCount: number;
   /** 태그 설명 */
   description: string;
+  /** 태그 ID */
+  id: number;
 };
