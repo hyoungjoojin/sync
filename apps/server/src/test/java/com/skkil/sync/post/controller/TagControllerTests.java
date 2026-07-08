@@ -2,6 +2,7 @@ package com.skkil.sync.post.controller;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -10,15 +11,21 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.config.SecurityConfig;
+import com.skkil.sync.post.dto.request.CreateTagRequest;
+import com.skkil.sync.post.dto.response.CreateTagResponse;
 import com.skkil.sync.post.dto.response.GetTagsResponse;
 import com.skkil.sync.post.service.TagService;
+import com.skkil.sync.post.snippets.CreateTagRequestSnippets;
+import com.skkil.sync.post.snippets.CreateTagResponseSnippets;
 import com.skkil.sync.post.snippets.GetTagsResponseSnippets;
+import com.skkil.sync.user.constant.Role;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,9 +35,11 @@ import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDoc
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(TagController.class)
 @AutoConfigureMockMvc(addFilters = true)
@@ -40,6 +49,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class TagControllerTests {
 
   @Autowired private MockMvc mockMvc;
+
+  @Autowired private JsonMapper jsonMapper;
 
   @MockitoBean private TagService tagService;
 
@@ -211,6 +222,101 @@ class TagControllerTests {
   void verifyTag_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
     mockMvc
         .perform(patch("/tags/{tagId}/verify", 1L).with(csrf().asHeader()))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("[createTag] API 문서화 테스트")
+  @WithAuthenticatedUser(role = Role.ADMIN)
+  void createTag() throws Exception {
+    CreateTagRequest request = CreateTagRequestSnippets.getCreateTagRequest();
+    CreateTagResponse response = CreateTagResponseSnippets.getCreateTagResponse();
+
+    when(tagService.createTag(eq(request))).thenReturn(response);
+
+    mockMvc
+        .perform(
+            post("/tags")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
+        .andExpect(status().isCreated())
+        .andDo(
+            document(
+                "CreateTag",
+                ResourceSnippetParameters.builder()
+                    .tag("tag")
+                    .summary("Create Tag")
+                    .description("전역 태그를 생성합니다. 관리자만 접근할 수 있습니다.")
+                    .requestSchema(schema(CreateTagRequest.class.getSimpleName()))
+                    .responseSchema(schema(CreateTagResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                CreateTagRequestSnippets.getCreateTagRequestFields(),
+                CreateTagResponseSnippets.getCreateTagResponseFields()));
+  }
+
+  @Test
+  @DisplayName("[createTag] 로그인하지 않은 사용자는 접근할 수 없다")
+  void createTag_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    CreateTagRequest request = CreateTagRequestSnippets.getCreateTagRequest();
+
+    mockMvc
+        .perform(
+            post("/tags")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("[createProjectTag] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void createProjectTag() throws Exception {
+    String handle = "my-project";
+    CreateTagRequest request = CreateTagRequestSnippets.getCreateTagRequest();
+    CreateTagResponse response = CreateTagResponseSnippets.getCreateTagResponse();
+
+    when(tagService.createProjectTag(eq(handle), eq(request))).thenReturn(response);
+
+    mockMvc
+        .perform(
+            post("/projects/{handle}/tags", handle)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
+        .andExpect(status().isCreated())
+        .andDo(
+            document(
+                "CreateProjectTag",
+                ResourceSnippetParameters.builder()
+                    .tag("tag")
+                    .summary("Create Project Tag")
+                    .description("프로젝트 태그를 생성합니다. 프로젝트 관리자만 접근할 수 있습니다.")
+                    .requestSchema(schema(CreateTagRequest.class.getSimpleName()))
+                    .responseSchema(schema(CreateTagResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
+                CreateTagRequestSnippets.getCreateTagRequestFields(),
+                CreateTagResponseSnippets.getCreateTagResponseFields()));
+  }
+
+  @Test
+  @DisplayName("[createProjectTag] 로그인하지 않은 사용자는 접근할 수 없다")
+  void createProjectTag_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    String handle = "my-project";
+    CreateTagRequest request = CreateTagRequestSnippets.getCreateTagRequest();
+
+    mockMvc
+        .perform(
+            post("/projects/{handle}/tags", handle)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
         .andExpect(status().isUnauthorized());
   }
 }

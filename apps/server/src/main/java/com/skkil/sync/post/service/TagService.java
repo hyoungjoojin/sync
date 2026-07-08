@@ -1,8 +1,11 @@
 package com.skkil.sync.post.service;
 
 import com.skkil.sync.post.constants.PostConstants;
+import com.skkil.sync.post.dto.request.CreateTagRequest;
+import com.skkil.sync.post.dto.response.CreateTagResponse;
 import com.skkil.sync.post.dto.response.GetTagsResponse;
 import com.skkil.sync.post.exception.PostTagLimitExceededException;
+import com.skkil.sync.post.exception.TagAlreadyExistsException;
 import com.skkil.sync.post.exception.TagNotFoundException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Post;
@@ -114,5 +117,34 @@ public class TagService {
   public void verifyTag(Long tagId) {
     Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new TagNotFoundException(tagId));
     tag.verify();
+  }
+
+  @Transactional
+  @PreAuthorize("hasRole('ADMIN')")
+  public CreateTagResponse createTag(CreateTagRequest request) {
+    return createTag(null, request);
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
+  public CreateTagResponse createProjectTag(String handle, CreateTagRequest request) {
+    Project project = projectDomainService.getProjectByHandle(handle);
+    return createTag(project, request);
+  }
+
+  private CreateTagResponse createTag(@Nullable Project project, CreateTagRequest request) {
+    String name = request.name().trim();
+
+    boolean exists =
+        project == null
+            ? tagRepository.findByNameAndProjectIsNull(name).isPresent()
+            : tagRepository.findByNameAndProject(name, project).isPresent();
+    if (exists) {
+      throw new TagAlreadyExistsException(name);
+    }
+
+    Tag tag = Tag.builder().name(name).project(project).build();
+    tag.verify();
+    return tagMapper.toCreateTagResponse(tagRepository.save(tag));
   }
 }
