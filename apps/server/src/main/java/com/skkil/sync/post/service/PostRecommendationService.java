@@ -44,7 +44,8 @@ public class PostRecommendationService {
   @Transactional(readOnly = true)
   public GetPostRecommendationsResponse getRecommendations(
       Long requesterId, PostRecommendationType type, CursorPaginationRequest pagination) {
-    var recommendationChannel = type == null ? defaultChannel : channelsByType.get(type);
+    var recommendationChannel =
+        type == null ? defaultChannel : channelsByType.getOrDefault(type, defaultChannel);
     var candidates =
         paginationService.paginate(
             recommendationChannel.getCandidateFetcher(requesterId),

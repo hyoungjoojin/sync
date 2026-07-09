@@ -1,5 +1,6 @@
 package com.skkil.sync.config;
 
+import com.skkil.sync.common.exception.ErrorCode;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
@@ -103,12 +104,11 @@ public class BucketConfig {
       response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
       response.setCharacterEncoding("UTF-8");
       response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-      response
-          .getWriter()
-          .write(
-              jsonMapper.writeValueAsString(
-                  ProblemDetail.forStatusAndDetail(
-                      HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests")));
+      ProblemDetail problemDetail =
+          ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests");
+      problemDetail.setProperty("code", ErrorCode.RATE_LIMIT_EXCEEDED);
+
+      response.getWriter().write(jsonMapper.writeValueAsString(problemDetail));
     }
 
     private BucketConfiguration bucketConfiguration() {
