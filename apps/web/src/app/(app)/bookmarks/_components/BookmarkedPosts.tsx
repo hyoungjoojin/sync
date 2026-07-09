@@ -1,6 +1,7 @@
 'use client';
 
 import { BookmarkSimpleIcon } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useGetBookmarkedPostsInfinite } from '@/api/__generated__/bookmark/bookmark';
@@ -28,6 +29,7 @@ const BOOKMARKED_POST_PAGE_SIZE = '30';
 const ALL_SCOPE = 'all';
 
 export default function BookmarkedPosts() {
+  const t = useTranslations('pages.bookmarks');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -76,6 +78,7 @@ export default function BookmarkedPosts() {
   return (
     <div className="space-y-4">
       <PageHeader
+        t={t}
         scope={scope}
         projects={projects}
         onScopeChange={handleScopeChange}
@@ -93,10 +96,8 @@ export default function BookmarkedPosts() {
               <BookmarkSimpleIcon />
             </EmptyMedia>
             <EmptyHeader>
-              <EmptyTitle>저장한 포스트가 없습니다</EmptyTitle>
-              <EmptyDescription>
-                다시 보고 싶은 포스트를 북마크하면 여기에 모입니다.
-              </EmptyDescription>
+              <EmptyTitle>{t('empty.title')}</EmptyTitle>
+              <EmptyDescription>{t('empty.description')}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         }
@@ -106,19 +107,18 @@ export default function BookmarkedPosts() {
 }
 
 interface PageHeaderProps {
+  t: ReturnType<typeof useTranslations<'pages.bookmarks'>>;
   scope: string;
   projects: { handle: string; name: string }[];
   onScopeChange: (value: string) => void;
 }
 
-function PageHeader({ scope, projects, onScopeChange }: PageHeaderProps) {
+function PageHeader({ t, scope, projects, onScopeChange }: PageHeaderProps) {
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">저장한 포스트</h1>
-        <p className="text-sm text-muted-foreground">
-          북마크한 포스트를 최근 저장순으로 확인하세요.
-        </p>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       <Select value={scope} onValueChange={onScopeChange}>
@@ -126,7 +126,7 @@ function PageHeader({ scope, projects, onScopeChange }: PageHeaderProps) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_SCOPE}>전체</SelectItem>
+          <SelectItem value={ALL_SCOPE}>{t('filter.all')}</SelectItem>
           {projects.map((project) => (
             <SelectItem key={project.handle} value={project.handle}>
               {project.name}

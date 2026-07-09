@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { useGetPostRecommendationsInfinite } from '@/api/__generated__/post/post';
@@ -20,6 +21,7 @@ const FILTERS = [
 type Filter = (typeof FILTERS)[number]['value'];
 
 export default function HomeFeed() {
+  const t = useTranslations('pages.home.feed.tabs');
   const [filter, setFilter] = useState<Filter>('all');
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
@@ -59,10 +61,10 @@ export default function HomeFeed() {
           onValueChange={(value) => setFilter(value as Filter)}
         >
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="shorts">Shorts</TabsTrigger>
-            <TabsTrigger value="articles">Articles</TabsTrigger>
-            <TabsTrigger value="questions">Questions</TabsTrigger>
+            <TabsTrigger value="all">{t('all')}</TabsTrigger>
+            <TabsTrigger value="shorts">{t('shorts')}</TabsTrigger>
+            <TabsTrigger value="articles">{t('articles')}</TabsTrigger>
+            <TabsTrigger value="questions">{t('questions')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

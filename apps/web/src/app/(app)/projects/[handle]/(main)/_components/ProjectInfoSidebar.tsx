@@ -1,6 +1,7 @@
 'use client';
 
 import { UserPlusIcon } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { useGetPostsByProject } from '@/api/__generated__/post/post';
@@ -48,6 +49,7 @@ export default function ProjectInfoSidebar({
 }
 
 function MembersWidget({ handle }: ProjectInfoSidebarProps) {
+  const t = useTranslations('pages.projects.project.sidebar.members');
   const { data, isPending } = useGetProjectTeammates(handle);
 
   const teammates = data?.data.teammates ?? [];
@@ -58,7 +60,7 @@ function MembersWidget({ handle }: ProjectInfoSidebarProps) {
     <Card>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">멤버</h2>
+          <h2 className="text-sm font-semibold">{t('heading')}</h2>
           <span className="text-muted-foreground text-xs">
             {teammates.length}
           </span>
@@ -102,7 +104,7 @@ function MembersWidget({ handle }: ProjectInfoSidebarProps) {
           trigger={
             <Button variant="outline" className="w-full">
               <UserPlusIcon />
-              멤버 초대하기
+              {t('invite')}
             </Button>
           }
         />
@@ -112,6 +114,7 @@ function MembersWidget({ handle }: ProjectInfoSidebarProps) {
 }
 
 function OpenQuestionsWidget({ handle }: ProjectInfoSidebarProps) {
+  const t = useTranslations('pages.projects.project.sidebar.open-questions');
   const { data, isPending } = useGetPostsByProject(handle, {
     type: PostType.QUESTION,
     first: OPEN_QUESTIONS_PAGE_SIZE,
@@ -125,7 +128,7 @@ function OpenQuestionsWidget({ handle }: ProjectInfoSidebarProps) {
     <Card>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">미해결 질문</h2>
+          <h2 className="text-sm font-semibold">{t('heading')}</h2>
           {!isPending && (
             <Badge color={openQuestions.length > 0 ? 'danger' : 'default'}>
               {openQuestions.length}
@@ -139,9 +142,7 @@ function OpenQuestionsWidget({ handle }: ProjectInfoSidebarProps) {
             <Skeleton className="h-4 w-3/4" />
           </div>
         ) : visibleQuestions.length === 0 ? (
-          <p className="text-muted-foreground text-xs">
-            미해결 질문이 없습니다.
-          </p>
+          <p className="text-muted-foreground text-xs">{t('empty')}</p>
         ) : (
           <ul className="space-y-2">
             {visibleQuestions.map((node) => (
@@ -162,6 +163,7 @@ function OpenQuestionsWidget({ handle }: ProjectInfoSidebarProps) {
 }
 
 function TopTagsWidget({ handle }: ProjectInfoSidebarProps) {
+  const t = useTranslations('pages.projects.project.sidebar.top-tags');
   const { data, isPending } = useGetProjectTags(handle);
 
   const tags = [...(data?.data.tags ?? [])]
@@ -171,7 +173,7 @@ function TopTagsWidget({ handle }: ProjectInfoSidebarProps) {
   return (
     <Card>
       <CardContent className="space-y-3">
-        <h2 className="text-sm font-semibold">인기 태그</h2>
+        <h2 className="text-sm font-semibold">{t('heading')}</h2>
 
         {isPending ? (
           <div className="flex flex-wrap gap-1.5">
@@ -180,7 +182,7 @@ function TopTagsWidget({ handle }: ProjectInfoSidebarProps) {
             ))}
           </div>
         ) : tags.length === 0 ? (
-          <p className="text-muted-foreground text-xs">태그가 없습니다.</p>
+          <p className="text-muted-foreground text-xs">{t('empty')}</p>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {tags.map((tag) => (

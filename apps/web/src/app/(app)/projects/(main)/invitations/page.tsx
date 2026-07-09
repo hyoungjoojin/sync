@@ -1,4 +1,5 @@
 import { ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,14 @@ import ProjectInvitations from './_components/ProjectInvitations';
 export default async function ProjectInvitationsPage() {
   await requireSession();
 
+  const t = await getTranslations('pages.projects.invitations');
+
   return (
     <div className="space-y-6">
       <Button variant="ghost" size="sm" asChild>
         <Link href={ROUTES.PROJECTS()}>
           <ArrowLeftIcon className="size-4" />
-          프로젝트 대시보드로 돌아가기
+          {t('back')}
         </Link>
       </Button>
 

@@ -10,9 +10,10 @@ import {
   TagIcon,
   TrendUpIcon,
 } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useSearchMyProjects } from '@/api/__generated__/project/project';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
@@ -29,6 +30,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
+import { useMounted } from '@/hooks/use-mounted';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
@@ -40,53 +42,59 @@ const MAX_VISIBLE_PROJECTS = 5;
 
 const nav = [
   {
-    label: 'Home',
+    labelKey: 'nav.home',
     href: ROUTES.HOME(),
     icon: HouseIcon,
     authenticated: false,
   },
   {
-    label: 'Trending Posts',
+    labelKey: 'nav.trending-posts',
     href: ROUTES.EXPLORE_TRENDING(),
     icon: TrendUpIcon,
     authenticated: false,
   },
   {
-    label: 'Explore Projects',
+    labelKey: 'nav.explore-projects',
     href: ROUTES.EXPLORE_PROJECTS(),
     icon: CompassIcon,
     authenticated: false,
   },
   {
-    label: 'Tags',
+    labelKey: 'nav.tags',
     href: ROUTES.EXPLORE_TAGS(),
     icon: TagIcon,
     authenticated: false,
   },
-];
+] as const;
 
 const yours = [
   {
-    label: 'Drafts',
+    labelKey: 'nav.drafts',
     href: ROUTES.DRAFTS(),
     icon: FileTextIcon,
     authenticated: true,
   },
   {
-    label: 'Bookmarks',
+    // Reuses `components.navigation.menu.bookmarks` — same bookmarks concept
+    // already translated for the top navigation bar.
+    labelKey: 'menu.bookmarks',
+    namespace: 'navigation' as const,
     href: ROUTES.BOOKMARKS(),
     icon: BookmarkSimpleIcon,
     authenticated: true,
   },
-];
+] as const;
 
 const footer = [
-  { label: 'Privacy', href: ROUTES.PRIVACY() },
-  { label: 'Terms', href: ROUTES.TERMS() },
-  { label: 'Cookies', href: ROUTES.COOKIES() },
-];
+  { labelKey: 'privacy', href: ROUTES.PRIVACY() },
+  { labelKey: 'terms', href: ROUTES.TERMS() },
+  { labelKey: 'cookies', href: ROUTES.COOKIES() },
+] as const;
 
 export default function PersonalSidebarContent() {
+  const t = useTranslations('components.layout.sidebar');
+  const tNav = useTranslations('components.navigation');
+  const tFooter = useTranslations('components.footer');
   const pathname = usePathname();
   const [query] = useState('');
   const { requireAuth } = useRequireAuth();
@@ -96,10 +104,7 @@ export default function PersonalSidebarContent() {
   // `mounted` keeps the first client render identical to the server-rendered
   // HTML so the project list doesn't shift Radix's useId-based ids and cause
   // a hydration mismatch.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const { data: session } = useSession();
   const { data } = useSearchMyProjects(
@@ -138,7 +143,7 @@ export default function PersonalSidebarContent() {
                     }}
                   >
                     <PencilSimpleIcon />
-                    Ask / Write
+                    {t('ask-write')}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -170,7 +175,7 @@ export default function PersonalSidebarContent() {
                         }}
                       >
                         <Icon />
-                        {item.label}
+                        {t(item.labelKey)}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -183,7 +188,7 @@ export default function PersonalSidebarContent() {
         <SidebarSeparator />
 
         <SidebarGroup>
-          <SidebarGroupLabel>Yours</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('yours')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {yours.map((item) => {
@@ -207,7 +212,9 @@ export default function PersonalSidebarContent() {
                         }}
                       >
                         <Icon />
-                        {item.label}
+                        {'namespace' in item
+                          ? tNav(item.labelKey)
+                          : t(item.labelKey)}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -227,7 +234,7 @@ export default function PersonalSidebarContent() {
                     href={ROUTES.PROJECTS()}
                     className="grow hover:text-sidebar-foreground"
                   >
-                    Projects
+                    {t('projects')}
                   </Link>
 
                   <LinkButton href={ROUTES.NEW_PROJECT()} variant="ghost">
@@ -262,7 +269,7 @@ export default function PersonalSidebarContent() {
                           href={ROUTES.PROJECTS()}
                           className="text-sidebar-foreground/60"
                         >
-                          See All
+                          {t('see-more')}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -278,7 +285,7 @@ export default function PersonalSidebarContent() {
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-sidebar-foreground/60">
           {footer.map((link) => (
             <Link key={link.href} href={link.href} className="hover:underline">
-              {link.label}
+              {tFooter(link.labelKey)}
             </Link>
           ))}
         </div>

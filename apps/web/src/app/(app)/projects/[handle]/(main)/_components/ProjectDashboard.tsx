@@ -6,6 +6,7 @@ import {
   QuestionIcon,
   StarIcon,
 } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
@@ -52,6 +53,10 @@ export default function ProjectDashboard({ handle }: ProjectDashboardProps) {
 }
 
 function KnowledgeHealthSection() {
+  const t = useTranslations(
+    'pages.projects.project.dashboard.knowledge-health',
+  );
+
   return (
     <Unimplemented>
       <Card>
@@ -59,9 +64,11 @@ function KnowledgeHealthSection() {
           <div className="flex items-center gap-3">
             <GaugeIcon className="text-success-text size-8" />
             <div>
-              <p className="text-sm font-semibold">지식이 최신 상태예요</p>
+              <p className="text-sm font-semibold">{t('fresh')}</p>
               <p className="text-muted-foreground text-xs">
-                최근 주기에서 {MOCK_KNOWLEDGE_HEALTH.freshPercent}% 검증됨
+                {t('fresh-detail', {
+                  percent: MOCK_KNOWLEDGE_HEALTH.freshPercent,
+                })}
               </p>
             </div>
           </div>
@@ -72,7 +79,9 @@ function KnowledgeHealthSection() {
               <p className="text-lg font-semibold">
                 {MOCK_KNOWLEDGE_HEALTH.needsReviewCount}
               </p>
-              <p className="text-muted-foreground text-xs">검토 필요</p>
+              <p className="text-muted-foreground text-xs">
+                {t('needs-review')}
+              </p>
             </div>
           </div>
 
@@ -82,7 +91,7 @@ function KnowledgeHealthSection() {
               <p className="text-lg font-semibold">
                 {MOCK_KNOWLEDGE_HEALTH.unansweredCount}
               </p>
-              <p className="text-muted-foreground text-xs">미답변</p>
+              <p className="text-muted-foreground text-xs">{t('unanswered')}</p>
             </div>
           </div>
         </CardContent>
@@ -92,11 +101,13 @@ function KnowledgeHealthSection() {
 }
 
 function PinnedSection() {
+  const t = useTranslations('pages.projects.project.dashboard.pinned');
+
   return (
     <section className="space-y-3">
       <h2 className="flex items-center gap-1.5 text-sm font-semibold">
         <StarIcon />
-        고정 · 정본
+        {t('heading')}
       </h2>
 
       <Unimplemented>
@@ -105,12 +116,14 @@ function PinnedSection() {
             <Card key={post.title}>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 text-xs">
-                  <Badge variant="secondary">정본</Badge>
-                  <span className="text-muted-foreground">가이드</span>
+                  <Badge variant="secondary">{t('badge')}</Badge>
+                  <span className="text-muted-foreground">
+                    {t('type-guide')}
+                  </span>
                 </div>
                 <p className="text-sm font-semibold">{post.title}</p>
                 <p className="text-muted-foreground text-xs">
-                  {post.author} · {post.minutes}분
+                  {t('meta', { author: post.author, minutes: post.minutes })}
                 </p>
               </CardContent>
             </Card>
@@ -130,15 +143,17 @@ function RecentActivitySection({
   isPending: boolean;
   handle: string;
 }) {
+  const t = useTranslations('pages.projects.project.dashboard.recent-activity');
+
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">최근 활동</h2>
+        <h2 className="text-sm font-semibold">{t('heading')}</h2>
         <Link
           href={ROUTES.PROJECT_FEED(handle)}
           className="text-primary text-xs font-medium hover:underline"
         >
-          피드에서 모두 보기 →
+          {t('view-all')}
         </Link>
       </div>
 
@@ -149,7 +164,7 @@ function RecentActivitySection({
           ))}
         </div>
       ) : activities.length === 0 ? (
-        <p className="text-muted-foreground text-sm">최근 활동이 없습니다.</p>
+        <p className="text-muted-foreground text-sm">{t('empty')}</p>
       ) : (
         <div className="space-y-3">
           {activities.map((activity) => (

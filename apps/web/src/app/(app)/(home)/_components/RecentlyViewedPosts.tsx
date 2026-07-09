@@ -1,4 +1,5 @@
 import { ClockCounterClockwiseIcon } from '@phosphor-icons/react/dist/ssr';
+import { getTranslations } from 'next-intl/server';
 
 const MOCK_RECENTLY_VIEWED_POSTS = [
   {
@@ -18,12 +19,14 @@ const MOCK_RECENTLY_VIEWED_POSTS = [
   },
 ];
 
-export default function RecentlyViewedPosts() {
+export default async function RecentlyViewedPosts() {
+  const t = await getTranslations('pages.home.recently-viewed');
+
   return (
     <div className="space-y-4 rounded-xl border bg-card p-6">
       <span className="flex items-center gap-1.5 text-sm font-semibold">
         <ClockCounterClockwiseIcon />
-        Recently viewed
+        {t('title')}
       </span>
 
       <div className="space-y-3">

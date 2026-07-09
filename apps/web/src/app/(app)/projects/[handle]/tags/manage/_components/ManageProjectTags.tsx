@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckIcon, PlusIcon } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -58,6 +59,8 @@ const CreateProjectTagFormSchema = z.object({
 type CreateProjectTagFormValues = z.infer<typeof CreateProjectTagFormSchema>;
 
 function CreateProjectTagPopover() {
+  const t = useTranslations('pages.projects.project.tags.manage.create');
+
   const { handle } = useParams<{ handle: string }>();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -74,7 +77,7 @@ function CreateProjectTagPopover() {
       { handle, data: { name: values.name } },
       {
         onSuccess: async (response) => {
-          toast.success(`'${response.data.name}' 태그를 생성했습니다.`);
+          toast.success(t('messages.success', { name: response.data.name }));
           await queryClient.invalidateQueries({
             queryKey: getGetProjectTagsQueryKey(handle),
           });
@@ -82,7 +85,7 @@ function CreateProjectTagPopover() {
           setOpen(false);
         },
         onError: () => {
-          toast.error('태그 생성에 실패했습니다.');
+          toast.error(t('messages.error'));
         },
       },
     );
@@ -92,20 +95,24 @@ function CreateProjectTagPopover() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button size="sm">
-          <PlusIcon className="h-4 w-4" />새 태그
+          <PlusIcon className="h-4 w-4" />
+          {t('trigger')}
         </Button>
       </PopoverTrigger>
 
       <PopoverContent align="end">
         <PopoverHeader>
-          <PopoverTitle>새 태그 생성</PopoverTitle>
+          <PopoverTitle>{t('title')}</PopoverTitle>
         </PopoverHeader>
 
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
           <FieldGroup>
             <Field>
-              <FieldLabel>태그 이름</FieldLabel>
-              <Input {...form.register('name')} placeholder="예: java" />
+              <FieldLabel>{t('name-label')}</FieldLabel>
+              <Input
+                {...form.register('name')}
+                placeholder={t('name-placeholder')}
+              />
             </Field>
           </FieldGroup>
 
@@ -119,14 +126,14 @@ function CreateProjectTagPopover() {
                 setOpen(false);
               }}
             >
-              취소
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
               size="sm"
               disabled={!form.formState.isDirty || isPending}
             >
-              생성
+              {t('submit')}
             </Button>
           </div>
         </form>
@@ -136,6 +143,8 @@ function CreateProjectTagPopover() {
 }
 
 function UnverifiedTagsSection() {
+  const t = useTranslations('pages.projects.project.tags.manage');
+
   const { handle } = useParams<{ handle: string }>();
   const queryClient = useQueryClient();
 
@@ -149,7 +158,7 @@ function UnverifiedTagsSection() {
       { tagId: tag.id.toString() },
       {
         onSuccess: async () => {
-          toast.success(`'${tag.name}' 태그를 인증했습니다.`);
+          toast.success(t('unverified.messages.success', { name: tag.name }));
           await queryClient.invalidateQueries({
             queryKey: getGetProjectUnverifiedTagsQueryKey(handle),
           });
@@ -158,7 +167,7 @@ function UnverifiedTagsSection() {
           });
         },
         onError: () => {
-          toast.error('태그 인증에 실패했습니다.');
+          toast.error(t('unverified.messages.error'));
         },
       },
     );
@@ -167,9 +176,9 @@ function UnverifiedTagsSection() {
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-base font-semibold">인증되지 않은 태그</h2>
+        <h2 className="text-base font-semibold">{t('unverified.heading')}</h2>
         <p className="text-sm text-muted-foreground">
-          검토 후 인증할 태그를 선택하세요.
+          {t('unverified.description')}
         </p>
       </div>
 
@@ -178,16 +187,22 @@ function UnverifiedTagsSection() {
       ) : tags.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center">
           <p className="text-sm text-muted-foreground">
-            인증되지 않은 태그가 없습니다.
+            {t('unverified.empty')}
           </p>
         </div>
       ) : (
         <Table className="border-separate border-spacing-y-1">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="border-l-0">이름</TableHead>
-              <TableHead className="border-l-0">설명</TableHead>
-              <TableHead className="border-l-0">게시물 수</TableHead>
+              <TableHead className="border-l-0">
+                {t('table.columns.name')}
+              </TableHead>
+              <TableHead className="border-l-0">
+                {t('table.columns.description')}
+              </TableHead>
+              <TableHead className="border-l-0">
+                {t('table.columns.post-count')}
+              </TableHead>
               <TableHead className="w-0 border-l-0" />
             </TableRow>
           </TableHeader>
@@ -198,7 +213,7 @@ function UnverifiedTagsSection() {
                   {tag.name}
                 </TableCell>
                 <TableCell className="border-l-0 text-muted-foreground">
-                  {tag.description || '-'}
+                  {tag.description || t('table.no-description')}
                 </TableCell>
                 <TableCell className="border-l-0">{tag.postCount}</TableCell>
                 <TableCell className="border-l-0">
@@ -210,7 +225,7 @@ function UnverifiedTagsSection() {
                       onClick={() => onVerify(tag)}
                     >
                       <CheckIcon className="h-4 w-4" />
-                      인증
+                      {t('unverified.verify')}
                     </Button>
                   </div>
                 </TableCell>
@@ -224,6 +239,8 @@ function UnverifiedTagsSection() {
 }
 
 function VerifiedTagsSection() {
+  const t = useTranslations('pages.projects.project.tags.manage');
+
   const { handle } = useParams<{ handle: string }>();
   const { data, isPending } = useGetProjectTags(handle);
   const tags = data?.data.tags ?? [];
@@ -231,9 +248,9 @@ function VerifiedTagsSection() {
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-base font-semibold">인증된 태그</h2>
+        <h2 className="text-base font-semibold">{t('verified.heading')}</h2>
         <p className="text-sm text-muted-foreground">
-          현재 사용 중인 인증된 태그 목록입니다.
+          {t('verified.description')}
         </p>
       </div>
 
@@ -241,17 +258,21 @@ function VerifiedTagsSection() {
         <TagsTableSkeleton />
       ) : tags.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            인증된 태그가 없습니다.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('verified.empty')}</p>
         </div>
       ) : (
         <Table className="border-separate border-spacing-y-1">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="border-l-0">이름</TableHead>
-              <TableHead className="border-l-0">설명</TableHead>
-              <TableHead className="border-l-0">게시물 수</TableHead>
+              <TableHead className="border-l-0">
+                {t('table.columns.name')}
+              </TableHead>
+              <TableHead className="border-l-0">
+                {t('table.columns.description')}
+              </TableHead>
+              <TableHead className="border-l-0">
+                {t('table.columns.post-count')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -260,11 +281,11 @@ function VerifiedTagsSection() {
                 <TableCell className="border-l-0 font-medium">
                   <div className="flex items-center gap-2">
                     {tag.name}
-                    <Badge variant="secondary">인증됨</Badge>
+                    <Badge variant="secondary">{t('verified.badge')}</Badge>
                   </div>
                 </TableCell>
                 <TableCell className="border-l-0 text-muted-foreground">
-                  {tag.description || '-'}
+                  {tag.description || t('table.no-description')}
                 </TableCell>
                 <TableCell className="border-l-0">{tag.postCount}</TableCell>
               </TableRow>

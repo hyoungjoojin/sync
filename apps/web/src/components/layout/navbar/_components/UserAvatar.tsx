@@ -9,7 +9,6 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useLogout } from '@/api/__generated__/auth/auth';
@@ -25,6 +24,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { ModalType } from '@/constants/modal';
 import { useModal } from '@/hooks/store';
+import { useMounted } from '@/hooks/use-mounted';
 import { isAuthenticated } from '@/lib/auth';
 import { signOut, useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
@@ -44,10 +44,7 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
 
   const t = useTranslations('components.navigation');
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   // `useSession` can resolve synchronously from a client-only cache, which
   // would make the very first client render diverge from the SSR output.

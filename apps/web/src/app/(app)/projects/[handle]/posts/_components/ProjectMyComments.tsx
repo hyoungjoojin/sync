@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { useGetCommentedPostsInfinite } from '@/api/__generated__/post/post';
 import PostList from '@/components/feature/post/viewer/PostList';
 import PostListMessage from '@/components/feature/post/viewer/error/PostListMessage';
@@ -13,6 +15,7 @@ interface ProjectMyCommentsProps {
 }
 
 export default function ProjectMyComments({ handle }: ProjectMyCommentsProps) {
+  const t = useTranslations('pages.projects.project.my-comments');
   const { data: session } = useSession();
   const userId = session?.user.id;
 
@@ -44,7 +47,7 @@ export default function ProjectMyComments({ handle }: ProjectMyCommentsProps) {
 
   return (
     <section className="space-y-3">
-      <h1 className="text-xl font-semibold">내가 댓글단 글</h1>
+      <h1 className="text-xl font-semibold">{t('heading')}</h1>
 
       <PostList
         items={posts.map((post) => toPostViewSource(post.content))}
@@ -53,18 +56,11 @@ export default function ProjectMyComments({ handle }: ProjectMyCommentsProps) {
         hasNextPage={!!hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
         fetchNextPage={fetchNextPage}
-        empty={<PostListMessage message="아직 댓글을 남긴 게시물이 없어요." />}
-        error={
-          <PostListMessage
-            message="게시물을 불러오지 못했습니다."
-            variant="destructive"
-          />
-        }
+        empty={<PostListMessage message={t('empty')} />}
+        error={<PostListMessage message={t('error')} variant="destructive" />}
         end={
           <div className="py-4 text-center">
-            <p className="text-muted-foreground text-xs">
-              마지막 게시물입니다.
-            </p>
+            <p className="text-muted-foreground text-xs">{t('end')}</p>
           </div>
         }
       />

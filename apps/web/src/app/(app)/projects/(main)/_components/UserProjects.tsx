@@ -1,6 +1,7 @@
 'use client';
 
 import { FolderSimpleIcon } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 import { useGetProjectsByUser } from '@/api/__generated__/project/project';
 import { ProjectCard } from '@/components/feature/project/card';
@@ -44,6 +45,7 @@ function UserProjectsSkeleton() {
 }
 
 export default function UserProjects() {
+  const t = useTranslations('pages.projects.list.empty');
   const { data: session } = useSession();
 
   const { data: projectsData, isPending } = useGetProjectsByUser(
@@ -72,14 +74,12 @@ export default function UserProjects() {
           <EmptyMedia variant="icon">
             <FolderSimpleIcon />
           </EmptyMedia>
-          <EmptyTitle>참여 중인 프로젝트가 없습니다</EmptyTitle>
-          <EmptyDescription>
-            새 프로젝트를 만들어 팀과 함께 지식을 쌓아보세요.
-          </EmptyDescription>
+          <EmptyTitle>{t('title')}</EmptyTitle>
+          <EmptyDescription>{t('description')}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <LinkButton href={ROUTES.NEW_PROJECT()} size="sm">
-            새 프로젝트 만들기
+            {t('create')}
           </LinkButton>
         </EmptyContent>
       </Empty>

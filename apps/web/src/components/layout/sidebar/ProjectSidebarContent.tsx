@@ -13,6 +13,7 @@ import {
   RssIcon,
   TagIcon,
 } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -91,6 +92,7 @@ interface SectionProps {
 const PROJECT_SWITCHER_VISIBLE_COUNT = 5;
 
 function ProjectSwitcher({ handle }: SectionProps) {
+  const t = useTranslations('components.layout.sidebar');
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const { isAuthenticated } = useRequireAuth();
   const { data } = useGetProjectByHandle(handle);
@@ -128,7 +130,7 @@ function ProjectSwitcher({ handle }: SectionProps) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
-            <DropdownMenuLabel>Your Projects</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('your-projects')}</DropdownMenuLabel>
             {visibleProjects.map((project) => (
               <DropdownMenuItem key={project.handle} asChild>
                 <Link href={ROUTES.PROJECT(project.handle)}>
@@ -145,7 +147,7 @@ function ProjectSwitcher({ handle }: SectionProps) {
               <DropdownMenuItem asChild>
                 <Link href={ROUTES.PROJECTS()}>
                   <DotsThreeIcon />
-                  <span className="truncate">더보기</span>
+                  <span className="truncate">{t('see-more')}</span>
                 </Link>
               </DropdownMenuItem>
             )}
@@ -157,6 +159,7 @@ function ProjectSwitcher({ handle }: SectionProps) {
 }
 
 function AskOrWriteButton({ handle }: SectionProps) {
+  const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
   const { requireAuth } = useRequireAuth();
 
@@ -181,7 +184,7 @@ function AskOrWriteButton({ handle }: SectionProps) {
           }}
         >
           <PencilIcon />
-          Ask / Write
+          {t('ask-write')}
         </Link>
       </SidebarMenuButton>
     </SidebarMenu>
@@ -189,6 +192,7 @@ function AskOrWriteButton({ handle }: SectionProps) {
 }
 
 function Browse({ handle }: SectionProps) {
+  const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -199,51 +203,51 @@ function Browse({ handle }: SectionProps) {
 
   const items = [
     {
-      label: 'Home',
+      labelKey: 'nav.home',
       href: ROUTES.PROJECT(handle),
       icon: HouseIcon,
       isActive: pathname === ROUTES.PROJECT(handle),
     },
     {
-      label: 'Feed',
+      labelKey: 'nav.feed',
       href: ROUTES.PROJECT_FEED(handle),
       icon: RssIcon,
       isActive: isPostsPath && !type && !authorHandle && !tagId,
     },
     {
-      label: 'Questions',
+      labelKey: 'nav.questions',
       href: ROUTES.PROJECT_QUESTIONS(handle),
       icon: QuestionIcon,
       isActive: isPostsPath && type === 'QUESTION',
     },
     {
-      label: 'Guides',
+      labelKey: 'nav.guides',
       href: ROUTES.PROJECT_GUIDES(handle),
       icon: BookOpenIcon,
       isActive: isPostsPath && type === 'LONG',
     },
     {
-      label: 'Tags',
+      labelKey: 'nav.tags',
       href: ROUTES.PROJECT_TAGS(handle),
       icon: TagIcon,
       isActive:
         pathname === ROUTES.PROJECT_TAGS(handle) || (isPostsPath && !!tagId),
     },
-  ];
+  ] as const;
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Browse</SidebarGroupLabel>
+      <SidebarGroupLabel>{t('nav.browse')}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => {
             const Icon = item.icon;
             return (
-              <SidebarMenuItem key={item.label}>
+              <SidebarMenuItem key={item.labelKey}>
                 <SidebarMenuButton asChild isActive={item.isActive}>
                   <Link href={item.href}>
                     <Icon />
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -256,6 +260,7 @@ function Browse({ handle }: SectionProps) {
 }
 
 function MyContributions({ handle }: SectionProps) {
+  const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -266,32 +271,32 @@ function MyContributions({ handle }: SectionProps) {
 
   const items = [
     {
-      label: 'My Posts',
+      labelKey: 'nav.my-posts',
       href: ROUTES.PROJECT_MY_POSTS(handle),
       icon: NotePencilIcon,
       isActive: pathname === ROUTES.PROJECT_MY_POSTS(handle),
     },
     {
-      label: 'My Comments',
+      labelKey: 'nav.my-comments',
       href: ROUTES.PROJECT_MY_COMMENTS(handle),
       icon: ChatCircleIcon,
       isActive: pathname === ROUTES.PROJECT_MY_COMMENTS(handle),
     },
-  ];
+  ] as const;
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>My Contributions</SidebarGroupLabel>
+      <SidebarGroupLabel>{t('my-contributions')}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => {
             const Icon = item.icon;
             return (
-              <SidebarMenuItem key={item.label}>
+              <SidebarMenuItem key={item.labelKey}>
                 <SidebarMenuButton asChild isActive={item.isActive}>
                   <Link href={item.href}>
                     <Icon />
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -304,6 +309,7 @@ function MyContributions({ handle }: SectionProps) {
 }
 
 function Settings({ handle }: SectionProps) {
+  const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
 
   return (
@@ -317,7 +323,7 @@ function Settings({ handle }: SectionProps) {
             >
               <Link href={ROUTES.PROJECT_SETTINGS(handle)}>
                 <GearIcon />
-                Settings
+                {t('nav.settings')}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

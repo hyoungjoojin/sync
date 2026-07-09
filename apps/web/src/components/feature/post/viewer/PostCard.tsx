@@ -2,6 +2,7 @@
 
 import { CheckCircleIcon, ClockIcon } from '@phosphor-icons/react';
 import type { Editor } from '@tiptap/react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useGetPostBySlug } from '@/api/__generated__/post/post';
@@ -218,11 +219,13 @@ interface TypePostPreviewCardProps {
 }
 
 function ReviewStatusIndicator({ status }: { status: ReviewStatus }) {
+  const t = useTranslations('components.post.viewer');
+
   if (status === 'verified') {
     return (
       <span className="flex items-center gap-1 text-xs font-medium text-success-text">
         <CheckCircleIcon weight="fill" />
-        Verified
+        {t('reviewStatus.verified')}
       </span>
     );
   }
@@ -231,7 +234,7 @@ function ReviewStatusIndicator({ status }: { status: ReviewStatus }) {
     return (
       <span className="flex items-center gap-1 text-xs font-medium text-warning-text">
         <ClockIcon />
-        Verify soon
+        {t('reviewStatus.verify-soon')}
       </span>
     );
   }
@@ -327,17 +330,19 @@ function QuestionTypePostPreviewCard({
   onClick,
   tags,
 }: TypePostPreviewCardProps) {
+  const t = useTranslations('components.post.viewer');
+
   return (
     <Card onClick={onClick}>
       <CardContent className="flex gap-4">
         <div className="flex w-14 shrink-0 flex-col items-center gap-2 text-center">
           <div>
             <p className="text-lg font-semibold">{summary.likeCount}</p>
-            <p className="text-muted-foreground text-xs">votes</p>
+            <p className="text-muted-foreground text-xs">{t('votes')}</p>
           </div>
           <div className="rounded-md border px-2 py-1">
             <p className="text-sm font-semibold">{summary.commentCount}</p>
-            <p className="text-muted-foreground text-xs">answers</p>
+            <p className="text-muted-foreground text-xs">{t('answers')}</p>
           </div>
         </div>
 
@@ -350,7 +355,7 @@ function QuestionTypePostPreviewCard({
 
           {summary.resolved && (
             <span className="text-xs font-medium text-success-text">
-              ✓ Answered
+              {t('answered')}
             </span>
           )}
 
@@ -382,18 +387,20 @@ function ArticlePreviewMedia({
   editor: Editor | null;
   project?: PostProjectSummary;
 }) {
+  const t = useTranslations('components.post.viewer');
+
   // TODO: real reading time needs a stable word count from the server —
   // this estimates from the loaded editor content client-side.
   const wordCount = editor?.getText().split(/\s+/).filter(Boolean).length ?? 0;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
   // TODO: no thumbnail/category field on posts yet — falls back to the
   // project name, or a generic label.
-  const category = project?.name?.toUpperCase() ?? 'ARTICLE';
+  const category = project?.name?.toUpperCase() ?? t('article');
 
   return (
     <div className="relative flex h-32 items-end rounded-lg bg-gradient-to-br from-primary/20 to-success-tint p-4">
       <span className="absolute top-3 right-3 rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium">
-        {readingMinutes} min read
+        {t('minRead', { minutes: readingMinutes })}
       </span>
       <span className="text-xs font-semibold tracking-wide text-primary">
         {category}

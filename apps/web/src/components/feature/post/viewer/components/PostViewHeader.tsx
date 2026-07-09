@@ -44,6 +44,7 @@ export function PostViewHeader({
   const tPost = useTranslations('components.post');
   const tDelete = useTranslations('pages.posts.delete');
   const tCopyLink = useTranslations('pages.posts.copy-link');
+  const tViewer = useTranslations('components.post.viewer');
 
   const isPreview = variant === 'preview';
   const report = useReportPostDialog();
@@ -100,7 +101,7 @@ export function PostViewHeader({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Post options"
+              aria-label={tViewer('options')}
               onClick={stopPropagation}
             >
               <DotsThreeIcon weight="bold" />
@@ -119,7 +120,9 @@ export function PostViewHeader({
                 {tDelete('trigger')}
               </DropdownMenuItem>
             ) : isPreview ? (
-              <DropdownMenuItem variant="destructive">Report</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive">
+                {t('trigger')}
+              </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 variant="destructive"

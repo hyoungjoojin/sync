@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { useGetRecommendations } from '@/api/__generated__/user/user';
@@ -14,6 +15,7 @@ import ROUTES from '@/util/routes';
 const MAX_DISCOVER_USERS = 4;
 
 export default function DiscoverCard() {
+  const t = useTranslations('pages.home.discover');
   const followedUserIds = useFollowedRecommendedUserIds();
   const { data, isPending } = useGetRecommendations();
   const { mutate: followUser, isPending: isFollowPending } = useFollowUser();
@@ -23,12 +25,12 @@ export default function DiscoverCard() {
   return (
     <div className="space-y-4 rounded-xl border bg-card p-6">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">Discover people to follow</span>
+        <span className="text-sm font-semibold">{t('title')}</span>
         <Link
           href={ROUTES.EXPLORE_TRENDING()}
           className="text-xs font-medium text-primary hover:underline"
         >
-          Explore &rarr;
+          {t('explore')} &rarr;
         </Link>
       </div>
 
@@ -70,7 +72,7 @@ export default function DiscoverCard() {
                     disabled={isFollowPending || isFollowing}
                     onClick={() => followUser({ followeeId: user.userId })}
                   >
-                    {isFollowing ? '팔로잉' : 'Follow'}
+                    {isFollowing ? t('following') : t('follow')}
                   </Button>
                 </div>
               );

@@ -1,6 +1,7 @@
 'use client';
 
 import { PencilIcon } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 import {
   useGetFollowedProjects,
@@ -37,6 +38,7 @@ interface ProjectHeaderProps {
 }
 
 export default function ProjectHeader({ handle }: ProjectHeaderProps) {
+  const t = useTranslations('pages.projects.project.header');
   const { data: session } = useSession();
   const { requireAuth } = useRequireAuth();
 
@@ -91,16 +93,19 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-semibold">{summary.name}</h1>
               {role === GetProjectResponseRole.Admin && (
-                <Badge variant="secondary">관리자</Badge>
+                <Badge variant="secondary">{t('role.admin')}</Badge>
               )}
             </div>
 
             <p className="text-muted-foreground text-sm">
-              {summary.description || '설명이 없습니다.'}
+              {summary.description || t('description-empty')}
             </p>
 
             <p className="text-muted-foreground text-xs">
-              멤버 {memberCount}명 · {mockCreatedYear(handle)}년 생성
+              {t('meta', {
+                count: memberCount,
+                year: mockCreatedYear(handle),
+              })}
             </p>
           </div>
         </div>
@@ -108,7 +113,7 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
         <div className="flex shrink-0 items-center gap-2">
           {isMember ? (
             <Button variant="outline" disabled>
-              참여 중
+              {t('status.member')}
             </Button>
           ) : (
             <Button
@@ -116,7 +121,7 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
               disabled={isFollowPending || isUnfollowPending}
               onClick={handleFollowToggle}
             >
-              {isFollowing ? '팔로잉' : '팔로우'}
+              {isFollowing ? t('follow.following') : t('follow.follow')}
             </Button>
           )}
 
@@ -134,7 +139,7 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
             }}
           >
             <PencilIcon />
-            Ask / Write
+            {t('actions.write')}
           </LinkButton>
         </div>
       </CardContent>

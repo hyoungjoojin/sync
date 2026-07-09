@@ -2,6 +2,7 @@
 
 import { EnvelopeSimpleIcon } from '@phosphor-icons/react/dist/ssr';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import {
@@ -49,6 +50,8 @@ function ProjectInvitationsSkeleton() {
 }
 
 export default function ProjectInvitations() {
+  const t = useTranslations('pages.projects.invitations');
+
   const queryClient = useQueryClient();
 
   const { data: invitationsData, isPending } = useGetMyProjectInvitations();
@@ -62,7 +65,7 @@ export default function ProjectInvitations() {
     return (
       <section className="space-y-3">
         <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          초대
+          {t('heading')}
         </h2>
         <ProjectInvitationsSkeleton />
       </section>
@@ -78,10 +81,8 @@ export default function ProjectInvitations() {
           <EmptyMedia variant="icon">
             <EnvelopeSimpleIcon />
           </EmptyMedia>
-          <EmptyTitle>받은 초대가 없습니다</EmptyTitle>
-          <EmptyDescription>
-            새로운 프로젝트 초대를 받으면 여기에 표시됩니다.
-          </EmptyDescription>
+          <EmptyTitle>{t('empty.title')}</EmptyTitle>
+          <EmptyDescription>{t('empty.description')}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -104,10 +105,10 @@ export default function ProjectInvitations() {
               queryKey: getGetProjectTeammatesQueryKey(projectHandle),
             }),
           ]);
-          toast.success('초대를 수락했습니다.');
+          toast.success(t('messages.accept-success'));
         },
         onError: () => {
-          toast.error('초대 수락에 실패했습니다.');
+          toast.error(t('messages.accept-error'));
         },
       },
     );
@@ -119,24 +120,24 @@ export default function ProjectInvitations() {
       {
         onSuccess: async () => {
           await invalidateInvitations();
-          toast.success('초대를 거절했습니다.');
+          toast.success(t('messages.decline-success'));
         },
         onError: () => {
-          toast.error('초대 거절에 실패했습니다.');
+          toast.error(t('messages.decline-error'));
         },
       },
     );
   };
 
   const roleLabel: Record<string, string> = {
-    ADMIN: '관리자',
-    MEMBER: '멤버',
+    ADMIN: t('role.admin'),
+    MEMBER: t('role.member'),
   };
 
   return (
     <section className="bg-success-tint/40 space-y-4 rounded-xl border border-success-tint p-4">
       <h2 className="flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-        초대
+        {t('heading')}
         <Badge color="success">{invitations.length}</Badge>
       </h2>
 
@@ -157,7 +158,10 @@ export default function ProjectInvitations() {
                   {invitation.project.name}
                 </span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {invitation.invitation.inviter.name}님이 초대함 ·{' '}
+                  {t('invited-by', {
+                    name: invitation.invitation.inviter.name,
+                  })}{' '}
+                  ·{' '}
                   {roleLabel[invitation.invitation.role] ??
                     invitation.invitation.role}
                 </span>
@@ -170,7 +174,7 @@ export default function ProjectInvitations() {
                 disabled={isAccepting || isDeclining}
                 onClick={() => handleDecline(invitation.token)}
               >
-                거절
+                {t('actions.decline')}
               </Button>
               <Button
                 size="sm"
@@ -179,7 +183,7 @@ export default function ProjectInvitations() {
                   handleAccept(invitation.token, invitation.project.handle)
                 }
               >
-                수락
+                {t('actions.accept')}
               </Button>
             </div>
           </div>

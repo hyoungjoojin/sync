@@ -121,22 +121,21 @@ export default function ProjectPosts({
 }
 
 function ProjectPostsEmpty({ handle }: ProjectPostsProps) {
+  const t = useTranslations('pages.projects.project.posts.empty-state');
   const { requireAuth } = useRequireAuth();
 
   return (
     <div className="flex flex-col items-center gap-6 text-center w-full">
       <div className="space-y-2">
-        <p className="font-medium">아직 게시물이 없어요</p>
-        <p className="text-sm text-muted-foreground">
-          팀원을 초대하거나 첫 번째 게시물을 작성해보세요.
-        </p>
+        <p className="font-medium">{t('title')}</p>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </div>
       <div className="flex gap-2">
         <AddTeammatePopover
           projectHandle={handle}
           trigger={
             <Button variant="outline" size="sm">
-              팀원 초대하기
+              {t('invite')}
             </Button>
           }
         />
@@ -154,7 +153,7 @@ function ProjectPostsEmpty({ handle }: ProjectPostsProps) {
             }
           }}
         >
-          첫 게시물 작성하기
+          {t('write')}
         </LinkButton>
       </div>
     </div>

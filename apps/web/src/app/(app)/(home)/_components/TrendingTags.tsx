@@ -1,4 +1,5 @@
 import { TrendUpIcon } from '@phosphor-icons/react/dist/ssr';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import ROUTES from '@/util/routes';
@@ -9,12 +10,14 @@ const MOCK_TRENDING_TAGS = [
   { name: 'rust', postCount: 265 },
 ];
 
-export default function TrendingTags() {
+export default async function TrendingTags() {
+  const t = await getTranslations('pages.home.trending-tags');
+
   return (
     <div className="space-y-4 rounded-xl border bg-card p-6">
       <span className="flex items-center gap-1.5 text-sm font-semibold">
         <TrendUpIcon />
-        Trending tags
+        {t('title')}
       </span>
 
       <div className="divide-border -mx-2 divide-y">
@@ -26,7 +29,7 @@ export default function TrendingTags() {
           >
             <p className="text-sm font-semibold">#{tag.name}</p>
             <p className="text-muted-foreground text-xs">
-              {tag.postCount} posts
+              {t('post-count', { count: tag.postCount })}
             </p>
           </Link>
         ))}

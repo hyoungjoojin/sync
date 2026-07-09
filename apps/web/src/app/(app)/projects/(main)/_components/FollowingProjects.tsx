@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { useGetFollowedProjects } from '@/api/__generated__/project/project';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
 import { useUnfollowProject } from '@/components/feature/project/hooks/useFollowProject';
@@ -9,7 +11,10 @@ import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
 
 // TODO: 팔로우한 프로젝트의 최신 활동 요약 API가 추가되면 실제 데이터로 교체합니다.
-function mockActivitySummary(handle: string) {
+function mockActivitySummary(
+  handle: string,
+  t: ReturnType<typeof useTranslations<'pages.projects.list.following'>>,
+) {
   let hash = 0;
   for (const char of handle) {
     hash = (hash * 31 + char.charCodeAt(0)) % 1000;
@@ -17,10 +22,10 @@ function mockActivitySummary(handle: string) {
 
   const newPosts = hash % 6;
   if (newPosts === 0) {
-    return '새 게시물 없음';
+    return t('no-new-posts');
   }
 
-  return `새 게시물 ${newPosts}개`;
+  return t('new-posts', { count: newPosts });
 }
 
 function FollowingProjectsSkeleton() {
@@ -34,6 +39,7 @@ function FollowingProjectsSkeleton() {
 }
 
 export default function FollowingProjects() {
+  const t = useTranslations('pages.projects.list.following');
   const { data: session } = useSession();
   const { mutate: unfollowProject, variables: unfollowVariables } =
     useUnfollowProject();
@@ -75,7 +81,7 @@ export default function FollowingProjects() {
                 {project.name}
               </span>
               <span className="text-muted-foreground truncate text-xs">
-                {mockActivitySummary(project.handle)}
+                {mockActivitySummary(project.handle, t)}
               </span>
             </span>
           </LinkButton>
@@ -87,7 +93,7 @@ export default function FollowingProjects() {
             disabled={unfollowVariables?.handle === project.handle}
             onClick={() => unfollowProject({ handle: project.handle })}
           >
-            팔로우 중
+            {t('unfollow')}
           </Button>
         </div>
       ))}

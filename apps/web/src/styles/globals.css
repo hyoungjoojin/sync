@@ -170,6 +170,10 @@
   --focus-ring: 0 0 0 3px rgba(11, 122, 91, 0.45);
   --font-mono:
     'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic',
+    sans-serif;
 
   /* ── shadcn semantic mapping ────────────────────────── */
   --background: var(--surface-canvas);

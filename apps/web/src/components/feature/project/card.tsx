@@ -1,4 +1,5 @@
 import { CheckCircleIcon, ClockIcon } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { LinkButton } from '@/components/ui/button';
@@ -30,6 +31,7 @@ function ProjectCard({
   toReviewCount,
   unansweredCount,
 }: ProjectCardProps) {
+  const t = useTranslations('components.project.card');
   const isFresh = freshPercent !== undefined && freshPercent >= 85;
 
   return (
@@ -46,7 +48,7 @@ function ProjectCard({
             <p className="truncate font-semibold">{name}</p>
             {memberCount !== undefined && (
               <p className="text-muted-foreground text-xs">
-                멤버 {memberCount}명
+                {t('memberCount', { count: memberCount })}
               </p>
             )}
           </div>
@@ -54,7 +56,7 @@ function ProjectCard({
 
         {role && (
           <Badge variant="outline" className="shrink-0 font-normal">
-            {role === 'admin' ? '관리자' : '멤버'}
+            {role === 'admin' ? t('role.admin') : t('role.member')}
           </Badge>
         )}
       </div>
@@ -80,21 +82,21 @@ function ProjectCard({
               >
                 {freshPercent}%
               </span>
-              <span className="text-muted-foreground">최신</span>
+              <span className="text-muted-foreground">{t('fresh')}</span>
             </div>
 
             <div className="text-muted-foreground">
               <span className="text-foreground font-medium">
                 {toReviewCount}
               </span>{' '}
-              검토 대기
+              {t('toReview')}
             </div>
 
             <div className="text-muted-foreground">
               <span className="text-foreground font-medium">
                 {unansweredCount}
               </span>{' '}
-              미답변
+              {t('unanswered')}
             </div>
           </div>
         )}
@@ -105,7 +107,7 @@ function ProjectCard({
         variant="secondary"
         className="w-full"
       >
-        프로젝트 열기
+        {t('open')}
       </LinkButton>
     </Card>
   );

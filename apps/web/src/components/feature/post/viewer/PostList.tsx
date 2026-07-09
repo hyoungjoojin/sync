@@ -1,6 +1,7 @@
 'use client';
 
 import { useIntersectionObserver } from '@uidotdev/usehooks';
+import { useTranslations } from 'next-intl';
 import { type ReactNode, useEffect } from 'react';
 
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
@@ -10,14 +11,16 @@ import { Spinner } from '@/components/ui/spinner';
 import { PostPreviewCard } from './PostCard';
 import type { PostViewSource } from './types';
 
-const DEFAULT_EMPTY = (
-  <Empty className="min-h-80">
-    <EmptyTitle>표시할 포스트가 없습니다</EmptyTitle>
-    <EmptyDescription>
-      더 많은 사용자, 프로젝트, 태그를 팔로우하면 여기에 포스트가 모입니다.
-    </EmptyDescription>
-  </Empty>
-);
+function DefaultEmpty() {
+  const t = useTranslations('components.post.viewer.empty');
+
+  return (
+    <Empty className="min-h-80">
+      <EmptyTitle>{t('title')}</EmptyTitle>
+      <EmptyDescription>{t('description')}</EmptyDescription>
+    </Empty>
+  );
+}
 
 interface PostListProps {
   items: PostViewSource[];
@@ -39,7 +42,7 @@ export default function PostList({
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
-  empty = DEFAULT_EMPTY,
+  empty = <DefaultEmpty />,
   error,
   end,
   skeletonCount = 3,

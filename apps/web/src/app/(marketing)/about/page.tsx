@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { LinkButton } from '@/components/ui/button';
@@ -6,9 +7,8 @@ import { Logo } from '@/components/ui/logo';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
-// 랜딩 페이지 — 하드코딩된 한국어 문자열 사용 (i18n 미적용)
-
 const MONO = 'font-mono tracking-tight';
+const AVATAR_COLORS = ['bg-primary', 'bg-foreground/70', 'bg-amber-500'];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -38,14 +38,30 @@ function TypeTag({ label }: { label: string }) {
 }
 
 /* 시그니처 요소: "한 번 답하면 영원히 신뢰할 수 있는" 정본 답변 카드 */
-function CanonicalCard() {
+function CanonicalCard({
+  tag,
+  badge,
+  question,
+  answerCode,
+  answerText,
+  verifiedAt,
+  freshBadge,
+}: {
+  tag: string;
+  badge: string;
+  question: string;
+  answerCode: string;
+  answerText: string;
+  verifiedAt: string;
+  freshBadge: string;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <span
           className={cn(MONO, 'text-[11px] uppercase text-muted-foreground')}
         >
-          question · #배포
+          {tag}
         </span>
         <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
           <svg viewBox="0 0 24 24" className="size-3" fill="none">
@@ -57,27 +73,25 @@ function CanonicalCard() {
               strokeLinejoin="round"
             />
           </svg>
-          정본 답변
+          {badge}
         </span>
       </div>
 
-      <p className="mt-3 text-[15px] font-medium leading-snug">
-        스테이징 서버는 어떻게 재배포하나요?
-      </p>
+      <p className="mt-3 text-[15px] font-medium leading-snug">{question}</p>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         <code className="rounded bg-muted px-1 py-0.5 text-[13px]">
-          make deploy staging
+          {answerCode}
         </code>{' '}
-        한 줄이면 됩니다. 파이프라인이 이미지 빌드부터 헬스체크까지 처리해요.
+        {answerText}
       </p>
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
         <span className={cn(MONO, 'text-[11px] text-muted-foreground')}>
-          last_verified_at · 3일 전
+          {verifiedAt}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-primary">
           <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-          최신 상태 유지 중
+          {freshBadge}
         </span>
       </div>
     </div>
@@ -111,7 +125,46 @@ function BentoTile({
   );
 }
 
-export default function About() {
+export default async function About() {
+  const t = await getTranslations('pages.about');
+  const tPostType = await getTranslations('components.post.type');
+
+  const freshnessRows = [
+    {
+      label: t('bento.items.freshness.rows.apiAuth.label'),
+      state: t('bento.items.freshness.rows.apiAuth.state'),
+      fresh: true,
+    },
+    {
+      label: t('bento.items.freshness.rows.onboarding.label'),
+      state: t('bento.items.freshness.rows.onboarding.state'),
+      fresh: true,
+    },
+    {
+      label: t('bento.items.freshness.rows.legacyDeploy.label'),
+      state: t('bento.items.freshness.rows.legacyDeploy.state'),
+      fresh: false,
+    },
+  ];
+
+  const postTypeCards = [
+    {
+      tag: 'SHORT',
+      title: tPostType('SHORT'),
+      desc: t('postTypes.items.short.description'),
+    },
+    {
+      tag: 'QUESTION',
+      title: tPostType('QUESTION'),
+      desc: t('postTypes.items.question.description'),
+    },
+    {
+      tag: 'LONG',
+      title: tPostType('LONG'),
+      desc: t('postTypes.items.long.description'),
+    },
+  ];
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background text-foreground">
       {/* Nav */}
@@ -120,9 +173,11 @@ export default function About() {
           <Logo />
           <div className="flex items-center gap-2">
             <LinkButton variant="ghost" href={ROUTES.LOGIN()}>
-              로그인
+              {t('nav.login')}
             </LinkButton>
-            <LinkButton href={ROUTES.REGISTER()}>시작하기</LinkButton>
+            <LinkButton href={ROUTES.REGISTER()}>
+              {t('nav.register')}
+            </LinkButton>
           </div>
         </div>
       </header>
@@ -140,38 +195,42 @@ export default function About() {
           />
           <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 pb-20 pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:pt-28">
             <div>
-              <Eyebrow>SYNC · Beta</Eyebrow>
+              <Eyebrow>{t('hero.badge')}</Eyebrow>
               <h1 className="mt-5 text-4xl font-medium leading-[1.08] tracking-tight md:text-5xl lg:text-[3.4rem]">
-                질문은 한 번만 답하고,
-                <br />
-                <span className="text-primary">영원히 찾을 수 있게.</span>
+                {t('hero.title')}
               </h1>
               <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-                채팅은 지식을 흘려보내고, 위키는 낡아 신뢰를 잃습니다. SYNC는
-                팀의 Q&amp;A와 결정을 포럼으로 담아, 검색으로 잘 뜨고 시간이
-                지나도 믿을 수 있게 만듭니다.
+                {t('hero.description')}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <LinkButton size="lg" href={ROUTES.REGISTER()}>
-                  무료로 시작하기
+                  {t('hero.actions.register')}
                 </LinkButton>
               </div>
               <p className={cn(MONO, 'mt-6 text-[11px] text-muted-foreground')}>
-                5–50명 규모의 기술 팀과 개발자 커뮤니티를 위해 설계되었습니다.
+                {t('hero.audience')}
               </p>
             </div>
 
-            <CanonicalCard />
+            <CanonicalCard
+              tag={t('hero.demo.tag')}
+              badge={t('hero.demo.badge')}
+              question={t('hero.demo.question')}
+              answerCode="make deploy staging"
+              answerText={t('hero.demo.answer')}
+              verifiedAt={t('hero.demo.verifiedAt')}
+              freshBadge={t('hero.demo.freshBadge')}
+            />
           </div>
         </section>
 
         {/* Bento */}
         <section className="mx-auto w-full max-w-6xl px-6 pb-24">
           <div className="mb-10 flex flex-col gap-3">
-            <Eyebrow>무엇이 다른가</Eyebrow>
+            <Eyebrow>{t('bento.eyebrow')}</Eyebrow>
             <h2 className="max-w-2xl text-2xl font-medium tracking-tight md:text-3xl">
-              지식 도구는 저장이 아니라 신뢰와 검색에서 무너집니다.
-              <br className="hidden md:block" /> SYNC는 그 두 가지에 집중합니다.
+              {t('bento.title')}
+              <br className="hidden md:block" /> {t('bento.titleTail')}
             </h2>
           </div>
 
@@ -179,33 +238,15 @@ export default function About() {
             {/* 시그니처: 신선도/신뢰 시스템 */}
             <BentoTile
               className="md:col-span-3 md:row-span-2"
-              eyebrow="Freshness & Trust"
-              title="6개월 뒤에도 믿을 수 있는 답변"
+              eyebrow={t('bento.items.freshness.eyebrow')}
+              title={t('bento.items.freshness.title')}
             >
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                모든 정본 지식에는 검증일, 담당자, 그리고 자동으로 계산되는
-                노후도가 붙습니다. 오래된 문서는 스스로 표시되고, 담당자는 한
-                번의 클릭으로 &ldquo;여전히 맞음&rdquo;을 확인합니다.
+                {t('bento.items.freshness.description')}
               </p>
 
               <div className="mt-auto space-y-2 pt-6">
-                {[
-                  {
-                    label: 'API 인증 흐름',
-                    state: '검증됨 · 2일 전',
-                    fresh: true,
-                  },
-                  {
-                    label: '온보딩 체크리스트',
-                    state: '검증됨 · 3주 전',
-                    fresh: true,
-                  },
-                  {
-                    label: '레거시 배포 스크립트',
-                    state: '확인 필요 · 5개월 전',
-                    fresh: false,
-                  },
-                ].map((row) => (
+                {freshnessRows.map((row) => (
                   <div
                     key={row.label}
                     className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5"
@@ -234,12 +275,11 @@ export default function About() {
             {/* 검색 & 관련도 */}
             <BentoTile
               className="md:col-span-3"
-              eyebrow="Search & Relevance"
-              title="오타에 강하고, 관련도로 정렬되는 검색"
+              eyebrow={t('bento.items.search.eyebrow')}
+              title={t('bento.items.search.title')}
             >
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                시간순도, 정확히 일치하는 것만도 아닙니다. 필드 가중치와
-                트라이그램 유사도로 원하는 답이 먼저 뜹니다.
+                {t('bento.items.search.description')}
               </p>
               <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
                 <svg
@@ -262,10 +302,10 @@ export default function About() {
                   />
                 </svg>
                 <span className="text-sm text-muted-foreground">
-                  디플로이 롤백
+                  {t('bento.items.search.example')}
                 </span>
                 <span className={cn(MONO, 'ml-auto text-[10px] text-primary')}>
-                  ~12ms
+                  {t('bento.items.search.latency')}
                 </span>
               </div>
             </BentoTile>
@@ -273,29 +313,26 @@ export default function About() {
             {/* 실시간 */}
             <BentoTile
               className="md:col-span-3"
-              eyebrow="Real-time"
-              title="새로고침 없이 살아 움직이는 지식"
+              eyebrow={t('bento.items.realtime.eyebrow')}
+              title={t('bento.items.realtime.title')}
             >
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                새 글과 답변이 즉시 반영되고, 누가 보고 있는지, 무엇을 아직 안
-                읽었는지 실시간으로 이어집니다.
+                {t('bento.items.realtime.description')}
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <div className="flex -space-x-2">
-                  {['bg-primary', 'bg-foreground/70', 'bg-amber-500'].map(
-                    (c, i) => (
-                      <span
-                        key={i}
-                        className={cn(
-                          'size-6 rounded-full border-2 border-card',
-                          c,
-                        )}
-                      />
-                    ),
-                  )}
+                  {AVATAR_COLORS.map((c, i) => (
+                    <span
+                      key={i}
+                      className={cn(
+                        'size-6 rounded-full border-2 border-card',
+                        c,
+                      )}
+                    />
+                  ))}
                 </div>
                 <span className={cn(MONO, 'text-[11px] text-muted-foreground')}>
-                  3명 접속 중
+                  {t('bento.items.realtime.activeUsers')}
                 </span>
               </div>
             </BentoTile>
@@ -303,33 +340,33 @@ export default function About() {
             {/* 백링크 */}
             <BentoTile
               className="md:col-span-2"
-              eyebrow="Backlinks"
-              title="쌓이지 않고 이어지는 지식 그래프"
+              eyebrow={t('bento.items.backlinks.eyebrow')}
+              title={t('bento.items.backlinks.title')}
             >
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                어떤 글이든 서로 참조하면 양방향으로 연결됩니다.
+                {t('bento.items.backlinks.description')}
               </p>
             </BentoTile>
 
             {/* 정본 답변 */}
             <BentoTile
               className="md:col-span-2"
-              eyebrow="Canonical answers"
-              title="흩어진 답을 하나로 수렴"
+              eyebrow={t('bento.items.canonical.eyebrow')}
+              title={t('bento.items.canonical.title')}
             >
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                최고의 답변을 정본으로 승격해, 같은 질문을 다시 묻지 않게.
+                {t('bento.items.canonical.description')}
               </p>
             </BentoTile>
 
             {/* 채팅 인제스천 */}
             <BentoTile
               className="md:col-span-2"
-              eyebrow="Chat ingestion"
-              title="Slack·Discord 스레드를 질문으로"
+              eyebrow={t('bento.items.chatIngestion.eyebrow')}
+              title={t('bento.items.chatIngestion.title')}
             >
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                지식이 만들어지는 곳에서, 한 번의 동작으로 옮겨 담습니다.
+                {t('bento.items.chatIngestion.description')}
               </p>
             </BentoTile>
           </div>
@@ -338,28 +375,12 @@ export default function About() {
         {/* 세 가지 글 유형 */}
         <section className="border-y border-border bg-muted/30">
           <div className="mx-auto w-full max-w-6xl px-6 py-20">
-            <Eyebrow>세 가지 글 유형</Eyebrow>
+            <Eyebrow>{t('postTypes.eyebrow')}</Eyebrow>
             <h2 className="mt-4 max-w-2xl text-2xl font-medium tracking-tight md:text-3xl">
-              팀이 이미 하고 있는 대화를, 제자리에 담습니다.
+              {t('postTypes.title')}
             </h2>
             <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
-              {[
-                {
-                  tag: 'SHORT',
-                  title: '짧은 글',
-                  desc: 'Slack에서 흘러가 버리는 공지와 “참고하세요”를 대신합니다.',
-                },
-                {
-                  tag: 'QUESTION',
-                  title: '질문',
-                  desc: 'DM과 스레드에서 한 번 답하고 사라지던 Q&A를 붙잡아 둡니다.',
-                },
-                {
-                  tag: 'LONG',
-                  title: '긴 글',
-                  desc: '위키에 넣자마자 낡기 시작하던 결정과 가이드를 대신합니다.',
-                },
-              ].map((c) => (
+              {postTypeCards.map((c) => (
                 <div
                   key={c.tag}
                   className="rounded-xl border border-border bg-card p-6"
@@ -385,16 +406,16 @@ export default function About() {
                   'radial-gradient(circle at 50% 0%, var(--color-brand), transparent 60%)',
               }}
             />
-            <Eyebrow>지금은 베타</Eyebrow>
+            <Eyebrow>{t('finalCta.eyebrow')}</Eyebrow>
             <h2 className="mx-auto mt-5 max-w-xl text-3xl font-medium tracking-tight md:text-4xl">
-              팀의 지식이 낡지 않도록.
+              {t('finalCta.title')}
             </h2>
             <p className="mx-auto mt-4 max-w-md text-muted-foreground">
-              가장 먼저 SYNC를 사용해 볼 팀을 찾고 있습니다. 함께 만들어 가요.
+              {t('finalCta.description')}
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <LinkButton size="lg" href={ROUTES.REGISTER()}>
-                베타 시작하기
+                {t('finalCta.action')}
               </LinkButton>
             </div>
           </div>
@@ -407,7 +428,7 @@ export default function About() {
           <div className="col-span-2 md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-[260px] text-sm text-muted-foreground">
-              한 번 답한 질문이, 6개월 뒤에도 잘 찾히고 신뢰받는 곳.
+              {t('footer.description')}
             </p>
           </div>
           <div>
@@ -417,17 +438,17 @@ export default function About() {
                 'mb-3 text-[11px] uppercase text-muted-foreground',
               )}
             >
-              약관
+              {t('footer.legal.title')}
             </h4>
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               <li>
                 <Link href={ROUTES.TERMS()} className="hover:text-foreground">
-                  이용약관
+                  {t('footer.legal.terms')}
                 </Link>
               </li>
               <li>
                 <Link href={ROUTES.PRIVACY()} className="hover:text-foreground">
-                  개인정보처리방침
+                  {t('footer.legal.privacy')}
                 </Link>
               </li>
             </ul>
@@ -439,7 +460,7 @@ export default function About() {
                 'mb-3 text-[11px] uppercase text-muted-foreground',
               )}
             >
-              제품
+              {t('footer.account.title')}
             </h4>
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               <li>
@@ -447,12 +468,12 @@ export default function About() {
                   href={ROUTES.REGISTER()}
                   className="hover:text-foreground"
                 >
-                  시작하기
+                  {t('footer.account.register')}
                 </Link>
               </li>
               <li>
                 <Link href={ROUTES.LOGIN()} className="hover:text-foreground">
-                  로그인
+                  {t('footer.account.login')}
                 </Link>
               </li>
             </ul>

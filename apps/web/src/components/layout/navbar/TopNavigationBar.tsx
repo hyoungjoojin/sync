@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useMounted } from '@/hooks/use-mounted';
 import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
@@ -48,10 +48,7 @@ function RightSection() {
   // hydration, while SSR always renders the pending state. Gating on
   // `mounted` keeps the first client render identical to the server-rendered
   // HTML so this subtree doesn't diverge and trigger a hydration mismatch.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const { data: session, isPending } = useSession();
 

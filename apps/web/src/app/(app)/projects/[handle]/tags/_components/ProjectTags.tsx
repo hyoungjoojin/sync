@@ -28,7 +28,9 @@ export default function ProjectTags() {
       {isAdmin && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" asChild>
-            <Link href={ROUTES.PROJECT_TAGS_MANAGE(handle)}>태그 관리</Link>
+            <Link href={ROUTES.PROJECT_TAGS_MANAGE(handle)}>
+              {t('manage-link')}
+            </Link>
           </Button>
         </div>
       )}
