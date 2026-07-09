@@ -151,12 +151,15 @@ class PostQueryControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getCommentedPosts(any(), eq(userId), eq(pagination)))
+    String projectHandle = "sync";
+
+    when(postQueryService.getCommentedPosts(any(), eq(userId), eq(projectHandle), eq(pagination)))
         .thenReturn(response);
 
     mockMvc
         .perform(
             get("/users/{userId}/posts/commented", userId)
+                .queryParam("projectHandle", projectHandle)
                 .queryParams(
                     CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
         .andExpect(status().isOk())
@@ -172,7 +175,8 @@ class PostQueryControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("userId").description("User ID")),
-                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
+                    .and(parameterWithName("projectHandle").description("프로젝트 핸들").optional()),
                 GetPostsResponseSnippets.getPostsResponseFields()));
   }
 

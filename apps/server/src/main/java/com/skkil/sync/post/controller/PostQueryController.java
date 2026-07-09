@@ -55,9 +55,10 @@ public class PostQueryController {
   public GetPostsResponse getCommentedPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable Long userId,
+      @RequestParam(required = false) String projectHandle,
       @Validated CursorPaginationRequest pagination) {
     return postQueryService.getCommentedPosts(
-        user == null ? null : user.userId(), userId, pagination);
+        user == null ? null : user.userId(), userId, projectHandle, pagination);
   }
 
   @GetMapping("/tags/{tagId}/posts")

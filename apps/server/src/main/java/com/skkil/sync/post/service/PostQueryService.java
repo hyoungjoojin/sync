@@ -100,10 +100,10 @@ public class PostQueryService {
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#userId, 'PROFILE', 'READ')")
   public GetPostsResponse getCommentedPosts(
-      Long requesterId, Long userId, CursorPaginationRequest pagination) {
+      Long requesterId, Long userId, String projectHandle, CursorPaginationRequest pagination) {
     return getPostsResponse(
         requesterId,
-        postQueryRepository.getCommentedPosts(userId),
+        postQueryRepository.getCommentedPosts(userId, projectHandle),
         commentedPostPaginationProvider,
         pagination);
   }

@@ -3,11 +3,21 @@
 import { useIntersectionObserver } from '@uidotdev/usehooks';
 import { type ReactNode, useEffect } from 'react';
 
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 
 import { PostPreviewCard } from './PostCard';
 import type { PostViewSource } from './types';
+
+const DEFAULT_EMPTY = (
+  <Empty className="min-h-80">
+    <EmptyTitle>표시할 포스트가 없습니다</EmptyTitle>
+    <EmptyDescription>
+      더 많은 사용자, 프로젝트, 태그를 팔로우하면 여기에 포스트가 모입니다.
+    </EmptyDescription>
+  </Empty>
+);
 
 interface PostListProps {
   items: PostViewSource[];
@@ -16,7 +26,7 @@ interface PostListProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
-  empty: ReactNode;
+  empty?: ReactNode;
   error?: ReactNode;
   end?: ReactNode;
   skeletonCount?: number;
@@ -29,7 +39,7 @@ export default function PostList({
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
-  empty,
+  empty = DEFAULT_EMPTY,
   error,
   end,
   skeletonCount = 3,

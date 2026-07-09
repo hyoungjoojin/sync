@@ -2,12 +2,13 @@
 
 import {
   BookmarkSimpleIcon,
+  CompassIcon,
   FileTextIcon,
-  FolderIcon,
-  NotePencilIcon,
+  HouseIcon,
+  PencilSimpleIcon,
   PlusIcon,
+  TagIcon,
   TrendUpIcon,
-  UsersIcon,
 } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,13 +38,34 @@ import SidebarCloseButton from './SidebarCloseButton';
 
 const MAX_VISIBLE_PROJECTS = 5;
 
-const posts = [
+const nav = [
   {
-    label: 'Create Post',
-    href: ROUTES.NEW_POST(),
-    icon: NotePencilIcon,
-    authenticated: true,
+    label: 'Home',
+    href: ROUTES.HOME(),
+    icon: HouseIcon,
+    authenticated: false,
   },
+  {
+    label: 'Trending Posts',
+    href: ROUTES.EXPLORE_TRENDING(),
+    icon: TrendUpIcon,
+    authenticated: false,
+  },
+  {
+    label: 'Explore Projects',
+    href: ROUTES.EXPLORE_PROJECTS(),
+    icon: CompassIcon,
+    authenticated: false,
+  },
+  {
+    label: 'Tags',
+    href: ROUTES.EXPLORE_TAGS(),
+    icon: TagIcon,
+    authenticated: false,
+  },
+];
+
+const yours = [
   {
     label: 'Drafts',
     href: ROUTES.DRAFTS(),
@@ -55,27 +77,6 @@ const posts = [
     href: ROUTES.BOOKMARKS(),
     icon: BookmarkSimpleIcon,
     authenticated: true,
-  },
-];
-
-const explore = [
-  {
-    label: 'Following',
-    href: ROUTES.EXPLORE_FOLLOWING(),
-    icon: UsersIcon,
-    authenticated: false,
-  },
-  {
-    label: 'Trending',
-    href: ROUTES.EXPLORE_TRENDING(),
-    icon: TrendUpIcon,
-    authenticated: false,
-  },
-  {
-    label: 'Projects',
-    href: ROUTES.PROJECTS(),
-    icon: FolderIcon,
-    authenticated: false,
   },
 ];
 
@@ -118,7 +119,37 @@ export default function PersonalSidebarContent() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {posts.map((item) => {
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className="bg-success-tint text-success-text hover:bg-success-tint/80 active:bg-success-tint/70"
+                >
+                  <Link
+                    href={ROUTES.NEW_POST()}
+                    onClick={(event) => {
+                      if (
+                        !requireAuth({
+                          intent: 'write',
+                          redirectTo: ROUTES.NEW_POST(),
+                        })
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    <PencilSimpleIcon />
+                    Ask / Write
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {nav.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (
@@ -152,10 +183,10 @@ export default function PersonalSidebarContent() {
         <SidebarSeparator />
 
         <SidebarGroup>
-          <SidebarGroupLabel>Explore</SidebarGroupLabel>
+          <SidebarGroupLabel>Yours</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {explore.map((item) => {
+              {yours.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (

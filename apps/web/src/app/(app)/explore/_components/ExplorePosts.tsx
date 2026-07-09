@@ -2,8 +2,8 @@
 
 import { useGetPostRecommendationsInfinite } from '@/api/__generated__/post/post';
 import { PostRecommendationType } from '@/components/feature/post/types/post';
-import InfinitePostList from '@/components/feature/post/viewer/InfinitePostList';
-import { toPostPreviewProps } from '@/components/feature/post/viewer/PostPreview';
+import PostList from '@/components/feature/post/viewer/PostList';
+import { toPostViewSource } from '@/components/feature/post/viewer/types';
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 
 const FEED_PAGE_SIZE = '50';
@@ -52,8 +52,8 @@ export default function ExplorePosts({ type }: ExplorePostsProps) {
   const emptyMessage = EMPTY_MESSAGES[type];
 
   return (
-    <InfinitePostList
-      posts={posts.map((post) => toPostPreviewProps(post.content))}
+    <PostList
+      items={posts.map((post) => toPostViewSource(post.content))}
       isPending={isPending}
       hasNextPage={!!hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

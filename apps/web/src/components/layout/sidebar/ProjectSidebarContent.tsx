@@ -273,9 +273,9 @@ function MyContributions({ handle }: SectionProps) {
     },
     {
       label: 'My Comments',
-      href: ROUTES.PROFILE(myHandle),
+      href: ROUTES.PROJECT_MY_COMMENTS(handle),
       icon: ChatCircleIcon,
-      isActive: false,
+      isActive: pathname === ROUTES.PROJECT_MY_COMMENTS(handle),
     },
   ];
 

@@ -2110,6 +2110,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: projectHandle
+        in: query
+        description: 프로젝트 핸들
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: "200"

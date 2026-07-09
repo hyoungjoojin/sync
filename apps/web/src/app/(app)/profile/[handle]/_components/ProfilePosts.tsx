@@ -4,9 +4,9 @@ import { useTranslations } from 'next-intl';
 
 import { useGetUserPostsInfinite } from '@/api/__generated__/post/post';
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
-import InfinitePostList from '@/components/feature/post/viewer/InfinitePostList';
-import PostListMessage from '@/components/feature/post/viewer/PostListMessage';
-import { toPostPreviewProps } from '@/components/feature/post/viewer/PostPreview';
+import PostList from '@/components/feature/post/viewer/PostList';
+import PostListMessage from '@/components/feature/post/viewer/error/PostListMessage';
+import { toPostViewSource } from '@/components/feature/post/viewer/types';
 
 const POSTS_PAGE_SIZE = '10';
 
@@ -58,8 +58,8 @@ export default function ProfilePosts({ handle }: ProfilePostsProps) {
   const isError = isProfileError || isPostsError;
 
   return (
-    <InfinitePostList
-      posts={posts.map((post) => toPostPreviewProps(post.content))}
+    <PostList
+      items={posts.map((post) => toPostViewSource(post.content))}
       isPending={isPending}
       isError={isError}
       hasNextPage={!!hasNextPage}

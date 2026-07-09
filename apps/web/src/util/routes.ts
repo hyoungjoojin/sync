@@ -3,8 +3,9 @@ const ROUTES = {
   ABOUT: () => '/about',
   TERMS: () => '/terms',
   PRIVACY: () => '/privacy',
-  EXPLORE_FOLLOWING: () => '/explore/following',
   EXPLORE_TRENDING: () => '/explore/trending',
+  EXPLORE_PROJECTS: () => '/explore/projects',
+  EXPLORE_TAGS: () => '/explore/tags',
   DRAFTS: () => '/posts/drafts',
   LOGIN: () => '/auth/login',
   REGISTER: () => '/auth/register',
@@ -36,6 +37,8 @@ const ROUTES = {
   PROJECT_GUIDES: (handle: string) =>
     ROUTES.PROJECT_POSTS(handle, { type: 'LONG' }),
   PROJECT_MY_POSTS: (handle: string) => ROUTES.PROJECT(handle) + '/posts/my',
+  PROJECT_MY_COMMENTS: (handle: string) =>
+    ROUTES.PROJECT(handle) + '/posts/my-comments',
   PROJECT_TAG_POSTS: (handle: string, tagId: string) =>
     ROUTES.PROJECT_POSTS(handle, { tagId }),
   PROJECT_TAGS: (handle: string) => ROUTES.PROJECT(handle) + '/tags',
@@ -48,6 +51,7 @@ const ROUTES = {
   PROJECT_SETTINGS_TEAMMATES: (handle: string) =>
     ROUTES.PROJECT(handle) + '/settings/teammates',
   PROJECTS: () => '/projects',
+  PROJECT_INVITATIONS: () => '/projects/invitations',
   BOOKMARKS: () => '/bookmarks',
   COOKIES: () => '/cookies',
   PROFILE: (handle: string) => `/@${handle}`,

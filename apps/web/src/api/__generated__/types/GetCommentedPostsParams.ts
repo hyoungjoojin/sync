@@ -22,4 +22,8 @@ export type GetCommentedPostsParams = {
    * Cursor for pagination, indicating the position before which to return items
    */
   before?: string;
+  /**
+   * 프로젝트 핸들
+   */
+  projectHandle?: string;
 };

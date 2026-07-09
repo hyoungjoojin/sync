@@ -162,7 +162,7 @@ public class PostQueryRepository {
     };
   }
 
-  public CursorPaginationDataFetcher<PostDto> getCommentedPosts(Long userId) {
+  public CursorPaginationDataFetcher<PostDto> getCommentedPosts(Long userId, String projectHandle) {
     return (condition, orderFields, size) -> {
       var commentedPosts =
           dsl.select(COMMENTS.POST_ID.as("postId"), DSL.max(COMMENTS.CREATED_AT).as("commentedAt"))
@@ -171,13 +171,18 @@ public class PostQueryRepository {
               .groupBy(COMMENTS.POST_ID)
               .asTable(DSL.name("commented_posts"));
 
+      Condition commentedCondition = condition.and(Conditions.visibleCondition());
+      if (projectHandle != null) {
+        commentedCondition = commentedCondition.and(PROJECTS.HANDLE.eq(projectHandle));
+      }
+
       return dsl.select(post(userId, COMMENTED_AT))
           .from(commentedPosts)
           .join(POSTS)
           .on(POSTS.ID.eq(DSL.field(DSL.name("commented_posts", "postId"), Long.class)))
           .leftJoin(PROJECTS)
           .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
-          .where(condition.and(Conditions.visibleCondition()))
+          .where(commentedCondition)
           .orderBy(orderFields)
           .limit(size)
           .fetchInto(PostDto.class);

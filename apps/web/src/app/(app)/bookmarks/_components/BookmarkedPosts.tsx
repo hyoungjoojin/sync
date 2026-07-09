@@ -5,8 +5,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useGetBookmarkedPostsInfinite } from '@/api/__generated__/bookmark/bookmark';
 import { useGetProjectsByUser } from '@/api/__generated__/project/project';
-import InfinitePostList from '@/components/feature/post/viewer/InfinitePostList';
-import { toPostPreviewProps } from '@/components/feature/post/viewer/PostPreview';
+import PostList from '@/components/feature/post/viewer/PostList';
+import { toPostViewSource } from '@/components/feature/post/viewer/types';
 import {
   Empty,
   EmptyDescription,
@@ -81,8 +81,8 @@ export default function BookmarkedPosts() {
         onScopeChange={handleScopeChange}
       />
 
-      <InfinitePostList
-        posts={posts.map((post) => toPostPreviewProps(post.content))}
+      <PostList
+        items={posts.map((post) => toPostViewSource(post.content))}
         isPending={isPending}
         hasNextPage={!!hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
