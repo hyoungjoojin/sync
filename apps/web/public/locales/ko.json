@@ -825,9 +825,25 @@
         "follow": "팔로우",
         "unfollow": "언팔로우",
         "message": "메시지 보내기",
+        "followers": "팔로워",
+        "following": "팔로잉",
         "contacts": {
           "show-more": "연락처 더 보기",
           "show-less": "연락처 접기"
+        }
+      },
+      "connections": {
+        "tabs": {
+          "followers": "팔로워",
+          "following": "팔로잉"
+        },
+        "followers": {
+          "empty": "아직 팔로워가 없습니다.",
+          "error": "팔로워 목록을 불러오는 중 오류가 발생했습니다."
+        },
+        "following": {
+          "empty": "아직 팔로우한 사용자가 없습니다.",
+          "error": "팔로잉 목록을 불러오는 중 오류가 발생했습니다."
         }
       },
       "experience": {

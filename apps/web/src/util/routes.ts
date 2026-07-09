@@ -51,6 +51,8 @@ const ROUTES = {
   BOOKMARKS: () => '/bookmarks',
   COOKIES: () => '/cookies',
   PROFILE: (handle: string) => `/@${handle}`,
+  PROFILE_FOLLOWERS: (handle: string) => ROUTES.PROFILE(handle) + '/followers',
+  PROFILE_FOLLOWING: (handle: string) => ROUTES.PROFILE(handle) + '/following',
   SEARCH: (query?: string, projectHandle?: string) => {
     if (!query) return '/search';
     const params = new URLSearchParams({ q: query });

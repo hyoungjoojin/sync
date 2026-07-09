@@ -34,7 +34,6 @@ export * from './GetConnectionsResponse';
 export * from './GetConnectionsResponseConnections';
 export * from './GetConnectionsResponseConnectionsNodesItem';
 export * from './GetConnectionsResponseConnectionsNodesItemContent';
-export * from './GetConnectionsResponseConnectionsNodesItemContentSummary';
 export * from './GetConnectionsResponseConnectionsPageInfo';
 export * from './GetFollowersParams';
 export * from './GetFollowingParams';

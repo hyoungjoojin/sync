@@ -1946,9 +1946,8 @@ paths:
                   value: "{\"connections\":{\"pageInfo\":{\"size\":1,\"hasNextPage\"\
                     :false,\"hasPreviousPage\":false,\"startCursor\":\"start-cursor\"\
                     ,\"endCursor\":\"end-cursor\"},\"nodes\":[{\"cursor\":\"cursor\"\
-                    ,\"content\":{\"userId\":\"1\",\"summary\":{\"handle\":\"john-doe\"\
-                    ,\"name\":\"John Doe\",\"profileImageUrl\":\"https://example.com/john.png\"\
-                    }}}]}}"
+                    ,\"content\":{\"handle\":\"john-doe\",\"name\":\"John Doe\",\"\
+                    profileImageUrl\":\"https://example.com/john.png\"}}]}}"
   /users/{userId}/following:
     get:
       tags:
@@ -2001,9 +2000,8 @@ paths:
                   value: "{\"connections\":{\"pageInfo\":{\"size\":1,\"hasNextPage\"\
                     :false,\"hasPreviousPage\":false,\"startCursor\":\"start-cursor\"\
                     ,\"endCursor\":\"end-cursor\"},\"nodes\":[{\"cursor\":\"cursor\"\
-                    ,\"content\":{\"userId\":\"1\",\"summary\":{\"handle\":\"john-doe\"\
-                    ,\"name\":\"John Doe\",\"profileImageUrl\":\"https://example.com/john.png\"\
-                    }}}]}}"
+                    ,\"content\":{\"handle\":\"john-doe\",\"name\":\"John Doe\",\"\
+                    profileImageUrl\":\"https://example.com/john.png\"}}]}}"
   /users/{userId}/posts:
     get:
       tags:
@@ -3205,6 +3203,70 @@ components:
         id:
           type: number
           description: Created comment ID
+    GetConnectionsResponse:
+      title: GetConnectionsResponse
+      type: object
+      properties:
+        connections:
+          required:
+          - nodes
+          - pageInfo
+          type: object
+          properties:
+            nodes:
+              type: array
+              description: Nodes
+              items:
+                required:
+                - content
+                - cursor
+                type: object
+                properties:
+                  cursor:
+                    type: string
+                    description: Node Cursor
+                  content:
+                    required:
+                    - handle
+                    - name
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: 유저 이름
+                      handle:
+                        type: string
+                        description: 유저 핸들
+                      profileImageUrl:
+                        type: string
+                        description: 유저 프로필 이미지 URL
+                        nullable: true
+                    description: Node Content
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                endCursor:
+                  type: string
+                  description: End Cursor
+                  nullable: true
+                startCursor:
+                  type: string
+                  description: Start Cursor
+                  nullable: true
+              description: Page Info
     GetProjectsResponse:
       title: GetProjectsResponse
       required:
@@ -3465,80 +3527,6 @@ components:
           type: string
           description: 신고 상세 설명
           nullable: true
-    GetConnectionsResponse:
-      title: GetConnectionsResponse
-      type: object
-      properties:
-        connections:
-          required:
-          - nodes
-          - pageInfo
-          type: object
-          properties:
-            nodes:
-              type: array
-              description: Nodes
-              items:
-                required:
-                - content
-                - cursor
-                type: object
-                properties:
-                  cursor:
-                    type: string
-                    description: Node Cursor
-                  content:
-                    required:
-                    - summary
-                    - userId
-                    type: object
-                    properties:
-                      summary:
-                        required:
-                        - handle
-                        - name
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                            description: 유저 이름
-                          handle:
-                            type: string
-                            description: 유저 핸들
-                          profileImageUrl:
-                            type: string
-                            description: 유저 프로필 이미지 URL
-                            nullable: true
-                        description: User Summary
-                      userId:
-                        type: string
-                        description: User ID
-                    description: Node Content
-            pageInfo:
-              required:
-              - hasNextPage
-              - hasPreviousPage
-              - size
-              type: object
-              properties:
-                size:
-                  type: number
-                  description: Page Size
-                hasNextPage:
-                  type: boolean
-                  description: Has Next Page
-                hasPreviousPage:
-                  type: boolean
-                  description: Has Previous Page
-                endCursor:
-                  type: string
-                  description: End Cursor
-                  nullable: true
-                startCursor:
-                  type: string
-                  description: Start Cursor
-                  nullable: true
-              description: Page Info
     GetProjectFollowersResponse:
       title: GetProjectFollowersResponse
       type: object

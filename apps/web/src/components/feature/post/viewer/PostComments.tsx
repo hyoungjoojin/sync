@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { useGetPostCommentsInfinite } from '@/api/__generated__/comment/comment';
 import type { GetCommentsResponseCommentsNodesItemContent } from '@/api/__generated__/types';
 import { useCreateComment } from '@/components/feature/post/hooks/useCreateComment';
+import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,13 +35,12 @@ function PostCommentItem({
 
   return (
     <div className="flex items-start gap-3 py-4">
-      <Avatar size="sm">
-        <AvatarImage
-          src={author?.profileImageUrl ?? undefined}
-          alt={author?.name}
-        />
-        <AvatarFallback>{author?.name?.[0] ?? '?'}</AvatarFallback>
-      </Avatar>
+      <ProfileHoverCard
+        handle={author?.handle ?? ''}
+        name={author?.name ?? '?'}
+        imageUrl={author?.profileImageUrl ?? undefined}
+        size="sm"
+      />
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
