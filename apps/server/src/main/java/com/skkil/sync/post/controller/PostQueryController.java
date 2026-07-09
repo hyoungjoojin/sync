@@ -50,6 +50,16 @@ public class PostQueryController {
         user == null ? null : user.userId(), userId, type, pagination);
   }
 
+  @GetMapping("/users/{userId}/posts/commented")
+  @ResponseStatus(HttpStatus.OK)
+  public GetPostsResponse getCommentedPosts(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable Long userId,
+      @Validated CursorPaginationRequest pagination) {
+    return postQueryService.getCommentedPosts(
+        user == null ? null : user.userId(), userId, pagination);
+  }
+
   @GetMapping("/tags/{tagId}/posts")
   @ResponseStatus(HttpStatus.OK)
   public GetPostsResponse getPostsByTag(

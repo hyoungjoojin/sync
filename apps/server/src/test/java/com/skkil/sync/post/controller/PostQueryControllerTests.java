@@ -143,6 +143,40 @@ class PostQueryControllerTests {
   }
 
   @Test
+  @DisplayName("[getCommentedPosts] API 문서화 테스트")
+  void getCommentedPosts() throws Exception {
+    Long userId = 1L;
+
+    CursorPaginationRequest pagination =
+        CursorPaginationRequestSnippets.getCursorPaginationRequest();
+    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+
+    when(postQueryService.getCommentedPosts(any(), eq(userId), eq(pagination)))
+        .thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/users/{userId}/posts/commented", userId)
+                .queryParams(
+                    CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetCommentedPosts",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Get Commented Posts")
+                    .description("Get Commented Posts")
+                    .responseSchema(schema("GetPostsResponse")),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("userId").description("User ID")),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                GetPostsResponseSnippets.getPostsResponseFields()));
+  }
+
+  @Test
   @DisplayName("[getPostsByTag] API 문서화 테스트")
   void getPostsByTag() throws Exception {
     Long tagId = 1L;
