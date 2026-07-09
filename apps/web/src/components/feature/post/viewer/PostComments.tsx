@@ -19,10 +19,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
 
-import { COMMENT_PAGE_SIZE } from './constants';
+import type { PostType } from '../types/post';
+
+export const COMMENT_PAGE_SIZE = '20';
 
 interface PostCommentsProps {
   slug: string;
+  // TODO: comments aren't rendered differently per post type yet — this is
+  // threaded through now so that can change without touching every call site.
+  postType: PostType;
 }
 
 function PostCommentItem({

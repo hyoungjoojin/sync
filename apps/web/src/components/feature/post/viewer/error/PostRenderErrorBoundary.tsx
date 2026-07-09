@@ -6,19 +6,19 @@ import { Component, type ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 
-interface PostErrorBoundaryProps {
+interface PostRenderErrorBoundaryProps {
   children: ReactNode;
 }
 
-interface PostErrorBoundaryState {
+interface PostRenderErrorBoundaryState {
   hasError: boolean;
 }
 
-export default class PostErrorBoundary extends Component<
-  PostErrorBoundaryProps,
-  PostErrorBoundaryState
+export default class PostRenderErrorBoundary extends Component<
+  PostRenderErrorBoundaryProps,
+  PostRenderErrorBoundaryState
 > {
-  constructor(props: PostErrorBoundaryProps) {
+  constructor(props: PostRenderErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }

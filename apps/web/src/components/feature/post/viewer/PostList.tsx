@@ -6,10 +6,11 @@ import { type ReactNode, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 
-import PostPreview, { type PostPreviewProps } from './PostPreview';
+import { PostPreviewCard } from './PostCard';
+import type { PostViewSource } from './types';
 
-interface InfinitePostListProps {
-  posts: PostPreviewProps[];
+interface PostListProps {
+  items: PostViewSource[];
   isPending: boolean;
   isError?: boolean;
   hasNextPage: boolean;
@@ -21,8 +22,8 @@ interface InfinitePostListProps {
   skeletonCount?: number;
 }
 
-export default function InfinitePostList({
-  posts,
+export default function PostList({
+  items,
   isPending,
   isError,
   hasNextPage,
@@ -32,7 +33,7 @@ export default function InfinitePostList({
   error,
   end,
   skeletonCount = 3,
-}: InfinitePostListProps) {
+}: PostListProps) {
   const [ref, entry] = useIntersectionObserver({
     threshold: 0.2,
     root: null,
@@ -59,14 +60,14 @@ export default function InfinitePostList({
     return error;
   }
 
-  if (posts.length === 0) {
+  if (items.length === 0) {
     return empty;
   }
 
   return (
     <div className="space-y-4">
-      {posts.map((post) => (
-        <PostPreview key={post.id} {...post} />
+      {items.map((item) => (
+        <PostPreviewCard key={item.summary.id} source={item} />
       ))}
 
       <div ref={ref} className="py-4">
