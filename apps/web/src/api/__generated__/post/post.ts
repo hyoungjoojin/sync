@@ -29,6 +29,7 @@ import type { ErrorType } from '../../../lib/server';
 import type {
   CreatePostRequest,
   CreatePostResponse,
+  GetCommentedPostsParams,
   GetLikedPostsParams,
   GetPostActivitiesParams,
   GetPostActivitiesResponse,
@@ -3362,6 +3363,428 @@ export function useGetUserPosts<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetUserPostsQueryOptions(userId, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type getCommentedPostsResponse200 = {
+  data: GetPostsResponse;
+  status: 200;
+};
+
+export type getCommentedPostsResponseSuccess = getCommentedPostsResponse200 & {
+  headers: Headers;
+};
+export type getCommentedPostsResponse = getCommentedPostsResponseSuccess;
+
+export const getGetCommentedPostsUrl = (
+  userId: string,
+  params?: GetCommentedPostsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/users/${userId}/posts/commented?${stringifiedParams}`
+    : `/users/${userId}/posts/commented`;
+};
+
+/**
+ * Get Commented Posts
+ * @summary Get Commented Posts
+ */
+export const getCommentedPosts = async (
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: RequestInit,
+): Promise<getCommentedPostsResponse> => {
+  return api<getCommentedPostsResponse>(
+    getGetCommentedPostsUrl(userId, params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetCommentedPostsInfiniteQueryKey = (
+  userId: string,
+  params?: GetCommentedPostsParams,
+) => {
+  return [
+    'infinite',
+    `/users/${userId}/posts/commented`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetCommentedPostsQueryKey = (
+  userId: string,
+  params?: GetCommentedPostsParams,
+) => {
+  return [
+    `/users/${userId}/posts/commented`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetCommentedPostsInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    GetCommentedPostsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData,
+        QueryKey,
+        GetCommentedPostsParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetCommentedPostsInfiniteQueryKey(userId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    QueryKey,
+    GetCommentedPostsParams['after']
+  > = ({ signal, pageParam }) =>
+    getCommentedPosts(
+      userId,
+      { ...params, after: pageParam ?? params?.['after'] },
+      { signal, ...requestOptions },
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: userId !== null && userId !== undefined,
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    TError,
+    TData,
+    QueryKey,
+    GetCommentedPostsParams['after']
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCommentedPostsInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCommentedPosts>>
+>;
+export type GetCommentedPostsInfiniteQueryError = ErrorType<unknown>;
+
+export function useGetCommentedPostsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    GetCommentedPostsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params: undefined | GetCommentedPostsParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData,
+        QueryKey,
+        GetCommentedPostsParams['after']
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommentedPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getCommentedPosts>>,
+          QueryKey
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCommentedPostsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    GetCommentedPostsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData,
+        QueryKey,
+        GetCommentedPostsParams['after']
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommentedPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getCommentedPosts>>,
+          QueryKey
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCommentedPostsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    GetCommentedPostsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData,
+        QueryKey,
+        GetCommentedPostsParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Commented Posts
+ */
+
+export function useGetCommentedPostsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    GetCommentedPostsParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData,
+        QueryKey,
+        GetCommentedPostsParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetCommentedPostsInfiniteQueryOptions(
+    userId,
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetCommentedPostsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCommentedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCommentedPostsQueryKey(userId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCommentedPosts>>
+  > = ({ signal }) =>
+    getCommentedPosts(userId, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: userId !== null && userId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCommentedPosts>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCommentedPostsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCommentedPosts>>
+>;
+export type GetCommentedPostsQueryError = ErrorType<unknown>;
+
+export function useGetCommentedPosts<
+  TData = Awaited<ReturnType<typeof getCommentedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params: undefined | GetCommentedPostsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommentedPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getCommentedPosts>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCommentedPosts<
+  TData = Awaited<ReturnType<typeof getCommentedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommentedPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getCommentedPosts>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCommentedPosts<
+  TData = Awaited<ReturnType<typeof getCommentedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Commented Posts
+ */
+
+export function useGetCommentedPosts<
+  TData = Awaited<ReturnType<typeof getCommentedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  userId: string,
+  params?: GetCommentedPostsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCommentedPosts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetCommentedPostsQueryOptions(
+    userId,
+    params,
+    options,
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

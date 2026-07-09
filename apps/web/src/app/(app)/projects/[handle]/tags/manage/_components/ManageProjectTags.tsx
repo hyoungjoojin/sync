@@ -1,13 +1,18 @@
 'use client';
 
-import { CheckIcon } from '@phosphor-icons/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CheckIcon, PlusIcon } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import z from 'zod';
 
 import {
   getGetProjectTagsQueryKey,
   getGetProjectUnverifiedTagsQueryKey,
+  useCreateProjectTag,
   useGetProjectTags,
   useGetProjectUnverifiedTags,
   useVerifyTag,
@@ -15,6 +20,15 @@ import {
 import { GetTagsResponseTagsItem } from '@/api/__generated__/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Table,
   TableBody,
@@ -27,9 +41,97 @@ import {
 export default function ManageProjectTags() {
   return (
     <div className="space-y-8">
+      <div className="flex justify-end">
+        <CreateProjectTagPopover />
+      </div>
+
       <UnverifiedTagsSection />
       <VerifiedTagsSection />
     </div>
+  );
+}
+
+const CreateProjectTagFormSchema = z.object({
+  name: z.string().trim().min(1),
+});
+
+type CreateProjectTagFormValues = z.infer<typeof CreateProjectTagFormSchema>;
+
+function CreateProjectTagPopover() {
+  const { handle } = useParams<{ handle: string }>();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const form = useForm<CreateProjectTagFormValues>({
+    resolver: zodResolver(CreateProjectTagFormSchema),
+    defaultValues: { name: '' },
+  });
+
+  const { mutate: createProjectTag, isPending } = useCreateProjectTag();
+
+  const onSubmit = form.handleSubmit((values) => {
+    createProjectTag(
+      { handle, data: { name: values.name } },
+      {
+        onSuccess: async (response) => {
+          toast.success(`'${response.data.name}' 태그를 생성했습니다.`);
+          await queryClient.invalidateQueries({
+            queryKey: getGetProjectTagsQueryKey(handle),
+          });
+          form.reset();
+          setOpen(false);
+        },
+        onError: () => {
+          toast.error('태그 생성에 실패했습니다.');
+        },
+      },
+    );
+  });
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button size="sm">
+          <PlusIcon className="h-4 w-4" />새 태그
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent align="end">
+        <PopoverHeader>
+          <PopoverTitle>새 태그 생성</PopoverTitle>
+        </PopoverHeader>
+
+        <form onSubmit={onSubmit} className="flex flex-col gap-3">
+          <FieldGroup>
+            <Field>
+              <FieldLabel>태그 이름</FieldLabel>
+              <Input {...form.register('name')} placeholder="예: java" />
+            </Field>
+          </FieldGroup>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                form.reset();
+                setOpen(false);
+              }}
+            >
+              취소
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!form.formState.isDirty || isPending}
+            >
+              생성
+            </Button>
+          </div>
+        </form>
+      </PopoverContent>
+    </Popover>
   );
 }
 

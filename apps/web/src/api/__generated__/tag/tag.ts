@@ -22,7 +22,12 @@ import type {
 
 import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
-import type { GetTagsResponse, SearchTagsParams } from '../types';
+import type {
+  CreateTagRequest,
+  CreateTagResponse,
+  GetTagsResponse,
+  SearchTagsParams,
+} from '../types';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -203,6 +208,109 @@ export function useGetProjectTags<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+export type createProjectTagResponse201 = {
+  data: CreateTagResponse;
+  status: 201;
+};
+
+export type createProjectTagResponseSuccess = createProjectTagResponse201 & {
+  headers: Headers;
+};
+export type createProjectTagResponse = createProjectTagResponseSuccess;
+
+export const getCreateProjectTagUrl = (handle: string) => {
+  return `/projects/${handle}/tags`;
+};
+
+/**
+ * 프로젝트 태그를 생성합니다. 프로젝트 관리자만 접근할 수 있습니다.
+ * @summary Create Project Tag
+ */
+export const createProjectTag = async (
+  handle: string,
+  createTagRequest?: CreateTagRequest,
+  options?: RequestInit,
+): Promise<createProjectTagResponse> => {
+  return api<createProjectTagResponse>(getCreateProjectTagUrl(handle), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+      ...options?.headers,
+    },
+    body: JSON.stringify(createTagRequest),
+  });
+};
+
+export const getCreateProjectTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProjectTag>>,
+    TError,
+    { handle: string; data?: CreateTagRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProjectTag>>,
+  TError,
+  { handle: string; data?: CreateTagRequest },
+  TContext
+> => {
+  const mutationKey = ['createProjectTag'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProjectTag>>,
+    { handle: string; data?: CreateTagRequest }
+  > = (props) => {
+    const { handle, data } = props ?? {};
+
+    return createProjectTag(handle, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProjectTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProjectTag>>
+>;
+export type CreateProjectTagMutationBody = CreateTagRequest | undefined;
+export type CreateProjectTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create Project Tag
+ */
+export const useCreateProjectTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createProjectTag>>,
+      TError,
+      { handle: string; data?: CreateTagRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createProjectTag>>,
+  TError,
+  { handle: string; data?: CreateTagRequest },
+  TContext
+> => {
+  return useMutation(getCreateProjectTagMutationOptions(options), queryClient);
+};
 export type getProjectUnverifiedTagsResponse200 = {
   data: GetTagsResponse;
   status: 200;
@@ -555,6 +663,105 @@ export function useSearchTags<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+export type createTagResponse201 = {
+  data: CreateTagResponse;
+  status: 201;
+};
+
+export type createTagResponseSuccess = createTagResponse201 & {
+  headers: Headers;
+};
+export type createTagResponse = createTagResponseSuccess;
+
+export const getCreateTagUrl = () => {
+  return `/tags`;
+};
+
+/**
+ * 전역 태그를 생성합니다. 관리자만 접근할 수 있습니다.
+ * @summary Create Tag
+ */
+export const createTag = async (
+  createTagRequest?: CreateTagRequest,
+  options?: RequestInit,
+): Promise<createTagResponse> => {
+  return api<createTagResponse>(getCreateTagUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+      ...options?.headers,
+    },
+    body: JSON.stringify(createTagRequest),
+  });
+};
+
+export const getCreateTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTag>>,
+    TError,
+    { data?: CreateTagRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTag>>,
+  TError,
+  { data?: CreateTagRequest },
+  TContext
+> => {
+  const mutationKey = ['createTag'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTag>>,
+    { data?: CreateTagRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createTag(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createTag>>
+>;
+export type CreateTagMutationBody = CreateTagRequest | undefined;
+export type CreateTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create Tag
+ */
+export const useCreateTag = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createTag>>,
+      TError,
+      { data?: CreateTagRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createTag>>,
+  TError,
+  { data?: CreateTagRequest },
+  TContext
+> => {
+  return useMutation(getCreateTagMutationOptions(options), queryClient);
+};
 export type getUnverifiedTagsResponse200 = {
   data: GetTagsResponse;
   status: 200;
