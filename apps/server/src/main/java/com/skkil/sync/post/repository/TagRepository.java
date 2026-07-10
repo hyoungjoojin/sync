@@ -74,6 +74,9 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
   Optional<Tag> findByNameAndProject(String name, Project project);
 
+
+  boolean existsByProjectIsNull();
+
   @Modifying
   @Query(
       """

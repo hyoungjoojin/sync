@@ -36,14 +36,18 @@ public class Tag extends BaseEntity {
   protected Tag() {}
 
   @Builder
-  public Tag(String name, Project project) {
+  public Tag(String name, String description, Project project) {
     this.name = name;
-    this.description = "";
+    this.description = description;
     this.postCount = 0L;
     this.project = project;
   }
 
   public void verify() {
     this.verified = true;
+  }
+
+  public void updateDescription(String description) {
+    this.description = description;
   }
 }

@@ -1,4 +1,4 @@
-package com.skkil.sync.common.devtools.seed;
+package com.skkil.sync.common.seeder;
 
 import com.skkil.sync.comment.dto.request.CreateCommentRequest;
 import com.skkil.sync.comment.service.CommentService;

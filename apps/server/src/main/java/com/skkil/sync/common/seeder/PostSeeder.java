@@ -1,4 +1,4 @@
-package com.skkil.sync.common.devtools.seed;
+package com.skkil.sync.common.seeder;
 
 import com.skkil.sync.post.dto.request.CreatePostRequest;
 import com.skkil.sync.post.model.Post;

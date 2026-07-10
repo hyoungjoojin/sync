@@ -1,4 +1,4 @@
-package com.skkil.sync.common.devtools.seed;
+package com.skkil.sync.common.seeder;
 
 import com.skkil.sync.common.util.text.Slugify;
 import com.skkil.sync.post.model.PostType;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Profile("dev")
 @ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 @Slf4j
-class DataSeeder implements ApplicationRunner {
+class DevDataSeeder implements ApplicationRunner {
 
   private static final long RANDOM_SEED = 42L;
   private static final int USER_COUNT = 60;
@@ -33,29 +33,6 @@ class DataSeeder implements ApplicationRunner {
   private static final int USER_FOLLOW_COUNT = 100;
   private static final int PROJECT_FOLLOW_COUNT = 60;
 
-  private static final List<String> TAG_POOL =
-      List.of(
-          "spring-boot",
-          "react",
-          "typescript",
-          "postgresql",
-          "docker",
-          "kubernetes",
-          "next-js",
-          "java",
-          "python",
-          "machine-learning",
-          "design-system",
-          "ux",
-          "graphql",
-          "websocket",
-          "aws",
-          "ci-cd",
-          "testing",
-          "recipe-app",
-          "mobile",
-          "startup");
-
   private final UserRepository userRepository;
   private final UserSeeder userSeeder;
   private final ProjectSeeder projectSeeder;
@@ -64,7 +41,7 @@ class DataSeeder implements ApplicationRunner {
   private final String testAccountEmail;
   private final String testAccountPassword;
 
-  DataSeeder(
+  DevDataSeeder(
       UserRepository userRepository,
       UserSeeder userSeeder,
       ProjectSeeder projectSeeder,
@@ -153,10 +130,9 @@ class DataSeeder implements ApplicationRunner {
       String title = faker.lorem().sentence(random.nextInt(6) + 3);
       PostType type = postTypes[random.nextInt(postTypes.length)];
       String content = faker.lorem().paragraph(random.nextInt(4) + 2);
-      List<String> tags = randomTags(random);
       String projectHandle = random.nextBoolean() ? randomElement(projectHandles, random) : null;
 
-      String slug = postSeeder.seed(author, title, type, content, tags, projectHandle);
+      String slug = postSeeder.seed(author, title, type, content, List.of(), projectHandle);
       if (projectHandle == null) {
         publicPostSlugs.add(slug);
       }
@@ -196,18 +172,6 @@ class DataSeeder implements ApplicationRunner {
       String projectHandle = randomElement(projectHandles, random);
       socialGraphSeeder.followProject(follower, projectHandle);
     }
-  }
-
-  private List<String> randomTags(Random random) {
-    int tagCount = random.nextInt(3) + 1;
-    List<String> tags = new ArrayList<>(tagCount);
-    for (int i = 0; i < tagCount; i++) {
-      String tag = randomElement(TAG_POOL, random);
-      if (!tags.contains(tag)) {
-        tags.add(tag);
-      }
-    }
-    return tags;
   }
 
   private String uniqueHandle(Faker faker) {

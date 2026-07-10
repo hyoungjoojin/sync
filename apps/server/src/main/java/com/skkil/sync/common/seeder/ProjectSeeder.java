@@ -1,4 +1,4 @@
-package com.skkil.sync.common.devtools.seed;
+package com.skkil.sync.common.seeder;
 
 import com.skkil.sync.project.dto.request.AddTeammateRequest;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
