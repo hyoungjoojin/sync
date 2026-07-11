@@ -15,12 +15,14 @@ import com.skkil.sync.user.repository.UserRepository;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Service
+@Slf4j
 public class EmailVerificationService {
 
   private final UserRepository userRepository;
@@ -48,6 +50,7 @@ public class EmailVerificationService {
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     if (user.isVerified()) {
+      log.debug("User {} has already verified their email.", userId);
       throw new EmailAlreadyVerifiedException();
     }
 
@@ -80,6 +83,7 @@ public class EmailVerificationService {
             .text(templateEngine.process("email/verify-email", context))
             .build();
 
+    log.debug("Sending email verification to user {} with token {}", userId, token.getToken());
     emailService.sendMessage(email);
   }
 
