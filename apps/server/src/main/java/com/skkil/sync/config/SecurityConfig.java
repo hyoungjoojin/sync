@@ -77,6 +77,7 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/users/**",
                         "/profiles/me",
+                        "/profiles/me/**",
                         "/media/**",
                         "/providers/my/**",
                         "/preferences/**")
