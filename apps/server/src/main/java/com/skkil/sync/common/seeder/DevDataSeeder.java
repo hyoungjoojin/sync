@@ -6,7 +6,9 @@ import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -71,9 +73,10 @@ class DevDataSeeder implements ApplicationRunner {
     Random random = new Random(RANDOM_SEED);
 
     List<User> users = seedUsers(faker, random);
-    List<String> projectHandles = seedProjects(faker, random, users);
-    List<String> publicPostSlugs = seedPosts(faker, random, users, projectHandles);
-    seedSocialGraph(faker, random, users, projectHandles, publicPostSlugs);
+    Map<String, List<User>> projectMembers = seedProjects(faker, random, users);
+    List<String> publicPostSlugs = seedPosts(faker, random, users, projectMembers);
+    seedSocialGraph(
+        faker, random, users, new ArrayList<>(projectMembers.keySet()), publicPostSlugs);
 
     log.info("Finished seeding local dev data");
   }
@@ -96,8 +99,8 @@ class DevDataSeeder implements ApplicationRunner {
     return users;
   }
 
-  private List<String> seedProjects(Faker faker, Random random, List<User> users) {
-    List<String> projectHandles = new ArrayList<>(PROJECT_COUNT);
+  private Map<String, List<User>> seedProjects(Faker faker, Random random, List<User> users) {
+    Map<String, List<User>> projectMembers = new LinkedHashMap<>(PROJECT_COUNT);
     for (int i = 0; i < PROJECT_COUNT; i++) {
       User owner = randomElement(users, random);
       String handle = "project" + i;
@@ -105,32 +108,40 @@ class DevDataSeeder implements ApplicationRunner {
       String description = faker.lorem().sentence(random.nextInt(15) + 8);
 
       projectSeeder.seed(owner, handle, name, description);
-      projectHandles.add(handle);
 
-      int teammateCount = random.nextInt(3) + 1;
+      List<User> members = new ArrayList<>();
+      members.add(owner);
       Set<Long> teammateIds = new HashSet<>();
       teammateIds.add(owner.getId());
+
+      int teammateCount = random.nextInt(3) + 1;
       for (int j = 0; j < teammateCount; j++) {
         User teammate = randomElement(users, random);
         if (teammateIds.add(teammate.getId())) {
           projectSeeder.addTeammate(owner, handle, teammate.getHandle());
+          members.add(teammate);
         }
       }
+      projectMembers.put(handle, members);
     }
-    return projectHandles;
+    return projectMembers;
   }
 
   private List<String> seedPosts(
-      Faker faker, Random random, List<User> users, List<String> projectHandles) {
+      Faker faker, Random random, List<User> users, Map<String, List<User>> projectMembers) {
     List<String> publicPostSlugs = new ArrayList<>(POST_COUNT);
+    List<String> projectHandles = new ArrayList<>(projectMembers.keySet());
     PostType[] postTypes = PostType.values();
 
     for (int i = 0; i < POST_COUNT; i++) {
-      User author = randomElement(users, random);
       String title = faker.lorem().sentence(random.nextInt(6) + 3);
       PostType type = postTypes[random.nextInt(postTypes.length)];
       String content = faker.lorem().paragraph(random.nextInt(4) + 2);
       String projectHandle = random.nextBoolean() ? randomElement(projectHandles, random) : null;
+      User author =
+          projectHandle == null
+              ? randomElement(users, random)
+              : randomElement(projectMembers.get(projectHandle), random);
 
       String slug = postSeeder.seed(author, title, type, content, List.of(), projectHandle);
       if (projectHandle == null) {

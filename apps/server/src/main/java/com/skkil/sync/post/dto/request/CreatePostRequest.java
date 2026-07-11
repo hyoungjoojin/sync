@@ -1,10 +1,12 @@
 package com.skkil.sync.post.dto.request;
 
+import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.Builder;
 
@@ -14,10 +16,10 @@ public record CreatePostRequest(
     @NotNull PostType type,
     PostStatus status,
     @Valid @NotNull Content content,
-    List<String> tags,
-    @Valid Project project) {
+    List<String> tags) {
 
-  public static record Content(@NotBlank String text, @NotBlank String json, List<Long> mediaIds) {}
-
-  public static record Project(@NotBlank String handle) {}
+  public static record Content(
+      @NotBlank @Size(max = PostConstants.MAX_CONTENT_TEXT_LENGTH) String text,
+      @NotBlank @Size(max = PostConstants.MAX_CONTENT_JSON_LENGTH) String json,
+      List<Long> mediaIds) {}
 }

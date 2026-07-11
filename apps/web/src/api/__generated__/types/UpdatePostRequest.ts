@@ -6,6 +6,8 @@
  */
 
 export interface UpdatePostRequest {
+  /** 일반 텍스트 콘텐츠 */
+  text: string;
   /** Content */
   content: string;
 }

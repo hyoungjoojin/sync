@@ -2,3 +2,5 @@
 
 *.playwright-mcp
 wireframe.zip
+
+docs/plans/**/*

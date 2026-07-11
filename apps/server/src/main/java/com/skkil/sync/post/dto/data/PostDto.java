@@ -17,7 +17,7 @@ public record PostDto(
     @Nullable String projectDescription,
     @Nullable String projectWebsite,
     @Nullable Boolean projectIsPublic,
-    String content,
+    @Nullable String content,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,
     Long likeCount,
@@ -25,4 +25,7 @@ public record PostDto(
     Boolean liked,
     Boolean bookmarked,
     Boolean resolved,
+    String preview,
+    int mediaCount,
+    int wordCount,
     @Nullable OffsetDateTime sortKey) {}

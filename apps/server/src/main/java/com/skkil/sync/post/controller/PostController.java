@@ -2,6 +2,7 @@ package com.skkil.sync.post.controller;
 
 import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.post.dto.request.CreatePostRequest;
+import com.skkil.sync.post.dto.request.CreateProjectPostRequest;
 import com.skkil.sync.post.dto.request.UpdatePostRequest;
 import com.skkil.sync.post.dto.request.UpdatePostSummaryRequest;
 import com.skkil.sync.post.dto.response.CreatePostResponse;
@@ -32,6 +33,15 @@ public class PostController {
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestBody @Validated CreatePostRequest request) {
     return postService.createPost(user.userId(), request);
+  }
+
+  @PostMapping("/projects/{handle}/posts")
+  @ResponseStatus(HttpStatus.CREATED)
+  public CreatePostResponse createProjectPost(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable String handle,
+      @RequestBody @Validated CreateProjectPostRequest request) {
+    return postService.createProjectPost(user.userId(), handle, request);
   }
 
   @PatchMapping("/posts/{postId}")

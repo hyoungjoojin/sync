@@ -17,7 +17,7 @@ import { PostStatus, PostType } from '../types/post';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTemplates } from './components/EditorTemplates';
 import { PostTypeSelector } from './components/PostTypeSelector';
-import { TagInput } from './components/TagInput';
+import { TagInput, TagValue } from './components/TagInput';
 import { CommandsExtension } from './extensions/commands';
 import { ImageNode } from './extensions/nodes/image';
 import { serialize } from './utils/serializer';
@@ -34,7 +34,7 @@ interface PostEditorProps {
     type: PostType;
     status: PostStatus;
     tags: string[];
-    project?: { handle: string };
+    projectTags: string[];
     content: {
       json: string;
       text: string;
@@ -71,7 +71,7 @@ export default function PostEditor({
 
   const [type, setType] = useState<PostType>(initialType);
   const [title, setTitle] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<TagValue[]>([]);
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
@@ -148,8 +148,10 @@ export default function PostEditor({
       title,
       type,
       status,
-      tags,
-      project: project ? { handle: project.handle } : undefined,
+      tags: tags.filter((tag) => !tag.isProjectTag).map((tag) => tag.name),
+      projectTags: tags
+        .filter((tag) => tag.isProjectTag)
+        .map((tag) => tag.name),
       content: serialize(editor),
     });
   };
@@ -242,6 +244,7 @@ export default function PostEditor({
           tags={tags}
           onChange={setTags}
           accentRing={ACCENT_RING[type]}
+          projectHandle={project?.handle}
         />
       </section>
 

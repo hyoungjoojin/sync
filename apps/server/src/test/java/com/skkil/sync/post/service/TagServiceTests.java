@@ -9,17 +9,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.skkil.sync.post.dto.request.CreateTagRequest;
+import com.skkil.sync.post.dto.request.MergeTagsRequest;
 import com.skkil.sync.post.dto.response.CreateTagResponse;
 import com.skkil.sync.post.exception.PostTagLimitExceededException;
 import com.skkil.sync.post.exception.TagAlreadyExistsException;
+import com.skkil.sync.post.exception.TagNotFoundException;
+import com.skkil.sync.post.exception.TagPoolMismatchException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Post;
 import com.skkil.sync.post.model.Tag;
+import com.skkil.sync.post.repository.TagFollowRelationshipRepository;
 import com.skkil.sync.post.repository.TagRepository;
 import com.skkil.sync.project.model.Project;
 import com.skkil.sync.project.service.ProjectDomainService;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +36,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TagServiceTests {
 
   @Mock private TagRepository tagRepository;
+
+  @Mock private TagFollowRelationshipRepository tagFollowRelationshipRepository;
 
   @Mock private ProjectDomainService projectDomainService;
 
@@ -44,7 +51,7 @@ class TagServiceTests {
     Post post = Post.builder().slug("slug").title("제목").content("내용").build();
     List<String> tags = List.of("tag1", "tag2", "tag3", "tag4", "tag5", "tag6");
 
-    assertThatThrownBy(() -> tagService.addTagsToPost(post, null, tags))
+    assertThatThrownBy(() -> tagService.addTagsToPost(post, null, tags, List.of()))
         .isInstanceOf(PostTagLimitExceededException.class);
   }
 
@@ -56,7 +63,7 @@ class TagServiceTests {
 
     when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(existingTag));
 
-    tagService.addTagsToPost(post, null, List.of("java"));
+    tagService.addTagsToPost(post, null, List.of("java"), List.of());
 
     verify(tagRepository, never()).save(any(Tag.class));
   }
@@ -70,7 +77,7 @@ class TagServiceTests {
     when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.empty());
     when(tagRepository.save(any(Tag.class))).thenReturn(newTag);
 
-    tagService.addTagsToPost(post, null, List.of("spring"));
+    tagService.addTagsToPost(post, null, List.of("spring"), List.of());
 
     verify(tagRepository, times(1)).save(any(Tag.class));
   }
@@ -85,7 +92,7 @@ class TagServiceTests {
     when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(tag1));
     when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.of(tag2));
 
-    tagService.addTagsToPost(post, null, List.of("java", "spring"));
+    tagService.addTagsToPost(post, null, List.of("java", "spring"), List.of());
 
     verify(tagRepository, times(1)).incrementPostCount(tag1);
     verify(tagRepository, times(1)).incrementPostCount(tag2);
@@ -101,7 +108,7 @@ class TagServiceTests {
     when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(tag1));
     when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.of(tag2));
 
-    tagService.addTagsToPost(post, null, List.of("java", "spring"));
+    tagService.addTagsToPost(post, null, List.of("java", "spring"), List.of());
 
     assertThat(post.getTags()).hasSize(2);
   }
@@ -116,7 +123,7 @@ class TagServiceTests {
     when(tagRepository.findByNameAndProject("java", project)).thenReturn(Optional.empty());
     when(tagRepository.save(any(Tag.class))).thenReturn(newTag);
 
-    tagService.addTagsToPost(post, project, List.of("java"));
+    tagService.addTagsToPost(post, project, List.of(), List.of("java"));
 
     verify(tagRepository, never()).findByNameAndProjectIsNull(any());
     verify(tagRepository, times(1)).save(any(Tag.class));
@@ -186,5 +193,104 @@ class TagServiceTests {
         .isInstanceOf(TagAlreadyExistsException.class);
 
     verify(tagRepository, never()).save(any(Tag.class));
+  }
+
+  @Test
+  @DisplayName("[searchTags] 팔로우한 태그 ID 집합을 조회하여 각 태그의 isFollowing 매핑에 사용")
+  void searchTags_buildsFollowedTagIdsOnce() {
+    String query = "java";
+    Set<Long> followedTagIds = Set.of(5L);
+
+    when(tagFollowRelationshipRepository.findTagIdsByFollowerId(1L)).thenReturn(followedTagIds);
+    when(tagRepository.searchTags(query)).thenReturn(List.of());
+
+    tagService.searchTags(1L, null, query);
+
+    verify(tagFollowRelationshipRepository, times(1)).findTagIdsByFollowerId(1L);
+  }
+
+  @Test
+  @DisplayName("[rejectTag] 전역 태그를 삭제")
+  void rejectTag_deletesTag() {
+    String name = "java";
+    Tag tag = Tag.builder().name(name).build();
+
+    when(tagRepository.findByNameAndProjectIsNull(name)).thenReturn(Optional.of(tag));
+
+    tagService.rejectTag(name);
+
+    verify(tagRepository, times(1)).delete(tag);
+  }
+
+  @Test
+  @DisplayName("[rejectProjectTag] 요청한 프로젝트 소유의 태그를 삭제")
+  void rejectProjectTag_ownTag_deletesTag() {
+    String name = "java";
+    String handle = "my-project";
+    Project project = Project.builder().handle(handle).name("My Project").build();
+    Tag tag = Tag.builder().name(name).project(project).build();
+
+    when(projectDomainService.getProjectByHandle(handle)).thenReturn(project);
+    when(tagRepository.findByNameAndProject(name, project)).thenReturn(Optional.of(tag));
+
+    tagService.rejectProjectTag(handle, name);
+
+    verify(tagRepository, times(1)).delete(tag);
+  }
+
+  @Test
+  @DisplayName("[rejectProjectTag] 다른 프로젝트 소유의 태그를 삭제하려 하면 TagNotFoundException 예외 발생")
+  void rejectProjectTag_otherProjectsTag_throwsException() {
+    String name = "java";
+    String handle = "my-project";
+    Project project = Project.builder().handle(handle).name("My Project").build();
+
+    when(projectDomainService.getProjectByHandle(handle)).thenReturn(project);
+    when(tagRepository.findByNameAndProject(name, project)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> tagService.rejectProjectTag(handle, name))
+        .isInstanceOf(TagNotFoundException.class);
+
+    verify(tagRepository, never()).delete(any(Tag.class));
+  }
+
+  @Test
+  @DisplayName("[mergeTags] 동일한 풀에 속한 두 태그를 병합")
+  void mergeTags_samePool_mergesTags() {
+    Long sourceId = 1L;
+    Long targetId = 2L;
+    Tag source = Tag.builder().name("java").build();
+    Tag target = Tag.builder().name("Java").build();
+
+    when(tagRepository.findByIdWithProject(sourceId)).thenReturn(Optional.of(source));
+    when(tagRepository.findByIdWithProject(targetId)).thenReturn(Optional.of(target));
+
+    tagService.mergeTags(new MergeTagsRequest(sourceId, targetId));
+
+    verify(tagRepository, times(1)).deleteDuplicatePostTags(sourceId, targetId);
+    verify(tagRepository, times(1)).reassignPostTags(sourceId, targetId);
+    verify(tagRepository, times(1)).deleteDuplicateTagFollows(sourceId, targetId);
+    verify(tagRepository, times(1)).reassignTagFollows(sourceId, targetId);
+    verify(tagRepository, times(1)).recomputeCounts(targetId);
+    verify(tagRepository, times(1)).delete(source);
+  }
+
+  @Test
+  @DisplayName("[mergeTags] 서로 다른 풀에 속한 태그를 병합하려 하면 TagPoolMismatchException 예외 발생")
+  void mergeTags_differentPools_throwsException() {
+    Long sourceId = 1L;
+    Long targetId = 2L;
+    Project project = Project.builder().handle("my-project").name("My Project").build();
+    Tag source = Tag.builder().name("java").build();
+    Tag target = Tag.builder().name("java").project(project).build();
+
+    when(tagRepository.findByIdWithProject(sourceId)).thenReturn(Optional.of(source));
+    when(tagRepository.findByIdWithProject(targetId)).thenReturn(Optional.of(target));
+
+    assertThatThrownBy(() -> tagService.mergeTags(new MergeTagsRequest(sourceId, targetId)))
+        .isInstanceOf(TagPoolMismatchException.class);
+
+    verify(tagRepository, never()).deleteDuplicatePostTags(any(), any());
+    verify(tagRepository, never()).delete(any(Tag.class));
   }
 }

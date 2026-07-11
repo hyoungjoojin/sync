@@ -2,6 +2,7 @@ package com.skkil.sync.common.seeder;
 
 import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.user.model.User;
+import java.util.function.Supplier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -17,6 +18,15 @@ final class SeedSecurityContext {
   private SeedSecurityContext() {}
 
   static void runAs(User user, Runnable action) {
+    runAs(
+        user,
+        () -> {
+          action.run();
+          return null;
+        });
+  }
+
+  static <T> T runAs(User user, Supplier<T> action) {
     AuthenticatedUser principal =
         new AuthenticatedUser(
             user.getId(), user.getFullName(), user.getEmail(), null, user.getRole());
@@ -28,7 +38,7 @@ final class SeedSecurityContext {
     context.setAuthentication(authentication);
     SecurityContextHolder.setContext(context);
     try {
-      action.run();
+      return action.get();
     } finally {
       SecurityContextHolder.clearContext();
     }

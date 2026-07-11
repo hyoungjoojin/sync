@@ -24,11 +24,13 @@ import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
 import com.skkil.sync.config.SecurityConfig;
 import com.skkil.sync.post.dto.request.CreatePostRequest;
+import com.skkil.sync.post.dto.request.CreateProjectPostRequest;
 import com.skkil.sync.post.dto.request.UpdatePostRequest;
 import com.skkil.sync.post.dto.response.CreatePostResponse;
 import com.skkil.sync.post.service.PostService;
 import com.skkil.sync.post.snippets.CreatePostRequestSnippets;
 import com.skkil.sync.post.snippets.CreatePostResponseSnippets;
+import com.skkil.sync.post.snippets.CreateProjectPostRequestSnippets;
 import com.skkil.sync.post.snippets.UpdatePostRequestSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
@@ -88,6 +90,43 @@ class PostControllerTests {
                 preprocessResponse(prettyPrint()),
                 Function.identity(),
                 CreatePostRequestSnippets.getCreatePostRequestFields(),
+                CreatePostResponseSnippets.getCreatePostResponseFields()));
+  }
+
+  @Test
+  @DisplayName("[createProjectPost] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void createProjectPost() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    String handle = "project-handle";
+    CreateProjectPostRequest request =
+        CreateProjectPostRequestSnippets.getCreateProjectPostRequest();
+    CreatePostResponse response = CreatePostResponseSnippets.getCreatePostResponse();
+
+    when(postService.createProjectPost(eq(user.userId()), eq(handle), eq(request)))
+        .thenReturn(response);
+
+    mockMvc
+        .perform(
+            post("/projects/{handle}/posts", handle)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andDo(
+            document(
+                "CreateProjectPost",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Create Project Post")
+                    .description("프로젝트에 글을 작성합니다.")
+                    .responseSchema(schema(CreatePostResponse.class.getSimpleName()))
+                    .requestSchema(schema(CreateProjectPostRequest.class.getSimpleName())),
+                preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
+                preprocessResponse(prettyPrint()),
+                Function.identity(),
+                pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
+                CreateProjectPostRequestSnippets.getCreateProjectPostRequestFields(),
                 CreatePostResponseSnippets.getCreatePostResponseFields()));
   }
 

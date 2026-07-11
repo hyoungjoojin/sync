@@ -10,11 +10,12 @@ import org.springframework.restdocs.payload.RequestFieldsSnippet;
 public class UpdatePostRequestSnippets {
 
   public static UpdatePostRequest getUpdatePostRequest() {
-    return new UpdatePostRequest("This is a post content.");
+    return new UpdatePostRequest("This is a post content.", "This is a post content.");
   }
 
   public static RequestFieldsSnippet getUpdatePostRequestFields() {
     return requestFields(
-        fieldWithPath("content").type(JsonFieldType.STRING).description("Content"));
+        fieldWithPath("content").type(JsonFieldType.STRING).description("Content"),
+        fieldWithPath("text").type(JsonFieldType.STRING).description("일반 텍스트 콘텐츠"));
   }
 }

@@ -29,6 +29,7 @@ import type { ErrorType } from '../../../lib/server';
 import type {
   CreatePostRequest,
   CreatePostResponse,
+  CreateProjectPostRequest,
   GetCommentedPostsParams,
   GetLikedPostsParams,
   GetPostActivitiesParams,
@@ -2426,6 +2427,108 @@ export function useGetPostsByProject<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+export type createProjectPostResponse201 = {
+  data: CreatePostResponse;
+  status: 201;
+};
+
+export type createProjectPostResponseSuccess = createProjectPostResponse201 & {
+  headers: Headers;
+};
+export type createProjectPostResponse = createProjectPostResponseSuccess;
+
+export const getCreateProjectPostUrl = (handle: string) => {
+  return `/projects/${handle}/posts`;
+};
+
+/**
+ * 프로젝트에 글을 작성합니다.
+ * @summary Create Project Post
+ */
+export const createProjectPost = async (
+  handle: string,
+  createProjectPostRequest?: CreateProjectPostRequest,
+  options?: RequestInit,
+): Promise<createProjectPostResponse> => {
+  return api<createProjectPostResponse>(getCreateProjectPostUrl(handle), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createProjectPostRequest),
+  });
+};
+
+export const getCreateProjectPostMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProjectPost>>,
+    TError,
+    { handle: string; data?: CreateProjectPostRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProjectPost>>,
+  TError,
+  { handle: string; data?: CreateProjectPostRequest },
+  TContext
+> => {
+  const mutationKey = ['createProjectPost'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProjectPost>>,
+    { handle: string; data?: CreateProjectPostRequest }
+  > = (props) => {
+    const { handle, data } = props ?? {};
+
+    return createProjectPost(handle, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProjectPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProjectPost>>
+>;
+export type CreateProjectPostMutationBody =
+  | CreateProjectPostRequest
+  | undefined;
+export type CreateProjectPostMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create Project Post
+ */
+export const useCreateProjectPost = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createProjectPost>>,
+      TError,
+      { handle: string; data?: CreateProjectPostRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createProjectPost>>,
+  TError,
+  { handle: string; data?: CreateProjectPostRequest },
+  TContext
+> => {
+  return useMutation(getCreateProjectPostMutationOptions(options), queryClient);
+};
 export type searchPostsResponse200 = {
   data: SearchPostsResponse;
   status: 200;

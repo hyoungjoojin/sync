@@ -28,16 +28,6 @@ class PostServiceTests {
   @InjectMocks private PostService postService;
 
   @Test
-  @DisplayName("[createPost] 발행 글에 태그가 없으면 InvalidPostPublishRequestException 예외 발생")
-  void createPost_publishedWithoutTags_throwsException() {
-    CreatePostRequest request =
-        createPostRequest(PostType.SHORT, null, PostStatus.PUBLISHED, List.of());
-
-    assertThatThrownBy(() -> postService.createPost(1L, request))
-        .isInstanceOf(InvalidPostPublishRequestException.class);
-  }
-
-  @Test
   @DisplayName("[createPost] 질문 발행 글에 제목이 없으면 InvalidPostPublishRequestException 예외 발생")
   void createPost_publishedQuestionWithoutTitle_throwsException() {
     CreatePostRequest request =

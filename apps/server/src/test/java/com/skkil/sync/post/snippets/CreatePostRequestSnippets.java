@@ -24,7 +24,6 @@ public class CreatePostRequestSnippets {
         .status(PostStatus.PUBLISHED)
         .content(content)
         .tags(List.of("java", "spring"))
-        .project(new CreatePostRequest.Project("project-handle"))
         .build();
   }
 
@@ -47,11 +46,6 @@ public class CreatePostRequestSnippets {
             .type(JsonFieldType.ARRAY)
             .description("사용된 미디어 ID 목록")
             .optional(),
-        fieldWithPath("tags").type(JsonFieldType.ARRAY).description("태그 목록").optional(),
-        fieldWithPath("project").type(JsonFieldType.OBJECT).description("프로젝트").optional(),
-        fieldWithPath("project.handle")
-            .type(JsonFieldType.STRING)
-            .description("프로젝트 핸들")
-            .optional());
+        fieldWithPath("tags").type(JsonFieldType.ARRAY).description("태그 목록").optional());
   }
 }
