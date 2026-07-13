@@ -27,6 +27,8 @@ import type {
   CreateTagResponse,
   GetAllTagsParams,
   GetAllTagsResponse,
+  GetTagRecommendationsParams,
+  GetTagRecommendationsResponse,
   GetTagsResponse,
   MergeTagsRequest,
   SearchTagsParams,
@@ -1329,6 +1331,203 @@ export const useMergeTags = <TError = ErrorType<unknown>, TContext = unknown>(
 > => {
   return useMutation(getMergeTagsMutationOptions(options), queryClient);
 };
+export type getTagRecommendationsResponse200 = {
+  data: GetTagRecommendationsResponse;
+  status: 200;
+};
+
+export type getTagRecommendationsResponseSuccess =
+  getTagRecommendationsResponse200 & {
+    headers: Headers;
+  };
+export type getTagRecommendationsResponse =
+  getTagRecommendationsResponseSuccess;
+
+export const getGetTagRecommendationsUrl = (
+  params?: GetTagRecommendationsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/tags/recommendations?${stringifiedParams}`
+    : `/tags/recommendations`;
+};
+
+/**
+ * 팔로우할 만한 태그 목록을 추천합니다.
+ * @summary Get Tag Recommendations
+ */
+export const getTagRecommendations = async (
+  params?: GetTagRecommendationsParams,
+  options?: RequestInit,
+): Promise<getTagRecommendationsResponse> => {
+  return api<getTagRecommendationsResponse>(
+    getGetTagRecommendationsUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetTagRecommendationsQueryKey = (
+  params?: GetTagRecommendationsParams,
+) => {
+  return [`/tags/recommendations`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTagRecommendationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTagRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTagRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTagRecommendations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTagRecommendationsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTagRecommendations>>
+  > = ({ signal }) =>
+    getTagRecommendations(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTagRecommendations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTagRecommendationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTagRecommendations>>
+>;
+export type GetTagRecommendationsQueryError = ErrorType<unknown>;
+
+export function useGetTagRecommendations<
+  TData = Awaited<ReturnType<typeof getTagRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | GetTagRecommendationsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTagRecommendations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTagRecommendations>>,
+          TError,
+          Awaited<ReturnType<typeof getTagRecommendations>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTagRecommendations<
+  TData = Awaited<ReturnType<typeof getTagRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTagRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTagRecommendations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTagRecommendations>>,
+          TError,
+          Awaited<ReturnType<typeof getTagRecommendations>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTagRecommendations<
+  TData = Awaited<ReturnType<typeof getTagRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTagRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTagRecommendations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Tag Recommendations
+ */
+
+export function useGetTagRecommendations<
+  TData = Awaited<ReturnType<typeof getTagRecommendations>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTagRecommendationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTagRecommendations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTagRecommendationsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type getUnverifiedTagsResponse200 = {
   data: GetTagsResponse;
   status: 200;

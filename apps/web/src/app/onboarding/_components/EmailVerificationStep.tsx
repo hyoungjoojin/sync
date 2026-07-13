@@ -66,25 +66,24 @@ export const EmailVerificationStep = forwardRef<
     toast.info(t('messages.alreadyVerified'));
   };
 
-  const { mutate: sendVerificationEmail, isPending: isSendPending } =
-    useSendVerificationEmail({
-      mutation: {
-        onSuccess: () => {
-          setHasSent(true);
-          toast.success(t('messages.sent'));
-        },
-        onError: (sendError) => {
-          if (
-            sendError instanceof SyncError &&
-            sendError.code === ErrorCode.EMAIL_ALREADY_VERIFIED
-          ) {
-            treatAsAlreadyVerified();
-            return;
-          }
-          toast.error(t('errors.send'));
-        },
+  const { mutate: sendVerificationEmail } = useSendVerificationEmail({
+    mutation: {
+      onSuccess: () => {
+        setHasSent(true);
+        toast.success(t('messages.sent'));
       },
-    });
+      onError: (sendError) => {
+        if (
+          sendError instanceof SyncError &&
+          sendError.code === ErrorCode.EMAIL_ALREADY_VERIFIED
+        ) {
+          treatAsAlreadyVerified();
+          return;
+        }
+        toast.error(t('errors.send'));
+      },
+    },
+  });
 
   const { mutate: verifyEmail, isPending: isVerifyPending } = useVerifyEmail({
     mutation: {

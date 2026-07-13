@@ -24,12 +24,12 @@
           "questions": "질문"
         }
       },
-      "recently-viewed": {
-        "title": "최근 본 게시물"
-      },
       "trending-tags": {
         "title": "인기 태그",
-        "post-count": "게시물 {count}개"
+        "explore": "탐색",
+        "post-count": "게시물 {count}개",
+        "follow": "팔로우",
+        "following": "팔로잉"
       }
     },
     "explore": {
@@ -57,6 +57,14 @@
         "no-description": "설명이 없습니다.",
         "follow": "팔로우",
         "unfollow": "팔로잉"
+      },
+      "projects": {
+        "title": "이번 달 인기 프로젝트",
+        "description": "팔로우할 가치가 있는 프로젝트를 만나보세요.",
+        "empty": {
+          "title": "추천 프로젝트가 없습니다",
+          "description": "잠시 후 다시 확인해 주세요."
+        }
       }
     },
     "bookmarks": {
