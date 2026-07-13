@@ -15,7 +15,7 @@ class TagSeeder {
     this.tagRepository = tagRepository;
   }
 
-  boolean shouldSeed() {
+  boolean hasGlobalTags() {
     return tagRepository.existsByProjectIsNull();
   }
 

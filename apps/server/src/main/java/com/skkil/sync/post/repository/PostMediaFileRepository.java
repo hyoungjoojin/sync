@@ -10,4 +10,6 @@ public interface PostMediaFileRepository extends JpaRepository<PostMediaFile, Lo
 
   List<PostMediaFile> findByPostIdInAndSortOrderLessThanOrderByPostIdAscSortOrderAsc(
       List<Long> postIds, int sortOrderExclusiveUpperBound);
+
+  int countByPostId(Long postId);
 }

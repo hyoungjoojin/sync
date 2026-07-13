@@ -14,7 +14,9 @@ All code, comments, commit messages, PR descriptions, and reviews are written in
 ```
 apps/web/        Next.js 16 + React 19 frontend (pnpm)
 apps/server/     Spring Boot 4 + Java 25 backend (Gradle)
-docs/api/        Generated OpenAPI spec — do NOT edit by hand
+docs/api/        docs/api/openapi3.yaml is a generated OpenAPI spec — do NOT
+                 edit it by hand. Other files under docs/api/ (e.g. API docs
+                 preview tooling) are hand-maintained.
 infra/           Infrastructure configuration files and Docker Compose files
 scripts/         CI and setup scripts
 ```

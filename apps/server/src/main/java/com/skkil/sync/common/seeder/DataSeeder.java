@@ -27,7 +27,7 @@ class DataSeeder implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws IOException {
-    if (!tagSeeder.shouldSeed()) {
+    if (!tagSeeder.hasGlobalTags()) {
       log.info("Seeding global tags");
 
       Arrays.stream(objectMapper.readValue(tags.getInputStream(), TagSeeder.TagSeed[].class))

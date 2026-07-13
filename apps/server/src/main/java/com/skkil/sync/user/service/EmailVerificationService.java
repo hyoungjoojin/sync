@@ -83,7 +83,7 @@ public class EmailVerificationService {
             .text(templateEngine.process("email/verify-email", context))
             .build();
 
-    log.debug("Sending email verification to user {} with token {}", userId, token.getToken());
+    log.debug("Sending email verification to user {}", userId);
     emailService.sendMessage(email);
   }
 

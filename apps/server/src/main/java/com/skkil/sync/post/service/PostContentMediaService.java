@@ -88,6 +88,6 @@ public class PostContentMediaService {
   }
 
   public int getMediaCountForPost(Long postId) {
-    return postMediaFileRepository.findAllByPostIdOrderBySortOrderAsc(postId).size();
+    return postMediaFileRepository.countByPostId(postId);
   }
 }
