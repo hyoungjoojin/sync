@@ -17,10 +17,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
       SELECT n FROM Notification n
       LEFT JOIN FETCH n.actor
       WHERE n.user.id = :userId
-      AND (:cursor IS NULL OR n.id < :cursor)
       ORDER BY n.id DESC
       """)
-  public Page<Notification> findByUser(Long userId, Pageable pageable, Long cursor);
+  public Page<Notification> findByUser(Long userId, Pageable pageable);
 
   Optional<Notification> findByIdAndUser_Id(Long id, Long userId);
 

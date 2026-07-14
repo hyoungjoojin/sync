@@ -1,6 +1,7 @@
 package com.skkil.sync.notification.dto.response;
 
+import com.skkil.sync.common.util.pagination.dto.response.OffsetPaginationResponse;
 import com.skkil.sync.notification.dto.data.NotificationSummary;
-import org.springframework.data.domain.Page;
 
-public record GetNotificationsResponse(Page<NotificationSummary> notifications, long unreadCount) {}
+public record GetNotificationsResponse(
+    OffsetPaginationResponse<NotificationSummary> notifications, long unreadCount) {}

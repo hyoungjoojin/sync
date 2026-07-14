@@ -78,6 +78,18 @@
         "description": "다시 보고 싶은 포스트를 북마크하면 여기에 모입니다."
       }
     },
+    "notifications": {
+      "title": "알림",
+      "empty": {
+        "title": "알림이 없습니다",
+        "description": "새로운 소식이 도착하면 여기에 표시됩니다."
+      },
+      "actions": {
+        "previous": "이전",
+        "next": "다음",
+        "mark-all-read": "모두 읽음"
+      }
+    },
     "posts": {
       "report": {
         "trigger": "신고",
@@ -1130,7 +1142,17 @@
       },
       "notifications": {
         "aria-label": "알림",
-        "placeholder": "준비 중입니다"
+        "title": "알림",
+        "mark-all-read": "모두 읽음",
+        "view-all": "전체 보기",
+        "empty": "새로운 알림이 없습니다",
+        "types": {
+          "NEW_COMMENT": "{name}님이 '{title}' 글에 댓글을 남겼습니다.",
+          "NEW_FOLLOWER": "{name}님이 회원님을 팔로우하기 시작했습니다.",
+          "PROJECT_INVITATION": "{name}님이 '{project}' 프로젝트에 회원님을 초대했습니다.",
+          "NEW_MESSAGE": "{name}님이 회원님에게 메시지를 보냈습니다.",
+          "WELCOME": "Sync에 오신 것을 환영합니다! 첫 글을 작성해 보세요."
+        }
       }
     },
     "footer": {

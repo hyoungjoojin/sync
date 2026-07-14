@@ -1,13 +1,16 @@
 package com.skkil.sync.notification.service;
 
+import com.skkil.sync.common.util.pagination.dto.request.OffsetPaginationRequest;
+import com.skkil.sync.common.util.pagination.dto.response.OffsetPaginationResponse;
+import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.media.service.domain.MediaDomainService;
 import com.skkil.sync.notification.constant.NotificationStatus;
+import com.skkil.sync.notification.dto.data.NotificationSummary;
 import com.skkil.sync.notification.dto.response.GetNotificationsResponse;
 import com.skkil.sync.notification.exception.NotificationNotFoundException;
 import com.skkil.sync.notification.mapper.NotificationMapper;
 import com.skkil.sync.notification.model.Notification;
 import com.skkil.sync.notification.repository.NotificationRepository;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,38 +20,41 @@ public class NotificationService {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final MediaDomainService mediaDomainService;
+  private final PaginationService paginationService;
 
   public NotificationService(
       NotificationRepository notificationRepository,
       NotificationMapper notificationMapper,
-      MediaDomainService mediaDomainService) {
+      MediaDomainService mediaDomainService,
+      PaginationService paginationService) {
     this.notificationRepository = notificationRepository;
     this.notificationMapper = notificationMapper;
     this.mediaDomainService = mediaDomainService;
+    this.paginationService = paginationService;
   }
 
   @Transactional(readOnly = true)
-  public GetNotificationsResponse getNotifications(Long userId, int size, Long cursor) {
-    Pageable pageable = Pageable.ofSize(size);
-
-    var notifications = notificationRepository.findByUser(userId, pageable, cursor);
+  public GetNotificationsResponse getNotifications(
+      Long userId, OffsetPaginationRequest pagination) {
+    OffsetPaginationResponse<Notification> page =
+        paginationService.paginate(
+            pageable -> notificationRepository.findByUser(userId, pageable), pagination);
 
     var actorProfileImageUrls =
         mediaDomainService.generatePublicGetUrls(
-            notifications.getContent(),
+            page.content(),
             notification -> {
               var actor = notification.getActor();
               return actor == null ? null : actor.getProfileImage();
             });
 
-    var notificationDtos =
-        notifications.map(
-            notification -> notificationMapper.toDto(notification, actorProfileImageUrls));
+    OffsetPaginationResponse<NotificationSummary> notifications =
+        page.map(notification -> notificationMapper.toDto(notification, actorProfileImageUrls));
 
     long unreadCount =
         notificationRepository.countByUser_IdAndStatus(userId, NotificationStatus.UNREAD);
 
-    return new GetNotificationsResponse(notificationDtos, unreadCount);
+    return new GetNotificationsResponse(notifications, unreadCount);
   }
 
   @Transactional

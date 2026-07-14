@@ -59,12 +59,12 @@ export * from './GetMyProjectInvitationsResponseInvitationsItemInvitationInviter
 export * from './GetMyProjectInvitationsResponseInvitationsItemInvitationRole';
 export * from './GetMyProjectInvitationsResponseInvitationsItemProject';
 export * from './GetNotificationPreferencesResponse';
+export * from './GetNotificationsParams';
 export * from './GetNotificationsResponse';
 export * from './GetNotificationsResponseNotifications';
 export * from './GetNotificationsResponseNotificationsContentItem';
 export * from './GetNotificationsResponseNotificationsContentItemActor';
-export * from './GetNotificationsResponseNotificationsPageable';
-export * from './GetNotificationsResponseNotificationsSort';
+export * from './GetNotificationsResponseNotificationsPageInfo';
 export * from './GetPostActivitiesParams';
 export * from './GetPostActivitiesResponse';
 export * from './GetPostActivitiesResponseActivitiesItem';

@@ -5,29 +5,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { GetNotificationsResponseNotificationsContentItem } from './GetNotificationsResponseNotificationsContentItem';
-import type { GetNotificationsResponseNotificationsPageable } from './GetNotificationsResponseNotificationsPageable';
-import type { GetNotificationsResponseNotificationsSort } from './GetNotificationsResponseNotificationsSort';
+import type { GetNotificationsResponseNotificationsPageInfo } from './GetNotificationsResponseNotificationsPageInfo';
 
 export type GetNotificationsResponseNotifications = {
-  /** Current page number */
-  number: number;
-  /** Number of elements in the current page */
-  numberOfElements: number;
-  /** Page size */
-  size: number;
-  /** Is last page */
-  last: boolean;
-  /** Total number of pages */
-  totalPages: number;
-  /** Pagination request info */
-  pageable: GetNotificationsResponseNotificationsPageable;
-  /** Sort info */
-  sort: GetNotificationsResponseNotificationsSort;
-  /** Is first page */
-  first: boolean;
-  content?: GetNotificationsResponseNotificationsContentItem[];
-  /** Whether the page is empty */
-  empty: boolean;
-  /** Total number of notifications */
-  totalElements: number;
+  /** Page Info */
+  pageInfo: GetNotificationsResponseNotificationsPageInfo;
+  /** Content */
+  content: GetNotificationsResponseNotificationsContentItem[];
 };

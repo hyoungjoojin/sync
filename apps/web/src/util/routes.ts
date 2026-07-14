@@ -56,6 +56,7 @@ const ROUTES = {
   PROJECTS: () => '/projects',
   PROJECT_INVITATIONS: () => '/projects/invitations',
   BOOKMARKS: () => '/bookmarks',
+  NOTIFICATIONS: () => '/notifications',
   COOKIES: () => '/cookies',
   PROFILE: (handle: string) => `/@${handle}`,
   PROFILE_FOLLOWERS: (handle: string) => ROUTES.PROFILE(handle) + '/followers',

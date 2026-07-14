@@ -20,6 +20,8 @@ import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
+import com.skkil.sync.common.util.pagination.dto.request.OffsetPaginationRequest;
+import com.skkil.sync.common.util.pagination.snippets.OffsetPaginationRequestSnippets;
 import com.skkil.sync.notification.dto.request.UpdateNotificationPreferencesRequest;
 import com.skkil.sync.notification.dto.response.GetNotificationPreferencesResponse;
 import com.skkil.sync.notification.dto.response.GetNotificationsResponse;
@@ -63,14 +65,17 @@ class NotificationControllerTests {
   @WithAuthenticatedUser
   void getNotifications() throws Exception {
     AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    OffsetPaginationRequest pagination = OffsetPaginationRequestSnippets.getPaginationRequest();
     GetNotificationsResponse response =
         GetNotificationsResponseSnippets.getGetNotificationsResponse();
 
-    when(notificationService.getNotifications(eq(user.userId()), eq(10), eq(null)))
+    when(notificationService.getNotifications(eq(user.userId()), eq(pagination)))
         .thenReturn(response);
 
     mockMvc
-        .perform(get("/notifications"))
+        .perform(
+            get("/notifications")
+                .queryParams(OffsetPaginationRequestSnippets.getPaginationRequestQueryParams()))
         .andExpect(status().isOk())
         .andDo(
             document(
@@ -83,6 +88,7 @@ class NotificationControllerTests {
                 null,
                 preprocessResponse(prettyPrint()),
                 Function.identity(),
+                OffsetPaginationRequestSnippets.getPaginationRequestParameters(),
                 GetNotificationsResponseSnippets.getNotificationsResponseFields()));
   }
 

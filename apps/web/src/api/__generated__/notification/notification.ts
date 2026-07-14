@@ -24,6 +24,7 @@ import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
 import type {
   GetNotificationPreferencesResponse,
+  GetNotificationsParams,
   GetNotificationsResponse,
   UpdateNotificationPreferencesRequest,
 } from '../types';
@@ -58,8 +59,20 @@ export type getNotificationsResponseSuccess = getNotificationsResponse200 & {
 };
 export type getNotificationsResponse = getNotificationsResponseSuccess;
 
-export const getGetNotificationsUrl = () => {
-  return `/notifications`;
+export const getGetNotificationsUrl = (params: GetNotificationsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/notifications?${stringifiedParams}`
+    : `/notifications`;
 };
 
 /**
@@ -67,34 +80,45 @@ export const getGetNotificationsUrl = () => {
  * @summary Get Notifications
  */
 export const getNotifications = async (
+  params: GetNotificationsParams,
   options?: RequestInit,
 ): Promise<getNotificationsResponse> => {
-  return api<getNotificationsResponse>(getGetNotificationsUrl(), {
+  return api<getNotificationsResponse>(getGetNotificationsUrl(params), {
     ...options,
     method: 'GET',
   });
 };
 
-export const getGetNotificationsQueryKey = () => {
-  return [`/notifications`] as const;
+export const getGetNotificationsQueryKey = (
+  params?: GetNotificationsParams,
+) => {
+  return [`/notifications`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetNotificationsQueryOptions = <
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
-  >;
-  request?: SecondParameter<typeof api>;
-}) => {
+>(
+  params: GetNotificationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getNotifications>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNotificationsQueryKey();
+  const queryKey =
+    queryOptions?.queryKey ?? getGetNotificationsQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getNotifications>>
-  > = ({ signal }) => getNotifications({ signal, ...requestOptions });
+  > = ({ signal }) => getNotifications(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getNotifications>>,
@@ -112,6 +136,7 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
+  params: GetNotificationsParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -138,6 +163,7 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
+  params: GetNotificationsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -164,6 +190,7 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
+  params: GetNotificationsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -186,6 +213,7 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
+  params: GetNotificationsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -200,7 +228,7 @@ export function useGetNotifications<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetNotificationsQueryOptions(options);
+  const queryOptions = getGetNotificationsQueryOptions(params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
