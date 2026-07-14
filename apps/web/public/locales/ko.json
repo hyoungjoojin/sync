@@ -254,6 +254,10 @@
             "actions": {
               "cancel": "취소",
               "invite": "초대"
+            },
+            "messages": {
+              "success": "초대를 보냈습니다.",
+              "error": "초대를 보내지 못했습니다. 잠시 후 다시 시도해 주세요."
             }
           }
         },
@@ -372,7 +376,8 @@
         "sidebar": {
           "members": {
             "heading": "멤버",
-            "invite": "멤버 초대하기"
+            "invite": "멤버 초대하기",
+            "manage": "멤버 관리"
           },
           "open-questions": {
             "heading": "미해결 질문",
@@ -440,8 +445,18 @@
               "remove": "팀원 삭제",
               "cancel-invitation": "초대 취소"
             },
+            "remove-dialog": {
+              "title": "팀원을 삭제할까요?",
+              "description": "{name}님을 이 워크스페이스에서 삭제합니다.",
+              "cancel": "취소",
+              "confirm": "삭제"
+            },
             "messages": {
-              "unsupported": "아직 지원되지 않는 기능입니다.",
+              "update-success": "팀원 역할을 수정했습니다.",
+              "update-error": "팀원 역할 수정에 실패했습니다.",
+              "remove-success": "팀원을 삭제했습니다.",
+              "remove-error": "팀원 삭제에 실패했습니다.",
+              "owner-protected": "워크스페이스 소유자는 수정하거나 삭제할 수 없습니다.",
               "cancel-success": "초대를 취소했습니다.",
               "cancel-error": "초대 취소에 실패했습니다."
             },
