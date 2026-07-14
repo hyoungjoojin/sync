@@ -1,6 +1,7 @@
 package com.skkil.sync.notification.channel;
 
 import com.skkil.sync.notification.constant.ChannelType;
+import com.skkil.sync.notification.dto.data.NotificationSummary;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ public class InAppNotificationChannel implements NotificationChannel {
   }
 
   @Override
-  public void send(Long to, String message) {
-    messagingTemplate.convertAndSend("/topic/notifications/" + to, message);
+  public void send(Long to, NotificationSummary notification) {
+    messagingTemplate.convertAndSend("/topic/notifications/" + to, notification);
   }
 }

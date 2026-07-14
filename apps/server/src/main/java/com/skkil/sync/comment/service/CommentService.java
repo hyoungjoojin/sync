@@ -5,6 +5,7 @@ import com.skkil.sync.comment.dto.request.CreateCommentRequest;
 import com.skkil.sync.comment.dto.request.UpdateCommentRequest;
 import com.skkil.sync.comment.dto.response.CreateCommentResponse;
 import com.skkil.sync.comment.dto.response.GetCommentsResponse;
+import com.skkil.sync.comment.event.CommentCreatedEvent;
 import com.skkil.sync.comment.exception.CommentNotFoundException;
 import com.skkil.sync.comment.mapper.CommentMapper;
 import com.skkil.sync.comment.model.Comment;
@@ -22,6 +23,7 @@ import com.skkil.sync.user.service.domain.UserDomainService;
 import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class CommentService {
   private final PaginationService paginationService;
   private final CommentCursorPaginationProvider paginationProvider;
   private final CommentMapper commentMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   public CommentService(
       CommentRepository commentRepository,
@@ -46,7 +49,8 @@ public class CommentService {
       MediaDomainService mediaDomainService,
       PaginationService paginationService,
       CommentCursorPaginationProvider paginationProvider,
-      CommentMapper commentMapper) {
+      CommentMapper commentMapper,
+      ApplicationEventPublisher eventPublisher) {
     this.commentRepository = commentRepository;
     this.commentQueryRepository = commentQueryRepository;
     this.postDomainService = postDomainService;
@@ -55,6 +59,7 @@ public class CommentService {
     this.paginationService = paginationService;
     this.paginationProvider = paginationProvider;
     this.commentMapper = commentMapper;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional(readOnly = true)
@@ -88,6 +93,10 @@ public class CommentService {
         Comment.builder().author(author).post(post).content(request.content()).build();
 
     comment = commentRepository.save(comment);
+
+    eventPublisher.publishEvent(
+        new CommentCreatedEvent(comment.getId(), post.getId(), post.getAuthor().getId(), authorId));
+
     return new CreateCommentResponse(comment.getId());
   }
 

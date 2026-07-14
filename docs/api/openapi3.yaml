@@ -376,6 +376,134 @@ paths:
                       "uploadUrl" : "https://example.com/upload",
                       "expiresAt" : "1970-01-01T00:00:00"
                     }
+  /notifications:
+    get:
+      tags:
+      - notification
+      summary: Get Notifications
+      description: Get Notifications
+      operationId: GetNotifications
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNotificationsResponse"
+              examples:
+                GetNotifications:
+                  value: |-
+                    {
+                      "notifications" : {
+                        "content" : [ {
+                          "id" : 1,
+                          "type" : "NEW_COMMENT",
+                          "status" : "UNREAD",
+                          "createdAt" : "2026-01-01T00:00:00Z",
+                          "actor" : {
+                            "handle" : "actor-handle",
+                            "name" : "Actor Name",
+                            "profileImageUrl" : "http://example.com/a.jpg"
+                          },
+                          "entityType" : "COMMENT",
+                          "entityId" : 3,
+                          "payload" : {
+                            "type" : "NEW_COMMENT",
+                            "actorHandle" : "actor-handle",
+                            "actorName" : "Actor Name",
+                            "postTitle" : "Post Title",
+                            "postSlug" : "post-slug"
+                          }
+                        } ],
+                        "empty" : false,
+                        "first" : true,
+                        "last" : true,
+                        "number" : 0,
+                        "numberOfElements" : 1,
+                        "pageable" : {
+                          "offset" : 0,
+                          "pageNumber" : 0,
+                          "pageSize" : 10,
+                          "paged" : true,
+                          "sort" : {
+                            "empty" : true,
+                            "sorted" : false,
+                            "unsorted" : true
+                          },
+                          "unpaged" : false
+                        },
+                        "size" : 10,
+                        "sort" : {
+                          "empty" : true,
+                          "sorted" : false,
+                          "unsorted" : true
+                        },
+                        "totalElements" : 1,
+                        "totalPages" : 1
+                      },
+                      "unreadCount" : 1
+                    }
+  /notifications/preferences:
+    get:
+      tags:
+      - notification
+      summary: Get Notification Preferences
+      description: Get Notification Preferences
+      operationId: GetNotificationPreferences
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNotificationPreferencesResponse"
+              examples:
+                GetNotificationPreferences:
+                  value: "{\"inAppEnabled\":true}"
+    patch:
+      tags:
+      - notification
+      summary: Update Notification Preferences
+      description: Update Notification Preferences
+      operationId: UpdateNotificationPreferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationPreferencesRequest"
+            examples:
+              UpdateNotificationPreferences:
+                value: "{\"inAppEnabled\":false}"
+      responses:
+        "204":
+          description: "204"
+  /notifications/read-all:
+    patch:
+      tags:
+      - notification
+      summary: Mark All Notifications As Read
+      description: Mark All Notifications As Read
+      operationId: MarkAllNotificationsAsRead
+      responses:
+        "204":
+          description: "204"
+  /notifications/{notificationId}/read:
+    patch:
+      tags:
+      - notification
+      summary: Mark Notification As Read
+      description: Mark Notification As Read
+      operationId: MarkNotificationAsRead
+      parameters:
+      - name: notificationId
+        in: path
+        description: Notification ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "204"
   /posts:
     get:
       tags:
@@ -2812,6 +2940,15 @@ components:
         slug:
           type: string
           description: Post Slug
+    UpdateNotificationPreferencesRequest:
+      title: UpdateNotificationPreferencesRequest
+      required:
+      - inAppEnabled
+      type: object
+      properties:
+        inAppEnabled:
+          type: boolean
+          description: Whether in-app notifications should be enabled
     UpdateCommentRequest:
       title: UpdateCommentRequest
       required:
@@ -3718,6 +3855,109 @@ components:
                   description: Start Cursor
                   nullable: true
               description: Page Info
+    GetNotificationsResponse:
+      title: GetNotificationsResponse
+      required:
+      - unreadCount
+      type: object
+      properties:
+        unreadCount:
+          type: number
+          description: Total unread notification count
+        notifications:
+          required:
+          - empty
+          - first
+          - last
+          - number
+          - numberOfElements
+          - pageable
+          - size
+          - sort
+          - totalElements
+          - totalPages
+          type: object
+          properties:
+            number:
+              type: number
+              description: Current page number
+            numberOfElements:
+              type: number
+              description: Number of elements in the current page
+            size:
+              type: number
+              description: Page size
+            last:
+              type: boolean
+              description: Is last page
+            totalPages:
+              type: number
+              description: Total number of pages
+            pageable:
+              type: object
+              description: Pagination request info
+            sort:
+              type: object
+              description: Sort info
+            first:
+              type: boolean
+              description: Is first page
+            content:
+              type: array
+              items:
+                required:
+                - createdAt
+                - id
+                - payload
+                - status
+                - type
+                type: object
+                properties:
+                  actor:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Actor name
+                        nullable: true
+                      handle:
+                        type: string
+                        description: Actor handle
+                        nullable: true
+                      profileImageUrl:
+                        type: string
+                        description: Actor profile image URL
+                        nullable: true
+                  createdAt:
+                    type: string
+                    description: Creation timestamp
+                  payload:
+                    type: object
+                    description: Type-specific rendering payload (shape depends on
+                      "type")
+                  entityType:
+                    type: string
+                    description: Type of the linked entity
+                    nullable: true
+                  entityId:
+                    type: number
+                    description: ID of the linked entity
+                    nullable: true
+                  id:
+                    type: number
+                    description: Notification ID
+                  type:
+                    type: string
+                    description: Notification type
+                  status:
+                    type: string
+                    description: Read status
+            empty:
+              type: boolean
+              description: Whether the page is empty
+            totalElements:
+              type: number
+              description: Total number of notifications
     GetCommentsResponse:
       title: GetCommentsResponse
       required:
@@ -5203,3 +5443,12 @@ components:
         hasMoreTeammates:
           type: boolean
           description: 추가 팀원 존재 여부
+    GetNotificationPreferencesResponse:
+      title: GetNotificationPreferencesResponse
+      required:
+      - inAppEnabled
+      type: object
+      properties:
+        inAppEnabled:
+          type: boolean
+          description: Whether in-app notifications are enabled

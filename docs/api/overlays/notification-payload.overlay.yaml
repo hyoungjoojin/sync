@@ -1,0 +1,122 @@
+overlay: 1.0.0
+info:
+  title: Notification payload discriminated union
+  version: 1.0.0
+  description: >
+    Replaces the generic `payload` object on GET /notifications with a
+    discriminated oneOf over the concrete notification payload shapes.
+    The `type` property inside each payload schema mirrors
+    com.skkil.sync.notification.model.NotificationPayload's
+    @JsonTypeInfo/@JsonSubTypes mapping, which the server actually embeds
+    in the JSON at serialization time.
+actions:
+  - target: $.components.schemas
+    update:
+      WelcomePayload:
+        type: object
+        required:
+          - type
+        properties:
+          type:
+            type: string
+            enum:
+              - WELCOME
+      NewCommentPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - postTitle
+          - postSlug
+        properties:
+          type:
+            type: string
+            enum:
+              - NEW_COMMENT
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          postTitle:
+            type: string
+          postSlug:
+            type: string
+      NewFollowerPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+        properties:
+          type:
+            type: string
+            enum:
+              - NEW_FOLLOWER
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+      ProjectInvitationPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - projectHandle
+          - projectName
+        properties:
+          type:
+            type: string
+            enum:
+              - PROJECT_INVITATION
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          projectHandle:
+            type: string
+          projectName:
+            type: string
+      NewMessagePayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - conversationId
+          - messagePreview
+        properties:
+          type:
+            type: string
+            enum:
+              - NEW_MESSAGE
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          conversationId:
+            type: number
+          messagePreview:
+            type: string
+
+  # openapi-overlays-js (alpha) fails to resolve long mixed bracket/dot
+  # JSONPath chains (e.g. $.paths['/notifications'].get.....schema.properties...),
+  # so we target the unique "payload" property by descendant selector instead.
+  # Verified there is exactly one "payload" key in the generated spec.
+  - target: $..payload
+    update:
+      oneOf:
+        - $ref: '#/components/schemas/WelcomePayload'
+        - $ref: '#/components/schemas/NewCommentPayload'
+        - $ref: '#/components/schemas/NewFollowerPayload'
+        - $ref: '#/components/schemas/ProjectInvitationPayload'
+        - $ref: '#/components/schemas/NewMessagePayload'
+      discriminator:
+        propertyName: type
+        mapping:
+          WELCOME: '#/components/schemas/WelcomePayload'
+          NEW_COMMENT: '#/components/schemas/NewCommentPayload'
+          NEW_FOLLOWER: '#/components/schemas/NewFollowerPayload'
+          PROJECT_INVITATION: '#/components/schemas/ProjectInvitationPayload'
+          NEW_MESSAGE: '#/components/schemas/NewMessagePayload'
