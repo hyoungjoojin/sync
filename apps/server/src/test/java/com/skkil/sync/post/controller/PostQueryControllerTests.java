@@ -4,6 +4,7 @@ import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.docume
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
@@ -91,7 +92,8 @@ class PostQueryControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetDraftPostsResponse();
 
-    when(postQueryService.getDrafts(eq(user.userId()), eq(type), eq(scope), eq(pagination)))
+    when(postQueryService.getDrafts(
+            eq(user.userId()), eq(type), eq(scope), isNull(), eq(pagination)))
         .thenReturn(response);
 
     mockMvc
@@ -115,7 +117,11 @@ class PostQueryControllerTests {
                 Function.identity(),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
                     .and(parameterWithName("type").description("게시글 타입").optional())
-                    .and(parameterWithName("scope").description("게시글 공개 범위").optional()),
+                    .and(parameterWithName("scope").description("게시글 공개 범위").optional())
+                    .and(
+                        parameterWithName("projectHandle")
+                            .description("프로젝트로 검색 범위 제한 (선택)")
+                            .optional()),
                 GetPostsResponseSnippets.getPostsResponseFields()));
   }
 

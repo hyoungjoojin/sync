@@ -1,11 +1,11 @@
 'use client';
 
-import { CheckCircleIcon, ClockIcon } from '@phosphor-icons/react';
 import type { Editor } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useGetPostBySlug } from '@/api/__generated__/post/post';
+import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ROUTES from '@/util/routes';
@@ -26,10 +26,6 @@ import {
   toPostViewSource,
 } from './types';
 import { normalizePostContent } from './utils/normalizePostContent';
-import {
-  type ReviewStatus,
-  getMockReviewStatus,
-} from './utils/placeholderData';
 
 const WORDS_PER_MINUTE = 200;
 
@@ -195,7 +191,6 @@ function PostPreviewCardBySummary({ summary }: PostPreviewCardProps) {
     summary,
     postPath,
     onClick: () => router.push(postPath),
-    reviewStatus: getMockReviewStatus(summary.id),
   };
 
   switch (summary.type) {
@@ -213,38 +208,12 @@ interface TypePostPreviewCardProps {
   summary: PostSummary;
   postPath: string;
   onClick: () => void;
-  reviewStatus: ReviewStatus;
-}
-
-function ReviewStatusIndicator({ status }: { status: ReviewStatus }) {
-  const t = useTranslations('components.post.viewer');
-
-  if (status === 'verified') {
-    return (
-      <span className="flex items-center gap-1 text-xs font-medium text-success-text">
-        <CheckCircleIcon weight="fill" />
-        {t('reviewStatus.verified')}
-      </span>
-    );
-  }
-
-  if (status === 'verify-soon') {
-    return (
-      <span className="flex items-center gap-1 text-xs font-medium text-warning-text">
-        <ClockIcon />
-        {t('reviewStatus.verify-soon')}
-      </span>
-    );
-  }
-
-  return null;
 }
 
 function ShortTypePostPreviewCard({
   summary,
   postPath,
   onClick,
-  reviewStatus,
 }: TypePostPreviewCardProps) {
   return (
     <Card onClick={onClick}>
@@ -262,8 +231,7 @@ function ShortTypePostPreviewCard({
         )}
         <PostPreviewBody preview={summary.preview} />
 
-        <div className="flex items-center justify-between">
-          <ReviewStatusIndicator status={reviewStatus} />
+        <div className="flex items-center justify-end">
           <PostCardActions
             postId={summary.id}
             liked={summary.liked}
@@ -281,40 +249,43 @@ function ShortTypePostPreviewCard({
 
 function LongTypePostPreviewCard({
   summary,
-  postPath,
   onClick,
-  reviewStatus,
 }: TypePostPreviewCardProps) {
+  const stopPropagation = (event: React.MouseEvent) => event.stopPropagation();
+
   return (
-    <Card onClick={onClick}>
-      <CardHeader>
-        <PostViewHeader
-          summary={summary}
-          postPath={postPath}
-          variant="preview"
-        />
-      </CardHeader>
+    <Card onClick={onClick} className="overflow-hidden py-0">
+      <ArticlePreviewMedia
+        previewMedia={summary.previewMedia}
+        wordCount={summary.wordCount}
+        project={summary.project}
+      />
 
-      <CardContent className="space-y-4">
-        <ArticlePreviewMedia
-          previewMedia={summary.previewMedia}
-          wordCount={summary.wordCount}
-          project={summary.project}
-        />
-
+      <CardContent className="space-y-4 py-4">
         {summary.title && (
           <h3 className="text-lg font-semibold">{summary.title}</h3>
         )}
         <PostPreviewBody preview={summary.preview} className="line-clamp-6" />
 
         <div className="flex items-center justify-between">
-          <ReviewStatusIndicator status={reviewStatus} />
+          <div className="flex items-center gap-2">
+            <div onClick={stopPropagation}>
+              <ProfileHoverCard
+                handle={summary.author.handle}
+                name={summary.author.name}
+                size="sm"
+              />
+            </div>
+            <span className="text-sm font-medium">{summary.author.name}</span>
+          </div>
+
           <PostCardActions
             postId={summary.id}
             liked={summary.liked}
             likeCount={summary.likeCount}
             commentCount={summary.commentCount}
             bookmarked={summary.bookmarked}
+            variant="bookmark-only"
           />
         </div>
 
@@ -397,7 +368,7 @@ function ArticlePreviewMedia({
 
   return (
     <div
-      className="relative flex h-32 items-end rounded-lg bg-gradient-to-br from-primary/20 to-success-tint bg-cover bg-center p-4"
+      className="relative flex h-40 items-end bg-gradient-to-br from-primary/20 to-success-tint bg-cover bg-center p-4"
       style={
         thumbnail ? { backgroundImage: `url(${thumbnail.url})` } : undefined
       }

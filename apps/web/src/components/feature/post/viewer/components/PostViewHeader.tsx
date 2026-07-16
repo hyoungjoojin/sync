@@ -19,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,11 +29,9 @@ import {
 import { RelativeTime } from '@/components/ui/relative-time';
 import ROUTES from '@/util/routes';
 
-import { PostStatus } from '../../types/post';
 import { useDeletePostDialog } from '../hooks/useDeletePostDialog';
 import { useReportPostDialog } from '../hooks/useReportPostDialog';
 import type { PostCardVariant, PostSummary } from '../types';
-import { PostTypeBadge } from './PostTypeBadge';
 import { ReportPostDialog } from './ReportPostDialog';
 
 export function PostViewHeader({
@@ -47,7 +44,6 @@ export function PostViewHeader({
   variant: PostCardVariant;
 }) {
   const t = useTranslations('pages.posts.report');
-  const tPost = useTranslations('components.post');
   const tDelete = useTranslations('pages.posts.delete');
   const tCopyLink = useTranslations('pages.posts.copy-link');
   const tViewer = useTranslations('components.post.viewer');
@@ -92,16 +88,6 @@ export function PostViewHeader({
               <RelativeTime date={summary.createdAt} />
             </span>
           </div>
-
-          {summary.type && <PostTypeBadge type={summary.type} />}
-
-          {summary.status === PostStatus.DRAFT && (
-            <Badge variant="outline">{tPost('status.DRAFT')}</Badge>
-          )}
-
-          {summary.project?.name && (
-            <Badge variant="secondary">{summary.project.name}</Badge>
-          )}
         </div>
 
         <DropdownMenu>

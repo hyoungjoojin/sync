@@ -53,7 +53,7 @@ public class PostQueryRepository {
             .from(POSTS)
             .leftJoin(PROJECTS)
             .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
-            .where(condition.and(Conditions.publicPublishedCondition()))
+            .where(condition.and(Conditions.feedVisibleCondition()))
             .orderBy(orderFields)
             .limit(size)
             .fetchInto(PostDto.class);
@@ -96,7 +96,9 @@ public class PostQueryRepository {
           condition
               .and(PROJECTS.HANDLE.eq(handle))
               .and(Conditions.workspacePublishedCondition())
-              .and(Conditions.workspaceReadableCondition(requesterId));
+              .and(
+                  Conditions.publicProjectCondition()
+                      .or(Conditions.workspaceReadableCondition(requesterId)));
       if (type != null) {
         projectCondition = projectCondition.and(POSTS.POST_TYPE.eq(type.name()));
       }
@@ -118,7 +120,7 @@ public class PostQueryRepository {
   }
 
   public CursorPaginationDataFetcher<PostDto> getDraftsByAuthor(
-      Long requesterId, PostType type, PostScope scope) {
+      Long requesterId, PostType type, PostScope scope, String projectHandle) {
     return (condition, orderFields, size) -> {
       Condition draftCondition =
           condition
@@ -132,6 +134,10 @@ public class PostQueryRepository {
 
       if (scope != null) {
         draftCondition = draftCondition.and(POSTS.SCOPE.eq(scope.name()));
+      }
+
+      if (projectHandle != null) {
+        draftCondition = draftCondition.and(PROJECTS.HANDLE.eq(projectHandle));
       }
 
       return dsl.select(post(requesterId))
@@ -231,7 +237,9 @@ public class PostQueryRepository {
             .ID
             .in(ids)
             .and(Conditions.workspacePublishedCondition())
-            .and(Conditions.workspaceReadableCondition(requesterId))
+            .and(
+                Conditions.publicProjectCondition()
+                    .or(Conditions.workspaceReadableCondition(requesterId)))
             .and(PROJECTS.HANDLE.eq(projectHandle)));
   }
 
@@ -341,6 +349,18 @@ public class PostQueryRepository {
       return visibleCondition().and(POSTS.PROJECT_ID.isNotNull()).and(publishedCondition());
     }
 
+    // 프로젝트가 공개(public)로 설정된 경우, 해당 프로젝트의 게시글은 팀원이 아니어도 읽을 수 있다.
+    private static Condition publicProjectCondition() {
+      return PROJECTS.IS_PUBLIC.isTrue();
+    }
+
+    // 공개 피드(전체 게시글 목록)에 노출 가능한 게시글: 프로젝트에 속하지 않은 개인 게시글이거나,
+    // 공개 프로젝트에 속한 게시글. 비공개 프로젝트 게시글은 작성자/팀원 여부와 무관하게 피드에서 제외한다.
+    private static Condition feedVisibleCondition() {
+      return publicPublishedCondition()
+          .or(workspacePublishedCondition().and(publicProjectCondition()));
+    }
+
     private static Condition tagPostVisibilityCondition(Long requesterId) {
       return visibleCondition()
           .and(publishedCondition())
@@ -348,7 +368,7 @@ public class PostQueryRepository {
               POSTS
                   .SCOPE
                   .eq(PostScope.PUBLIC.name())
-                  .or(PROJECTS.IS_PUBLIC.isTrue())
+                  .or(publicProjectCondition())
                   .or(workspaceReadableCondition(requesterId)));
     }
 
@@ -369,14 +389,16 @@ public class PostQueryRepository {
     }
 
     private static Condition readableCondition(Long requesterId) {
-      Condition publicPost = publicPublishedCondition();
+      Condition publiclyReadable =
+          publicPublishedCondition()
+              .or(workspacePublishedCondition().and(publicProjectCondition()));
       if (requesterId == null) {
-        return publicPost;
+        return publiclyReadable;
       }
 
       return visibleCondition()
           .and(
-              publicPost
+              publiclyReadable
                   .or(POSTS.AUTHOR_ID.eq(requesterId))
                   .or(workspacePublishedCondition().and(workspaceReadableCondition(requesterId))));
     }

@@ -3,11 +3,15 @@ package com.skkil.sync.post.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.skkil.sync.common.util.pagination.dto.request.OffsetPaginationRequest;
+import com.skkil.sync.common.util.pagination.dto.response.OffsetPaginationResponse;
+import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.post.dto.summary.TagSummary;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Tag;
@@ -39,6 +43,8 @@ class TagFollowServiceTests {
   @Mock private TagFollowRelationshipRepository tagFollowRelationshipRepository;
 
   @Mock private TagMapper tagMapper;
+
+  @Mock private PaginationService paginationService;
 
   @InjectMocks private TagFollowService tagFollowService;
 
@@ -115,14 +121,24 @@ class TagFollowServiceTests {
         TagFollowRelationship.builder().follower(user).tag(tag).build();
     TagSummary summary =
         TagSummary.builder().id(null).name("java").postCount(0L).followerCount(0L).build();
+    OffsetPaginationRequest pagination = new OffsetPaginationRequest(0, 10);
+    OffsetPaginationResponse<TagFollowRelationship> page =
+        new OffsetPaginationResponse<>(
+            OffsetPaginationResponse.PageInfo.builder()
+                .page(0)
+                .size(10)
+                .hasNextPage(false)
+                .hasPreviousPage(false)
+                .build(),
+            List.of(relationship));
 
     when(userDomainService.getUserByHandle(handle)).thenReturn(user);
     when(tagFollowRelationshipRepository.findTagIdsByFollowerId(1L)).thenReturn(Set.of());
-    when(tagFollowRelationshipRepository.findByFollowerId(1L)).thenReturn(List.of(relationship));
+    doReturn(page).when(paginationService).paginate(any(), eq(pagination));
     when(tagMapper.toTagSummary(tag, Set.of())).thenReturn(summary);
 
-    var response = tagFollowService.getFollowedTags(handle);
+    var response = tagFollowService.getFollowedTags(handle, pagination);
 
-    assertThat(response.tags()).containsExactly(summary);
+    assertThat(response.tags().content()).containsExactly(summary);
   }
 }

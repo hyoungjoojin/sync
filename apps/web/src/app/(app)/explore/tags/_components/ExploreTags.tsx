@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import {
   getGetAllTagsQueryKey,
+  getGetFollowedTagsQueryKey,
   useGetAllTags,
 } from '@/api/__generated__/tag/tag';
 import { TagList, TagListItem } from '@/components/feature/tag/TagList';
@@ -13,6 +14,7 @@ import { useFollowTag } from '@/components/feature/tag/hooks/useFollowTag';
 import { useUnfollowTag } from '@/components/feature/tag/hooks/useUnfollowTag';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/lib/auth/client';
+import ROUTES from '@/util/routes';
 
 const PAGE_SIZE = '20';
 
@@ -29,8 +31,12 @@ export default function ExploreTags() {
   });
 
   const queryClient = useQueryClient();
-  const invalidateTags = () =>
+  const invalidateTags = () => {
     queryClient.invalidateQueries({ queryKey: getGetAllTagsQueryKey() });
+    queryClient.invalidateQueries({
+      queryKey: getGetFollowedTagsQueryKey(handle),
+    });
+  };
 
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
   const setPending = (tagId: number, value: boolean) => {
@@ -70,7 +76,9 @@ export default function ExploreTags() {
   const pageInfo = data?.data.tags?.pageInfo;
 
   return (
-    <section>
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold">{t('all.title')}</h2>
+
       <TagList
         tags={tags}
         getKey={(tag) => tag.id}
@@ -87,13 +95,18 @@ export default function ExploreTags() {
             description={tag.description}
             noDescriptionLabel={t('no-description')}
             postCountLabel={t('post-count', { count: tag.postCount })}
+            href={ROUTES.TAG(String(tag.id))}
             trailing={
               <Button
                 variant={tag.isFollowing ? 'outline' : 'default'}
                 size="sm"
                 className="shrink-0"
                 isPending={pendingIds.has(tag.id)}
-                onClick={() => toggleFollow(tag.id, tag.isFollowing)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  toggleFollow(tag.id, tag.isFollowing);
+                }}
               >
                 {tag.isFollowing ? t('unfollow') : t('follow')}
               </Button>

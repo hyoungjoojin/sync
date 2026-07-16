@@ -1,8 +1,12 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getGetPostCommentsInfiniteQueryOptions } from '@/api/__generated__/comment/comment';
-import { getGetPostBySlugQueryOptions } from '@/api/__generated__/post/post';
+import {
+  getGetPostBySlugQueryOptions,
+  getPostBySlug,
+} from '@/api/__generated__/post/post';
 import type { PostType } from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
 import PostComments, {
@@ -18,12 +22,29 @@ interface PostProps {
   }>;
 }
 
+export async function generateMetadata({
+  params,
+}: PostProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const { data: post } = await getPostBySlug(slug);
+    const title =
+      post.summary.title ?? post.summary.preview.slice(0, 40) ?? undefined;
+
+    return { title };
+  } catch {
+    return {};
+  }
+}
+
 export default async function Post({ params }: PostProps) {
   const { slug } = await params;
 
   const queryClient = getQueryClient();
   let commentsEnabled = false;
   let postType: PostType | undefined;
+  let isPostAuthor = false;
 
   try {
     const { data: post } = await queryClient.fetchQuery(
@@ -31,6 +52,7 @@ export default async function Post({ params }: PostProps) {
     );
     commentsEnabled = post.summary.status === 'PUBLISHED';
     postType = post.summary.type as PostType;
+    isPostAuthor = post.summary.isAuthor;
   } catch (error) {
     if (error instanceof SyncError) {
       switch (error.code) {
@@ -67,7 +89,11 @@ export default async function Post({ params }: PostProps) {
         main={<PostCard slug={slug} />}
         side={
           commentsEnabled && postType ? (
-            <PostComments slug={slug} postType={postType} />
+            <PostComments
+              slug={slug}
+              postType={postType}
+              isPostAuthor={isPostAuthor}
+            />
           ) : null
         }
       />

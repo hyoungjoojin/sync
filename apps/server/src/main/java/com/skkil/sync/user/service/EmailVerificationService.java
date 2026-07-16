@@ -4,6 +4,7 @@ import com.skkil.sync.common.integration.email.EmailService;
 import com.skkil.sync.common.integration.email.dto.EmailMessage;
 import com.skkil.sync.user.constant.EmailVerificationConstants;
 import com.skkil.sync.user.dto.request.VerifyEmailRequest;
+import com.skkil.sync.user.dto.response.SendVerificationEmailResponse;
 import com.skkil.sync.user.exception.EmailAlreadyVerifiedException;
 import com.skkil.sync.user.exception.EmailVerificationTokenExpiredException;
 import com.skkil.sync.user.exception.EmailVerificationTokenInvalidException;
@@ -45,7 +46,7 @@ public class EmailVerificationService {
   }
 
   @Transactional
-  public void sendVerificationEmail(Long userId) {
+  public SendVerificationEmailResponse sendVerificationEmail(Long userId) {
     User user =
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -84,7 +85,16 @@ public class EmailVerificationService {
             .build();
 
     log.debug("Sending email verification to user {}", userId);
-    emailService.sendMessage(email);
+    emailService
+        .sendMessage(email)
+        .exceptionally(
+            e -> {
+              log.error("Failed to send verification email to user {}", userId, e);
+              return null;
+            });
+
+    return new SendVerificationEmailResponse(
+        token.getExpiresAt(), EmailVerificationConstants.EMAIL_VERIFICATION_TOKEN_TTL.toSeconds());
   }
 
   @Transactional

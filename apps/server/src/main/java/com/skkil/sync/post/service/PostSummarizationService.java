@@ -31,6 +31,9 @@ public class PostSummarizationService {
   private final ChatModel chatModel;
   private final PostRepository postRepository;
 
+  @Value("${app.ai.enabled:true}")
+  private boolean aiEnabled;
+
   public PostSummarizationService(ChatModel chatModel, PostRepository postRepository) {
     this.chatModel = chatModel;
     this.postRepository = postRepository;
@@ -40,6 +43,11 @@ public class PostSummarizationService {
   @TransactionalEventListener
   public void refreshPostSummary(PostContentChangedEvent event) {
     log.debug("Handling PostContentChangedEvent {}", event.getPostId());
+
+    if (!aiEnabled) {
+      log.debug("AI features disabled, skipping summary for post {}", event.getPostId());
+      return;
+    }
 
     if (event.getContent().trim().length() <= MINIMUM_SUMMARIZABLE_CONTENT_LENGTH) {
       log.debug("Skipping summary for short post {}", event.getPostId());

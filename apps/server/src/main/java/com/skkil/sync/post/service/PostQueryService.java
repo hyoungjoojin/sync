@@ -65,10 +65,17 @@ public class PostQueryService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("#projectHandle == null or hasPermission(#projectHandle, 'PROJECT', 'READ')")
   public GetPostsResponse getDrafts(
-      Long requesterId, PostType type, PostScope scope, CursorPaginationRequest pagination) {
+      Long requesterId,
+      PostType type,
+      PostScope scope,
+      String projectHandle,
+      CursorPaginationRequest pagination) {
     return getPostsResponse(
-        requesterId, postQueryRepository.getDraftsByAuthor(requesterId, type, scope), pagination);
+        requesterId,
+        postQueryRepository.getDraftsByAuthor(requesterId, type, scope, projectHandle),
+        pagination);
   }
 
   @Transactional(readOnly = true)

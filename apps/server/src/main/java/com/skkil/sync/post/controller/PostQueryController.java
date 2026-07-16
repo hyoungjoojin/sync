@@ -40,8 +40,9 @@ public class PostQueryController {
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestParam(required = false) PostType type,
       @RequestParam(required = false) PostScope scope,
+      @RequestParam(required = false) String projectHandle,
       @Validated CursorPaginationRequest pagination) {
-    return postQueryService.getDrafts(user.userId(), type, scope, pagination);
+    return postQueryService.getDrafts(user.userId(), type, scope, projectHandle, pagination);
   }
 
   @GetMapping("/posts/{slug}")

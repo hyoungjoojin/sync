@@ -3,6 +3,7 @@ package com.skkil.sync.common.integration.email;
 import com.skkil.sync.common.integration.email.dto.EmailMessage;
 import com.skkil.sync.common.integration.email.exception.EmailSendingFailedException;
 import jakarta.mail.internet.MimeMessage;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,10 +23,10 @@ public class EmailService {
 
   @Async
   @Retryable(value = EmailSendingFailedException.class, maxRetries = 3, delay = 2000)
-  public void sendMessage(EmailMessage emailMessage) {
+  public CompletableFuture<Void> sendMessage(EmailMessage emailMessage) {
     if (emailMessage == null) {
       log.warn("Message is null, skipping sending email");
-      return;
+      return CompletableFuture.completedFuture(null);
     }
 
     String to = emailMessage.to();
@@ -42,6 +43,7 @@ public class EmailService {
 
       log.debug("Sending email to {} with subject '{}'", to, subject);
       mailSender.send(message);
+      return CompletableFuture.completedFuture(null);
     } catch (Exception e) {
       log.error("Failed to send email to {}: {}", to, e.getMessage());
       throw new EmailSendingFailedException(e);

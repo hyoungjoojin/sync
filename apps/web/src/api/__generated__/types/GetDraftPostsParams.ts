@@ -30,4 +30,8 @@ export type GetDraftPostsParams = {
    * 게시글 공개 범위
    */
   scope?: string;
+  /**
+   * 프로젝트로 검색 범위 제한 (선택)
+   */
+  projectHandle?: string;
 };

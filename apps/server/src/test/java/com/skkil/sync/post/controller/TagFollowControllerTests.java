@@ -2,6 +2,7 @@ package com.skkil.sync.post.controller;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -18,10 +19,11 @@ import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
+import com.skkil.sync.common.util.pagination.snippets.OffsetPaginationRequestSnippets;
 import com.skkil.sync.config.SecurityConfig;
-import com.skkil.sync.post.dto.response.GetTagsResponse;
+import com.skkil.sync.post.dto.response.GetFollowedTagsResponse;
 import com.skkil.sync.post.service.TagFollowService;
-import com.skkil.sync.post.snippets.GetTagsResponseSnippets;
+import com.skkil.sync.post.snippets.GetFollowedTagsResponseSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -127,12 +129,14 @@ class TagFollowControllerTests {
   @DisplayName("[getFollowedTags] API 문서화 테스트")
   void getFollowedTags() throws Exception {
     String handle = "john";
-    GetTagsResponse response = GetTagsResponseSnippets.getGetTagsResponse();
+    GetFollowedTagsResponse response = GetFollowedTagsResponseSnippets.getGetFollowedTagsResponse();
 
-    when(tagFollowService.getFollowedTags(handle)).thenReturn(response);
+    when(tagFollowService.getFollowedTags(eq(handle), any())).thenReturn(response);
 
     mockMvc
-        .perform(get("/users/{handle}/followed-tags", handle))
+        .perform(
+            get("/users/{handle}/followed-tags", handle)
+                .queryParams(OffsetPaginationRequestSnippets.getPaginationRequestQueryParams()))
         .andExpect(status().isOk())
         .andDo(
             document(
@@ -140,12 +144,13 @@ class TagFollowControllerTests {
                 ResourceSnippetParameters.builder()
                     .tag("tag")
                     .summary("Get Followed Tags")
-                    .description("유저가 팔로우하는 전역 태그 목록을 조회합니다.")
-                    .responseSchema(schema(GetTagsResponse.class.getSimpleName())),
+                    .description("유저가 팔로우하는 전역 태그 목록을 페이지 단위로 조회합니다.")
+                    .responseSchema(schema(GetFollowedTagsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("유저 핸들")),
-                GetTagsResponseSnippets.getGetTagsResponseFields()));
+                OffsetPaginationRequestSnippets.getPaginationRequestParameters(),
+                GetFollowedTagsResponseSnippets.getGetFollowedTagsResponseFields()));
   }
 }

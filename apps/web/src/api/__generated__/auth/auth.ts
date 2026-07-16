@@ -17,6 +17,7 @@ import type { ErrorType } from '../../../lib/server';
 import type {
   LoginRequest,
   RegisterRequest,
+  SendVerificationEmailResponse,
   VerifyEmailRequest,
 } from '../types';
 
@@ -305,13 +306,13 @@ export const useRegister = <TError = ErrorType<unknown>, TContext = unknown>(
 > => {
   return useMutation(getRegisterMutationOptions(options), queryClient);
 };
-export type sendVerificationEmailResponse204 = {
-  data: void;
-  status: 204;
+export type sendVerificationEmailResponse200 = {
+  data: SendVerificationEmailResponse;
+  status: 200;
 };
 
 export type sendVerificationEmailResponseSuccess =
-  sendVerificationEmailResponse204 & {
+  sendVerificationEmailResponse200 & {
     headers: Headers;
   };
 export type sendVerificationEmailResponse =

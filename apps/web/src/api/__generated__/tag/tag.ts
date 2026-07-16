@@ -27,8 +27,11 @@ import type {
   CreateTagResponse,
   GetAllTagsParams,
   GetAllTagsResponse,
+  GetFollowedTagsParams,
+  GetFollowedTagsResponse,
   GetTagRecommendationsParams,
   GetTagRecommendationsResponse,
+  GetTagResponse,
   GetTagsResponse,
   MergeTagsRequest,
   SearchTagsParams,
@@ -1694,6 +1697,161 @@ export function useGetUnverifiedTags<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+export type getTagResponse200 = {
+  data: GetTagResponse;
+  status: 200;
+};
+
+export type getTagResponseSuccess = getTagResponse200 & {
+  headers: Headers;
+};
+export type getTagResponse = getTagResponseSuccess;
+
+export const getGetTagUrl = (id: string) => {
+  return `/tags/${id}`;
+};
+
+/**
+ * 태그 ID로 태그 상세 정보를 조회합니다. 로그인한 사용자만 접근할 수 있으며, 프로젝트 태그는 프로젝트가 공개이거나 요청자가 프로젝트 팀원인 경우에만 조회할 수 있습니다.
+ * @summary Get Tag
+ */
+export const getTag = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getTagResponse> => {
+  return api<getTagResponse>(getGetTagUrl(id), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetTagQueryKey = (id: string) => {
+  return [`/tags/${id}`] as const;
+};
+
+export const getGetTagQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTag>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTag>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTagQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTag>>> = ({
+    signal,
+  }) => getTag(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getTag>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type GetTagQueryResult = NonNullable<Awaited<ReturnType<typeof getTag>>>;
+export type GetTagQueryError = ErrorType<unknown>;
+
+export function useGetTag<
+  TData = Awaited<ReturnType<typeof getTag>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTag>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTag>>,
+          TError,
+          Awaited<ReturnType<typeof getTag>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTag<
+  TData = Awaited<ReturnType<typeof getTag>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTag>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTag>>,
+          TError,
+          Awaited<ReturnType<typeof getTag>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTag<
+  TData = Awaited<ReturnType<typeof getTag>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTag>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Tag
+ */
+
+export function useGetTag<
+  TData = Awaited<ReturnType<typeof getTag>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTag>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTagQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type rejectTagResponse204 = {
   data: void;
   status: 204;
@@ -2171,7 +2329,7 @@ export const useUnfollowTag = <TError = ErrorType<unknown>, TContext = unknown>(
   return useMutation(getUnfollowTagMutationOptions(options), queryClient);
 };
 export type getFollowedTagsResponse200 = {
-  data: GetTagsResponse;
+  data: GetFollowedTagsResponse;
   status: 200;
 };
 
@@ -2180,26 +2338,48 @@ export type getFollowedTagsResponseSuccess = getFollowedTagsResponse200 & {
 };
 export type getFollowedTagsResponse = getFollowedTagsResponseSuccess;
 
-export const getGetFollowedTagsUrl = (handle: string) => {
-  return `/users/${handle}/followed-tags`;
+export const getGetFollowedTagsUrl = (
+  handle: string,
+  params: GetFollowedTagsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/users/${handle}/followed-tags?${stringifiedParams}`
+    : `/users/${handle}/followed-tags`;
 };
 
 /**
- * 유저가 팔로우하는 전역 태그 목록을 조회합니다.
+ * 유저가 팔로우하는 전역 태그 목록을 페이지 단위로 조회합니다.
  * @summary Get Followed Tags
  */
 export const getFollowedTags = async (
   handle: string,
+  params: GetFollowedTagsParams,
   options?: RequestInit,
 ): Promise<getFollowedTagsResponse> => {
-  return api<getFollowedTagsResponse>(getGetFollowedTagsUrl(handle), {
+  return api<getFollowedTagsResponse>(getGetFollowedTagsUrl(handle, params), {
     ...options,
     method: 'GET',
   });
 };
 
-export const getGetFollowedTagsQueryKey = (handle: string) => {
-  return [`/users/${handle}/followed-tags`] as const;
+export const getGetFollowedTagsQueryKey = (
+  handle: string,
+  params?: GetFollowedTagsParams,
+) => {
+  return [
+    `/users/${handle}/followed-tags`,
+    ...(params ? [params] : []),
+  ] as const;
 };
 
 export const getGetFollowedTagsQueryOptions = <
@@ -2207,6 +2387,7 @@ export const getGetFollowedTagsQueryOptions = <
   TError = ErrorType<unknown>,
 >(
   handle: string,
+  params: GetFollowedTagsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2220,11 +2401,12 @@ export const getGetFollowedTagsQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetFollowedTagsQueryKey(handle);
+  const queryKey =
+    queryOptions?.queryKey ?? getGetFollowedTagsQueryKey(handle, params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowedTags>>> = ({
     signal,
-  }) => getFollowedTags(handle, { signal, ...requestOptions });
+  }) => getFollowedTags(handle, params, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -2248,6 +2430,7 @@ export function useGetFollowedTags<
   TError = ErrorType<unknown>,
 >(
   handle: string,
+  params: GetFollowedTagsParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -2275,6 +2458,7 @@ export function useGetFollowedTags<
   TError = ErrorType<unknown>,
 >(
   handle: string,
+  params: GetFollowedTagsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2302,6 +2486,7 @@ export function useGetFollowedTags<
   TError = ErrorType<unknown>,
 >(
   handle: string,
+  params: GetFollowedTagsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2325,6 +2510,7 @@ export function useGetFollowedTags<
   TError = ErrorType<unknown>,
 >(
   handle: string,
+  params: GetFollowedTagsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2339,7 +2525,7 @@ export function useGetFollowedTags<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetFollowedTagsQueryOptions(handle, options);
+  const queryOptions = getGetFollowedTagsQueryOptions(handle, params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

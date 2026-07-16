@@ -150,6 +150,18 @@ Permission evaluators (`TagPermissionEvaluator`, `PostPermissionEvaluator`,
 - Post `canEdit` is author-only; post `canDelete` is author **or** any teammate
   with `canManageProject()` on the post's project — moderation power to remove,
   not to rewrite.
+- Post `READ` (public feed, slug page, search, likes/bookmarks): a post's scope
+  is `PUBLIC` (no `project_id`, i.e. a personal post) or `WORKSPACE` (belongs
+  to a project) — `PostScope.fromProject()`. Personal posts are always
+  visible. Workspace posts are visible to non-teammates **iff** their project
+  is public (`Project.isPublic`); private-project posts are visible only to
+  the author or a project teammate, regardless of caller. This condition must
+  stay consistent across every read path — `PostQueryRepository.Conditions`
+  (`feedVisibleCondition`/`readableCondition`/`tagPostVisibilityCondition`/
+  `getPostsByProject`/`getPostsByIdsInProject`) and
+  `PostPermissionEvaluator.canRead` all encode the same rule; when adding a
+  new post-listing query, reuse or mirror these instead of writing an ad hoc
+  condition.
 
 ---
 
