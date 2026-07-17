@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useUploadMedia } from '@/api/__generated__/media/media';
@@ -312,7 +312,17 @@ function ProjectNameField({
   const project = data?.data;
 
   const [name, setName] = useState(project?.summary.name ?? '');
+  const [isNameSeeded, setIsNameSeeded] = useState(!!project);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isNameSeeded || !project) {
+      return;
+    }
+
+    setName(project.summary.name);
+    setIsNameSeeded(true);
+  }, [isNameSeeded, project]);
 
   const { mutate: updateProject, isPending } = useUpdateProject({
     mutation: {
@@ -395,7 +405,17 @@ function ProjectHandleField({
   const project = data?.data;
 
   const [nextHandle, setNextHandle] = useState(project?.summary.handle ?? '');
+  const [isHandleSeeded, setIsHandleSeeded] = useState(!!project);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isHandleSeeded || !project) {
+      return;
+    }
+
+    setNextHandle(project.summary.handle);
+    setIsHandleSeeded(true);
+  }, [isHandleSeeded, project]);
 
   const { mutate: updateProject, isPending } = useUpdateProject({
     mutation: {

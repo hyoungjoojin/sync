@@ -70,7 +70,11 @@ export const TagFollowStep = forwardRef<
   const [isSeeded, setIsSeeded] = useState(false);
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
 
-  if (!isSeeded && followedTagsData) {
+  useEffect(() => {
+    if (isSeeded || !followedTagsData) {
+      return;
+    }
+
     setIsSeeded(true);
     setSelectedTags(
       new Map(
@@ -80,7 +84,7 @@ export const TagFollowStep = forwardRef<
         ]),
       ),
     );
-  }
+  }, [isSeeded, followedTagsData]);
 
   const followedCount = selectedTags.size;
 

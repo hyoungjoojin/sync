@@ -7,11 +7,10 @@ import {
   getGetPostBySlugQueryOptions,
   getPostBySlug,
 } from '@/api/__generated__/post/post';
+import { COMMENT_PAGE_SIZE } from '@/components/feature/post/constants';
 import type { PostType } from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
-import PostComments, {
-  COMMENT_PAGE_SIZE,
-} from '@/components/feature/post/viewer/PostComments';
+import PostComments from '@/components/feature/post/viewer/PostComments';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import SyncError, { ErrorCode } from '@/lib/error';
 import { getQueryClient } from '@/lib/query';

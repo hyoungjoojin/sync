@@ -151,12 +151,16 @@ public class ProjectService {
 
     project.update(request.name(), request.description(), request.website());
 
-    if (request.handle() != null && !request.handle().trim().equals(project.getHandle())) {
-      if (projectRepository.existsByHandle(request.handle().trim())) {
-        throw new ProjectHandleAlreadyExistsException();
-      }
+    if (request.handle() != null) {
+      String trimmedHandle = request.handle().trim();
 
-      project.updateHandle(request.handle());
+      if (!trimmedHandle.equals(project.getHandle())) {
+        if (projectRepository.existsByHandle(trimmedHandle)) {
+          throw new ProjectHandleAlreadyExistsException();
+        }
+
+        project.updateHandle(trimmedHandle);
+      }
     }
 
     if (Boolean.TRUE.equals(request.removeIcon())) {

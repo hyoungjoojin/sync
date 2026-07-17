@@ -6,7 +6,7 @@ import {
   useUnacceptComment as useUnacceptCommentMutation,
 } from '@/api/__generated__/comment/comment';
 
-import { COMMENT_PAGE_SIZE } from '../viewer/PostComments';
+import { COMMENT_PAGE_SIZE } from '../constants';
 
 export function useCommentAcceptance(slug: string) {
   const queryClient = useQueryClient();

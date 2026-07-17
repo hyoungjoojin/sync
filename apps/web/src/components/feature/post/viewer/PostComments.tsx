@@ -20,9 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
 
+import { COMMENT_PAGE_SIZE } from '../constants';
 import { PostType } from '../types/post';
-
-export const COMMENT_PAGE_SIZE = '20';
 
 interface PostCommentsProps {
   slug: string;
