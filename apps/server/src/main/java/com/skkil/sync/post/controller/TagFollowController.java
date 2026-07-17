@@ -1,7 +1,8 @@
 package com.skkil.sync.post.controller;
 
 import com.skkil.sync.auth.AuthenticatedUser;
-import com.skkil.sync.post.dto.response.GetTagsResponse;
+import com.skkil.sync.common.util.pagination.dto.request.OffsetPaginationRequest;
+import com.skkil.sync.post.dto.response.GetFollowedTagsResponse;
 import com.skkil.sync.post.service.TagFollowService;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,8 @@ public class TagFollowController {
 
   @GetMapping("/users/{handle}/followed-tags")
   @ResponseStatus(HttpStatus.OK)
-  public GetTagsResponse getFollowedTags(@PathVariable String handle) {
-    return tagFollowService.getFollowedTags(handle);
+  public GetFollowedTagsResponse getFollowedTags(
+      @PathVariable String handle, @Validated OffsetPaginationRequest pagination) {
+    return tagFollowService.getFollowedTags(handle, pagination);
   }
 }

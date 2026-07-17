@@ -59,6 +59,13 @@ public class TagService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("hasPermission(#id, 'TAG', 'READ')")
+  public TagSummary getTag(Long requesterId, Long id) {
+    Tag tag = tagRepository.findByIdWithProject(id).orElseThrow(() -> new TagNotFoundException(id));
+    return tagMapper.toTagSummary(tag, followedTagIds(requesterId));
+  }
+
+  @Transactional(readOnly = true)
   public Map<Long, List<TagSummary>> getTagsForPosts(Long requesterId, List<Long> postIds) {
     if (postIds.isEmpty()) {
       return Map.of();

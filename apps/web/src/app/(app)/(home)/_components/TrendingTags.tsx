@@ -88,7 +88,11 @@ export default function TrendingTags() {
               return (
                 <div key={tag.id} className="flex items-center gap-2">
                   <Link
-                    href={ROUTES.EXPLORE_TAGS()}
+                    href={
+                      tag.projectHandle
+                        ? ROUTES.PROJECT_TAG(tag.projectHandle, String(tag.id))
+                        : ROUTES.TAG(String(tag.id))
+                    }
                     className="min-w-0 flex-1 rounded-md hover:underline"
                   >
                     <p className="truncate text-sm font-semibold">

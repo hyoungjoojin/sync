@@ -200,7 +200,7 @@ function TopTagsWidget({ handle }: ProjectInfoSidebarProps) {
             {tags.map((tag) => (
               <Link
                 key={tag.id}
-                href={ROUTES.PROJECT_TAG_POSTS(handle, String(tag.id))}
+                href={ROUTES.PROJECT_TAG(handle, String(tag.id))}
               >
                 <Badge variant="secondary">#{tag.name}</Badge>
               </Link>

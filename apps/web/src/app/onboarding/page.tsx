@@ -68,9 +68,14 @@ export default function Onboarding() {
     [profile],
   );
 
-  const contentRef = useRef<OnboardingStepContentRef | null>(null);
+  const contentRefs = useRef<Map<number, OnboardingStepContentRef | null>>(
+    new Map(),
+  );
 
   const [stepIndex, setStep] = useState(0);
+  const [visitedSteps, setVisitedSteps] = useState<Set<number>>(
+    () => new Set([0]),
+  );
   const [state, setState] = useState({
     isPending: false,
     isValid: true,
@@ -93,7 +98,9 @@ export default function Onboarding() {
   );
 
   const previousButtonClickHandler = () => {
-    setStep(stepIndex - 1);
+    const targetStep = stepIndex - 1;
+    setVisitedSteps((prev) => new Set(prev).add(targetStep));
+    setStep(targetStep);
     setState({
       isPending: false,
       isValid: true,
@@ -107,20 +114,21 @@ export default function Onboarding() {
         isValid: true,
       });
 
-      if (contentRef.current) {
-        contentRef.current.submit(() => {
-          setStep(stepIndex + 1);
-          setState({
-            isPending: false,
-            isValid: true,
-          });
-        });
-      } else {
-        setStep(stepIndex + 1);
+      const advance = () => {
+        const targetStep = stepIndex + 1;
+        setVisitedSteps((prev) => new Set(prev).add(targetStep));
+        setStep(targetStep);
         setState({
           isPending: false,
           isValid: true,
         });
+      };
+
+      const currentRef = contentRefs.current.get(stepIndex);
+      if (currentRef) {
+        currentRef.submit(advance);
+      } else {
+        advance();
       }
     }
   };
@@ -158,9 +166,30 @@ export default function Onboarding() {
           </p>
         </div>
 
-        {step?.content ? (
-          <step.content ref={contentRef} onStateChange={handleStateChange} />
-        ) : null}
+        {steps.map((s, index) => {
+          if (!s.content || !visitedSteps.has(index)) {
+            return null;
+          }
+
+          const StepContent = s.content;
+
+          return (
+            <div key={s.id} className={index === stepIndex ? '' : 'hidden'}>
+              <StepContent
+                ref={(el) => {
+                  if (el) {
+                    contentRefs.current.set(index, el);
+                  } else {
+                    contentRefs.current.delete(index);
+                  }
+                }}
+                onStateChange={
+                  index === stepIndex ? handleStateChange : () => {}
+                }
+              />
+            </div>
+          );
+        })}
 
         <div className="flex justify-end gap-4">
           {stepIndex > 0 && (

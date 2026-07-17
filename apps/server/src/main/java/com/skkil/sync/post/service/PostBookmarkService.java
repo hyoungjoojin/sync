@@ -8,6 +8,7 @@ import com.skkil.sync.post.repository.PostBookmarkRepository;
 import com.skkil.sync.post.repository.PostQueryRepository;
 import com.skkil.sync.post.repository.pagination.BookmarkedPostCursorPaginationProvider;
 import org.jspecify.annotations.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,7 @@ public class PostBookmarkService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("#projectHandle == null or hasPermission(#projectHandle, 'PROJECT', 'READ')")
   public GetPostsResponse getBookmarkedPosts(
       Long userId, @Nullable String projectHandle, CursorPaginationRequest pagination) {
     var page =

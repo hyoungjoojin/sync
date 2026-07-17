@@ -42,8 +42,8 @@ public interface PostSearchRepository extends Repository<PostEmbedding, Long> {
           AND r.status = 'PUBLISHED'
           AND ((:projectHandle IS NULL AND r.scope = 'PUBLIC')
             OR (:projectHandle IS NOT NULL AND r.scope = 'WORKSPACE' AND pr.handle = :projectHandle))
-          AND r.content ILIKE '%' || :query || '%'
-          ORDER BY similarity(r.content, :query) DESC
+          AND (r.title ILIKE '%' || :query || '%' OR r.content ILIKE '%' || :query || '%')
+          ORDER BY GREATEST(similarity(r.title, :query), similarity(r.content, :query)) DESC
           LIMIT :n
           """,
       nativeQuery = true)

@@ -58,12 +58,20 @@ public class ProjectAssembler {
   }
 
   public GetProjectResponse toGetProjectResponse(
-      Project project, List<Teammate> teammates, boolean hasMoreTeammates, Role requesterRole) {
+      Project project,
+      List<Teammate> teammates,
+      boolean hasMoreTeammates,
+      Role requesterRole,
+      boolean isFollowing,
+      boolean hasPendingInvitation) {
     return GetProjectResponse.builder()
         .summary(toProjectSummary(project))
         .teammates(toProjectTeammates(teammates))
         .hasMoreTeammates(hasMoreTeammates)
+        .isViewer(requesterRole != null)
         .role(requesterRole)
+        .isFollowing(isFollowing)
+        .hasPendingInvitation(hasPendingInvitation)
         .recentActivities(List.of())
         .build();
   }

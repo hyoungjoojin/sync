@@ -49,6 +49,8 @@ export const EmailVerificationStep = forwardRef<
   const [hasSent, setHasSent] = useState(false);
   const [token, setToken] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   useEffect(() => {
     if (profile?.data.isEmailVerified) {
@@ -77,8 +79,9 @@ export const EmailVerificationStep = forwardRef<
 
   const { mutate: sendVerificationEmail } = useSendVerificationEmail({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (response) => {
         setHasSent(true);
+        setExpiresAt(response.data.expiresAt);
         toast.success(t('messages.sent'));
       },
       onError: (sendError) => {
@@ -114,6 +117,31 @@ export const EmailVerificationStep = forwardRef<
       },
     },
   });
+
+  useEffect(() => {
+    if (!expiresAt) {
+      setRemainingSeconds(0);
+      return;
+    }
+
+    const computeRemainingSeconds = () =>
+      Math.max(
+        0,
+        Math.round((new Date(expiresAt).getTime() - Date.now()) / 1000),
+      );
+
+    setRemainingSeconds(computeRemainingSeconds());
+    const intervalId = setInterval(() => {
+      setRemainingSeconds(computeRemainingSeconds());
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [expiresAt]);
+
+  const isTokenExpired = hasSent && remainingSeconds === 0;
+  const formattedRemainingTime = `${Math.floor(remainingSeconds / 60)}:${String(
+    remainingSeconds % 60,
+  ).padStart(2, '0')}`;
 
   const hasAutoSentRef = useRef(false);
 
@@ -169,17 +197,23 @@ export const EmailVerificationStep = forwardRef<
               onChange={(event) => tokenChangeHandler(event.target.value)}
               autoComplete="one-time-code"
               placeholder={t('form.token.placeholder')}
+              disabled={isTokenExpired}
               spellCheck={false}
             />
             <Button
               type="button"
               isPending={isVerifyPending}
-              disabled={token.length === 0}
+              disabled={token.length === 0 || isTokenExpired}
               onClick={verifyClickHandler}
             >
               {t('actions.verify')}
             </Button>
           </div>
+          <p className="text-muted-foreground text-sm">
+            {isTokenExpired
+              ? t('messages.expired')
+              : t('messages.expiresIn', { time: formattedRemainingTime })}
+          </p>
           <div className="h-3 p-1">
             <FieldError errors={error ? [{ message: error }] : []} />
           </div>

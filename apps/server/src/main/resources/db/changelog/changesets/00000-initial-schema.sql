@@ -199,6 +199,7 @@ CREATE TABLE comments (
     post_id BIGINT NOT NULL,
     content TEXT NOT NULL,
     deleted_at TIMESTAMPTZ,
+    is_accepted BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY(author_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY(post_id) REFERENCES posts(id)
 );
@@ -358,6 +359,8 @@ CREATE INDEX idx_post_likes_post_id ON post_likes (post_id);
 CREATE INDEX idx_post_embeddings_embedding_hnsw ON post_embeddings USING hnsw (embedding vector_cosine_ops);
 
 CREATE INDEX idx_posts_content_gin ON posts USING gin (content gin_trgm_ops);
+
+CREATE INDEX idx_posts_title_gin ON posts USING gin (title gin_trgm_ops);
 
 CREATE INDEX idx_posts_status_created_id ON posts(status, created_at DESC, id DESC);
 

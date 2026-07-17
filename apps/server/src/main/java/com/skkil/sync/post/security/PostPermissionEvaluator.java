@@ -55,7 +55,11 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
       return false;
     }
 
-    if (post.isPublished() && post.isPublic()) {
+    if (!post.isPublished()) {
+      return user != null && user.userId().equals(post.getAuthor().getId());
+    }
+
+    if (post.isPublic() || (post.getProject() != null && post.getProject().isPublic())) {
       return true;
     }
 
@@ -67,11 +71,13 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
       return true;
     }
 
-    return post.isPublished()
-        && post.getProject() != null
-        && teammateRepository
-            .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
-            .isPresent();
+    if (post.getProject() == null) {
+      return false;
+    }
+
+    return teammateRepository
+        .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
+        .isPresent();
   }
 
   private boolean canEdit(AuthenticatedUser user, Post post) {
