@@ -1,1 +1,8 @@
 .env
+
+*.playwright-mcp
+wireframe.zip
+
+docs/plans/**/*
+
+.claude

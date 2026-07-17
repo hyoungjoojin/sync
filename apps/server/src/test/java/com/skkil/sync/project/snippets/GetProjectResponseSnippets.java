@@ -3,27 +3,69 @@ package com.skkil.sync.project.snippets;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+import com.skkil.sync.common.util.restdocs.RestDocsUtils;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
+import com.skkil.sync.project.model.Role;
 import java.util.List;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 
 public class GetProjectResponseSnippets {
 
   public static GetProjectResponse getGetProjectResponse() {
-    return new GetProjectResponse(
-        "my-project",
-        "나의 프로젝트",
-        List.of(
-            new GetProjectResponse.Teammate(1L, true), new GetProjectResponse.Teammate(2L, false)));
+    return GetProjectResponse.builder()
+        .summary(ProjectSummarySnippets.getProjectSummary())
+        .teammates(
+            List.of(
+                ProjectTeammateSummarySnippets.getProjectTeammate(Role.ADMIN),
+                ProjectTeammateSummarySnippets.getProjectTeammate(Role.MEMBER)))
+        .hasMoreTeammates(false)
+        .isViewer(true)
+        .role(Role.ADMIN)
+        .isFollowing(false)
+        .hasPendingInvitation(false)
+        .recentActivities(
+            List.of(new GetProjectResponse.Activity("1", "2024-01-01T00:00:00Z", "활동 내용")))
+        .build();
   }
 
   public static ResponseFieldsSnippet getGetProjectResponseFields() {
     return responseFields(
-        fieldWithPath("handle").type(JsonFieldType.STRING).description("프로젝트 핸들"),
-        fieldWithPath("name").type(JsonFieldType.STRING).description("프로젝트 이름"),
-        fieldWithPath("teammates").type(JsonFieldType.ARRAY).description("팀원 목록"),
-        fieldWithPath("teammates[].id").type(JsonFieldType.NUMBER).description("팀원 ID"),
-        fieldWithPath("teammates[].isOwner").type(JsonFieldType.BOOLEAN).description("오너 여부"));
+            fieldWithPath("summary").type(JsonFieldType.OBJECT).description("프로젝트 정보"))
+        .and(
+            ProjectSummarySnippets.getProjectSummaryFields("summary.")
+                .toArray(FieldDescriptor[]::new))
+        .and(
+            ProjectTeammateSummarySnippets.getProjectTeammateFields("teammates[].")
+                .toArray(FieldDescriptor[]::new))
+        .and(
+            fieldWithPath("teammates").type(JsonFieldType.ARRAY).description("팀원 목록"),
+            fieldWithPath("hasMoreTeammates")
+                .type(JsonFieldType.BOOLEAN)
+                .description("추가 팀원 존재 여부"),
+            fieldWithPath("isViewer").type(JsonFieldType.BOOLEAN).description("현재 사용자의 프로젝트 팀원 여부"),
+            fieldWithPath("role")
+                .type(RestDocsUtils.ENUM_TYPE)
+                .optional()
+                .description("현재 사용자 역할")
+                .attributes(RestDocsUtils.getEnumAttributes(Role.class)),
+            fieldWithPath("isFollowing")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 프로젝트 팔로우 여부"),
+            fieldWithPath("hasPendingInvitation")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 대기 중인 초대 존재 여부"),
+            fieldWithPath("recentActivities")
+                .type(JsonFieldType.ARRAY)
+                .description("최근 활동 목록")
+                .optional(),
+            fieldWithPath("recentActivities[].id").type(JsonFieldType.STRING).description("활동 ID"),
+            fieldWithPath("recentActivities[].timestamp")
+                .type(JsonFieldType.STRING)
+                .description("활동 시각"),
+            fieldWithPath("recentActivities[].text")
+                .type(JsonFieldType.STRING)
+                .description("활동 내용"));
   }
 }

@@ -1,11 +1,6 @@
 package com.skkil.sync.user.dto.response;
 
-import java.util.List;
+import com.skkil.sync.common.util.pagination.dto.response.CursorPaginationResponse;
+import com.skkil.sync.user.dto.summary.UserSummary;
 
-public record GetConnectionsResponse(List<Connection> connections) {
-
-  public static record Connection(
-      String userId, String name, Provider provider, String profession) {}
-
-  public static record Provider(String id, String type, String name) {}
-}
+public record GetConnectionsResponse(CursorPaginationResponse<UserSummary> connections) {}

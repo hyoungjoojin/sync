@@ -4,15 +4,30 @@ import com.skkil.sync.project.model.Project;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
+
+  @Modifying
+  @Query(
+      value = "UPDATE projects SET follower_count = follower_count + 1 WHERE id = :projectId",
+      nativeQuery = true)
+  void incrementFollowerCount(Long projectId);
+
+  @Modifying
+  @Query(
+      value =
+          "UPDATE projects SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = :projectId",
+      nativeQuery = true)
+  void decrementFollowerCount(Long projectId);
 
   @Query(
       """
       SELECT p
       FROM Project p
-      WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.handle) LIKE LOWER(CONCAT('%', :query, '%'))
+      WHERE p.isPublic = true
+      AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.handle) LIKE LOWER(CONCAT('%', :query, '%')))
       LIMIT 10
       """)
   List<Project> searchProjects(String query);
@@ -32,6 +47,19 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
       LIMIT 10
       """)
   List<Project> searchMyProjects(Long userId, String query);
+
+  @Query(
+      """
+      SELECT p
+      FROM Project p
+      WHERE EXISTS (
+       SELECT t
+       FROM Teammate t
+       WHERE
+       t.project = p AND t.user.id = :userId
+      )
+      """)
+  List<Project> findMyProjects(Long userId);
 
   Optional<Project> findByHandle(String handle);
 

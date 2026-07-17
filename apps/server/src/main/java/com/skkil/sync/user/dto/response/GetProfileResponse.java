@@ -13,7 +13,10 @@ public record GetProfileResponse(
     String profession,
     String profileImageUrl,
     boolean isFollowing,
-    boolean isOnboarded,
+    long followerCount,
+    long followingCount,
+    Boolean isOnboarded,
+    Boolean isEmailVerified,
     boolean isAuthenticatedUser,
     Role role,
     Contacts contacts) {

@@ -1,7 +1,7 @@
 package com.skkil.sync.comment.model;
 
 import com.skkil.sync.common.domain.BaseEntity;
-import com.skkil.sync.reflection.model.Reflection;
+import com.skkil.sync.post.model.Post;
 import com.skkil.sync.user.model.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,11 +24,7 @@ public class Comment extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "post_id", nullable = false)
-  private Reflection reflection;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "parent_id")
-  private Comment parent;
+  private Post post;
 
   @Column(name = "content", columnDefinition = "TEXT", nullable = false)
   private String content;
@@ -36,22 +32,20 @@ public class Comment extends BaseEntity {
   @Column(name = "deleted_at")
   private Instant deletedAt;
 
+  @Column(name = "is_accepted", nullable = false)
+  private boolean accepted;
+
   protected Comment() {}
 
   @Builder
-  public Comment(User author, Reflection reflection, Comment parent, String content) {
+  public Comment(User author, Post post, String content) {
     this.author = author;
-    this.reflection = reflection;
-    this.parent = parent;
+    this.post = post;
     this.content = content;
   }
 
   public boolean isDeleted() {
     return deletedAt != null;
-  }
-
-  public boolean isReply() {
-    return parent != null;
   }
 
   public void updateContent(String content) {
@@ -60,5 +54,13 @@ public class Comment extends BaseEntity {
 
   public void delete() {
     this.deletedAt = Instant.now();
+  }
+
+  public void accept() {
+    this.accepted = true;
+  }
+
+  public void unaccept() {
+    this.accepted = false;
   }
 }

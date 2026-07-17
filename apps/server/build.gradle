@@ -43,6 +43,20 @@ sourceSets {
 	main {
 		java {
 			srcDirs += 'build/generated/jooq'
+			exclude '**/recruitment/**'
+			exclude '**/provider/**'
+			exclude '**/review/**'
+			exclude '**/experience/**'
+			exclude '**/message/**'
+			exclude '**/notification/**'
+		}
+	}
+	test {
+		java {
+			exclude '**/recruitment/**'
+			exclude '**/provider/**'
+			exclude '**/review/**'
+			exclude '**/experience/**'
 		}
 	}
 }
@@ -87,15 +101,17 @@ dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-log4j2"
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation "io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:2.26.1-alpha"
+	implementation "io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:2.21.0-alpha"
 	implementation platform("org.springframework.ai:spring-ai-bom:2.0.0-M3")
 	implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
 	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
+	implementation 'com.bucket4j:bucket4j_jdk17-postgresql:8.18.0'
 	implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0-RC1')
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
 	implementation 'org.mapstruct:mapstruct:1.6.3'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+	implementation 'net.datafaker:datafaker:2.7.0'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'

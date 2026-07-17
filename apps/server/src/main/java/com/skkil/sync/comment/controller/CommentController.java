@@ -6,6 +6,7 @@ import com.skkil.sync.comment.dto.request.UpdateCommentRequest;
 import com.skkil.sync.comment.dto.response.CreateCommentResponse;
 import com.skkil.sync.comment.dto.response.GetCommentsResponse;
 import com.skkil.sync.comment.service.CommentService;
+import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,19 +29,20 @@ public class CommentController {
     this.commentService = commentService;
   }
 
-  @GetMapping("/reflections/{slug}/comments")
+  @GetMapping("/posts/{slug}/comments")
   @ResponseStatus(HttpStatus.OK)
-  public GetCommentsResponse getReflectionComments(@PathVariable String slug) {
-    return commentService.getReflectionComments(slug);
+  public GetCommentsResponse getPostComments(
+      @PathVariable String slug, @Validated CursorPaginationRequest pagination) {
+    return commentService.getPostComments(slug, pagination);
   }
 
-  @PostMapping("/reflections/{reflectionId}/comments")
+  @PostMapping("/posts/{slug}/comments")
   @ResponseStatus(HttpStatus.CREATED)
   public CreateCommentResponse createComment(
       @AuthenticationPrincipal AuthenticatedUser user,
-      @PathVariable Long reflectionId,
+      @PathVariable String slug,
       @RequestBody @Validated CreateCommentRequest request) {
-    return commentService.createComment(user.userId(), reflectionId, request);
+    return commentService.createComment(user.userId(), slug, request);
   }
 
   @PatchMapping("/comments/{commentId}")
@@ -53,5 +56,17 @@ public class CommentController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteComment(@PathVariable Long commentId) {
     commentService.deleteComment(commentId);
+  }
+
+  @PutMapping("/comments/{commentId}/accept")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void acceptComment(@PathVariable Long commentId) {
+    commentService.acceptComment(commentId);
+  }
+
+  @DeleteMapping("/comments/{commentId}/accept")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void unacceptComment(@PathVariable Long commentId) {
+    commentService.unacceptComment(commentId);
   }
 }

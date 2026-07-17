@@ -1,8 +1,21 @@
 package com.skkil.sync.project.dto.response;
 
+import com.skkil.sync.project.dto.summary.ProjectSummary;
+import com.skkil.sync.project.dto.summary.ProjectTeammateSummary;
+import com.skkil.sync.project.model.Role;
 import java.util.List;
+import lombok.Builder;
 
-public record GetProjectResponse(String handle, String name, List<Teammate> teammates) {
+@Builder
+public record GetProjectResponse(
+    ProjectSummary summary,
+    List<ProjectTeammateSummary> teammates,
+    boolean hasMoreTeammates,
+    boolean isViewer,
+    Role role,
+    boolean isFollowing,
+    boolean hasPendingInvitation,
+    List<Activity> recentActivities) {
 
-  public record Teammate(Long id, boolean isOwner) {}
+  public record Activity(String id, String timestamp, String text) {}
 }

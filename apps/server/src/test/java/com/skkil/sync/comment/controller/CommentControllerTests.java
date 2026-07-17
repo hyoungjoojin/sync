@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
@@ -30,6 +31,8 @@ import com.skkil.sync.comment.snippets.UpdateCommentRequestSnippets;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
+import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
+import com.skkil.sync.common.util.pagination.snippets.CursorPaginationRequestSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,28 +62,33 @@ class CommentControllerTests {
   @MockitoBean private CommentService commentService;
 
   @Test
-  @DisplayName("[getReflectionComments] API 문서화 테스트")
-  void getReflectionComments() throws Exception {
-    String slug = "test-reflection";
+  @DisplayName("[getPostComments] API 문서화 테스트")
+  void getPostComments() throws Exception {
+    String slug = "test-post";
+    CursorPaginationRequest pagination =
+        CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetCommentsResponse response = GetCommentsResponseSnippets.getGetCommentsResponse();
 
-    when(commentService.getReflectionComments(slug)).thenReturn(response);
+    when(commentService.getPostComments(eq(slug), eq(pagination))).thenReturn(response);
 
     mockMvc
-        .perform(get("/reflections/{slug}/comments", slug))
+        .perform(
+            get("/posts/{slug}/comments", slug)
+                .params(CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
         .andExpect(status().isOk())
         .andDo(
             document(
-                "GetReflectionComments",
+                "GetPostComments",
                 ResourceSnippetParameters.builder()
                     .tag("comment")
-                    .summary("Get Reflection Comments")
-                    .description("Get Reflection Comments")
+                    .summary("Get Post Comments")
+                    .description("Get Post Comments")
                     .responseSchema(schema(GetCommentsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
-                pathParameters(parameterWithName("slug").description("Reflection Slug")),
+                pathParameters(parameterWithName("slug").description("Post Slug")),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
                 GetCommentsResponseSnippets.getCommentsResponseFields()));
   }
 
@@ -88,17 +96,17 @@ class CommentControllerTests {
   @DisplayName("[createComment] API 문서화 테스트")
   @WithAuthenticatedUser
   void createComment() throws Exception {
-    Long reflectionId = 1L;
+    String slug = "test-post";
     AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
     CreateCommentRequest request = CreateCommentRequestSnippets.getCreateCommentRequest();
     CreateCommentResponse response = CreateCommentResponseSnippets.getCreateCommentResponse();
 
-    when(commentService.createComment(eq(user.userId()), eq(reflectionId), eq(request)))
+    when(commentService.createComment(eq(user.userId()), eq(slug), eq(request)))
         .thenReturn(response);
 
     mockMvc
         .perform(
-            post("/reflections/{reflectionId}/comments", reflectionId)
+            post("/posts/{slug}/comments", slug)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
@@ -114,7 +122,7 @@ class CommentControllerTests {
                 preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
                 null,
                 Function.identity(),
-                pathParameters(parameterWithName("reflectionId").description("Reflection ID")),
+                pathParameters(parameterWithName("slug").description("Post Slug")),
                 CreateCommentRequestSnippets.getCreateCommentRequestFields(),
                 CreateCommentResponseSnippets.getCreateCommentResponseFields()));
   }
@@ -160,6 +168,46 @@ class CommentControllerTests {
                     .tag("comment")
                     .summary("Delete Comment")
                     .description("Delete Comment"),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("commentId").description("Comment ID"))));
+  }
+
+  @Test
+  @DisplayName("[acceptComment] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void acceptComment() throws Exception {
+    mockMvc
+        .perform(put("/comments/{commentId}/accept", 1L))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "AcceptComment",
+                ResourceSnippetParameters.builder()
+                    .tag("comment")
+                    .summary("Accept Comment")
+                    .description("Accept Comment"),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("commentId").description("Comment ID"))));
+  }
+
+  @Test
+  @DisplayName("[unacceptComment] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void unacceptComment() throws Exception {
+    mockMvc
+        .perform(delete("/comments/{commentId}/accept", 1L))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "UnacceptComment",
+                ResourceSnippetParameters.builder()
+                    .tag("comment")
+                    .summary("Unaccept Comment")
+                    .description("Unaccept Comment"),
                 null,
                 null,
                 Function.identity(),

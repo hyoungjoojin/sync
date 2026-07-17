@@ -1,5 +1,7 @@
 import ky from 'ky';
 
+import koMessages from '@/public/locales/ko.json';
+import ROUTES from '@/util/routes';
 import { getCookies, getCsrfToken, isServer } from '@/util/server';
 
 import { env } from './env';
@@ -11,6 +13,21 @@ interface ErrorResponse {
   status: number;
   title: string;
   code: ErrorCode;
+}
+
+async function invalidateClientSessionIfAuthenticated() {
+  const sessionRes = await fetch('/api/auth/get-session', {
+    credentials: 'include',
+  });
+
+  const session = sessionRes.ok ? await sessionRes.json() : null;
+  if (session) {
+    await fetch('/api/auth/sign-out', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    window.location.href = ROUTES.LOGIN();
+  }
 }
 
 export const server = ky.extend({
@@ -44,7 +61,15 @@ export const server = ky.extend({
       async (error) => {
         const { response } = error;
 
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
+          if (!isServer()) {
+            await invalidateClientSessionIfAuthenticated();
+          }
+
+          return error;
+        }
+
+        if (response.status === 403) {
           return error;
         }
 
@@ -55,6 +80,14 @@ export const server = ky.extend({
   },
 });
 
+export async function primeCsrfToken() {
+  try {
+    await server.get('auth/csrf');
+  } catch {
+    // Best-effort — worst case the CSRF cookie stays unset until the next GET.
+  }
+}
+
 const getUrl = (url: string) => {
   if (url.startsWith('/')) {
     return url.slice(1);
@@ -64,7 +97,19 @@ const getUrl = (url: string) => {
 };
 
 export const api = async <T>(url: string, options: RequestInit): Promise<T> => {
-  const response = await server(getUrl(url), options);
+  let response: Response;
+  try {
+    response = await server(getUrl(url), options);
+  } catch (error) {
+    if (error instanceof SyncError) {
+      throw error;
+    }
+
+    throw new SyncError(
+      koMessages.errors['connection-failed'],
+      ErrorCode.NETWORK_ERROR,
+    );
+  }
 
   if (response.status === 204) {
     return {

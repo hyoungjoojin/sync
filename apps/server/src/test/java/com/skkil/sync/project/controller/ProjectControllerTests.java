@@ -4,12 +4,16 @@ import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.docume
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,16 +22,18 @@ import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.config.SecurityConfig;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
+import com.skkil.sync.project.dto.request.UpdateProjectRequest;
 import com.skkil.sync.project.dto.response.CreateProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
-import com.skkil.sync.project.dto.response.SearchProjectsResponse;
+import com.skkil.sync.project.dto.response.GetProjectsResponse;
 import com.skkil.sync.project.service.ProjectService;
 import com.skkil.sync.project.snippets.CreateProjectRequestSnippets;
 import com.skkil.sync.project.snippets.CreateProjectResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectHandleAvailabilityResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectResponseSnippets;
-import com.skkil.sync.project.snippets.SearchProjectsResponseSnippets;
+import com.skkil.sync.project.snippets.GetProjectsResponseSnippets;
+import com.skkil.sync.project.snippets.UpdateProjectRequestSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(ProjectController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = true)
 @AutoConfigureRestDocs
 @ExtendWith(RestDocumentationExtension.class)
 @Import({SecurityConfig.class, TestSecurityConfig.class})
@@ -69,7 +75,8 @@ class ProjectControllerTests {
         .perform(
             post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonMapper.writeValueAsString(request)))
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
         .andExpect(status().isCreated())
         .andDo(
             document(
@@ -92,10 +99,10 @@ class ProjectControllerTests {
   void getProjectByHandle() throws Exception {
     GetProjectResponse response = GetProjectResponseSnippets.getGetProjectResponse();
 
-    when(projectService.getProjectByHandle(response.handle())).thenReturn(response);
+    when(projectService.getProjectByHandle(null, response.summary().handle())).thenReturn(response);
 
     mockMvc
-        .perform(get("/projects/{handle}", response.handle()))
+        .perform(get("/projects/{handle}", response.summary().handle()))
         .andExpect(status().isOk())
         .andDo(
             document(
@@ -142,10 +149,37 @@ class ProjectControllerTests {
   }
 
   @Test
+  @DisplayName("[getProjectsByUser] API 문서화 테스트")
+  void getProjectsByUser() throws Exception {
+    String handle = "john";
+    GetProjectsResponse response = GetProjectsResponseSnippets.getGetProjectsResponse();
+
+    when(projectService.getProjectsByUser(handle)).thenReturn(response);
+
+    mockMvc
+        .perform(get("/users/{handle}/projects", handle))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetProjectsByUser",
+                ResourceSnippetParameters.builder()
+                    .tag("project")
+                    .summary("Get Projects By User")
+                    .description("유저 핸들로 해당 유저의 프로젝트 목록을 조회합니다.")
+                    .responseSchema(schema(GetProjectsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("handle").description("유저 핸들")),
+                GetProjectsResponseSnippets.getGetProjectsResponseFields()));
+  }
+
+  @Test
   @DisplayName("[searchProjects] API 문서화 테스트")
+  @WithAuthenticatedUser
   void searchProjects() throws Exception {
     String query = "Spring";
-    SearchProjectsResponse response = SearchProjectsResponseSnippets.getSearchProjectsResponse();
+    GetProjectsResponse response = GetProjectsResponseSnippets.getGetProjectsResponse();
 
     when(projectService.searchProjects(query)).thenReturn(response);
 
@@ -159,12 +193,12 @@ class ProjectControllerTests {
                     .tag("project")
                     .summary("Search Projects")
                     .description("검색어로 프로젝트를 검색합니다.")
-                    .responseSchema(schema(SearchProjectsResponse.class.getSimpleName())),
+                    .responseSchema(schema(GetProjectsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 queryParameters(parameterWithName("query").description("프로젝트 검색어")),
-                SearchProjectsResponseSnippets.getSearchProjectsResponseFields()));
+                GetProjectsResponseSnippets.getGetProjectsResponseFields()));
   }
 
   @Test
@@ -172,7 +206,7 @@ class ProjectControllerTests {
   @WithAuthenticatedUser
   void searchMyProjects() throws Exception {
     String query = "Spring";
-    SearchProjectsResponse response = SearchProjectsResponseSnippets.getSearchProjectsResponse();
+    GetProjectsResponse response = GetProjectsResponseSnippets.getGetProjectsResponse();
 
     when(projectService.searchMyProjects(anyLong(), eq(query))).thenReturn(response);
 
@@ -186,11 +220,58 @@ class ProjectControllerTests {
                     .tag("project")
                     .summary("Search My Projects")
                     .description("내 프로젝트를 검색어로 검색합니다.")
-                    .responseSchema(schema(SearchProjectsResponse.class.getSimpleName())),
+                    .responseSchema(schema(GetProjectsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 queryParameters(parameterWithName("query").description("프로젝트 검색어")),
-                SearchProjectsResponseSnippets.getSearchProjectsResponseFields()));
+                GetProjectsResponseSnippets.getGetProjectsResponseFields()));
+  }
+
+  @Test
+  @DisplayName("[searchProjects] 로그인하지 않은 사용자는 접근할 수 없다")
+  void searchProjects_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    mockMvc
+        .perform(get("/search/projects").queryParam("query", "Spring"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("[searchMyProjects] 로그인하지 않은 사용자는 접근할 수 없다")
+  void searchMyProjects_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    mockMvc
+        .perform(get("/search/projects/my").queryParam("query", "Spring"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("[updateProject] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void updateProject() throws Exception {
+    String projectHandle = "my-project";
+    UpdateProjectRequest request = UpdateProjectRequestSnippets.getUpdateProjectRequest();
+
+    doNothing().when(projectService).updateProject(anyLong(), anyString(), eq(request));
+
+    mockMvc
+        .perform(
+            patch("/projects/{handle}", projectHandle)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(request))
+                .with(csrf()))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "UpdateProject",
+                ResourceSnippetParameters.builder()
+                    .tag("project")
+                    .summary("Update Project")
+                    .description("프로젝트 정보를 수정합니다.")
+                    .requestSchema(schema(UpdateProjectRequest.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
+                UpdateProjectRequestSnippets.getUpdateProjectRequestFields()));
   }
 }

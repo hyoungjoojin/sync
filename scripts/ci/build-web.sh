@@ -12,4 +12,6 @@ pnpm run orval
 
 pnpm run format
 
+pnpm run lint
+
 pnpm run build

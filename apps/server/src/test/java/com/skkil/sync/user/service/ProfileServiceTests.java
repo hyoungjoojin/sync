@@ -6,8 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.skkil.sync.auth.AuthenticatedUser;
+import com.skkil.sync.user.dto.response.GetProfileResponse;
+import com.skkil.sync.user.exception.EmailNotVerifiedException;
+import com.skkil.sync.user.exception.HandleNotSetException;
 import com.skkil.sync.user.exception.UserNotFoundException;
-import com.skkil.sync.user.mapper.ProfileMapper;
+import com.skkil.sync.user.mapper.ProfileAssembler;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.repository.UserRepository;
 import java.util.Optional;
@@ -23,7 +26,7 @@ class ProfileServiceTests {
 
   @Mock private UserRepository userRepository;
   @Mock private UserRelationshipService userRelationshipService;
-  @Mock private ProfileMapper profileMapper;
+  @Mock private ProfileAssembler profileAssembler;
 
   @InjectMocks private ProfileService profileService;
 
@@ -55,8 +58,9 @@ class ProfileServiceTests {
 
     assertThat(user.isEnabled()).isFalse();
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(profileMapper.toGetProfileResponseContacts(null)).thenReturn(null);
     when(userRelationshipService.isFollowing(requesterId, userId)).thenReturn(false);
+    when(profileAssembler.toGetProfileResponse(user, null, false, true))
+        .thenReturn(GetProfileResponse.builder().build());
 
     assertThatCode(() -> profileService.getProfileById(requester, userId))
         .doesNotThrowAnyException();
@@ -70,5 +74,44 @@ class ProfileServiceTests {
 
     assertThatThrownBy(() -> profileService.getProfileById(null, userId))
         .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("[completeOnboarding] 핸들이 설정되어 있지 않으면 HandleNotSetException 예외 발생")
+  void completeOnboarding_handleNotSet_throwHandleNotSet() {
+    Long userId = 1L;
+    User user = User.builder().email("test@example.com").fullName("Test User").build();
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    assertThatThrownBy(() -> profileService.completeOnboarding(userId))
+        .isInstanceOf(HandleNotSetException.class);
+  }
+
+  @Test
+  @DisplayName("[completeOnboarding] 이메일이 인증되어 있지 않으면 EmailNotVerifiedException 예외 발생")
+  void completeOnboarding_emailNotVerified_throwEmailNotVerified() {
+    Long userId = 1L;
+    User user = User.builder().email("test@example.com").fullName("Test User").build();
+    user.updateHandle("testuser1");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    assertThatThrownBy(() -> profileService.completeOnboarding(userId))
+        .isInstanceOf(EmailNotVerifiedException.class);
+  }
+
+  @Test
+  @DisplayName("[completeOnboarding] 핸들이 설정되어 있고 이메일이 인증된 경우 온보딩이 완료된다")
+  void completeOnboarding_handleSetAndEmailVerified_onboardsUser() {
+    Long userId = 1L;
+    User user = User.builder().email("test@example.com").fullName("Test User").build();
+    user.updateHandle("testuser1");
+    user.verifyEmail();
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    assertThatCode(() -> profileService.completeOnboarding(userId)).doesNotThrowAnyException();
+    assertThat(user.getIsOnboarded()).isTrue();
   }
 }

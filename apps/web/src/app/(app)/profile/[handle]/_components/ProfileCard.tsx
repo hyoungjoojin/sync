@@ -9,18 +9,16 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
 
-import { useUploadMedia } from '@/api/__generated__/media/media';
 import {
-  getGetAuthenticatedUserQueryOptions,
-  getGetProfileByHandleQueryOptions,
   useGetAuthenticatedUser,
   useGetProfileByHandle,
-  useUpdateProfile,
 } from '@/api/__generated__/profile/profile';
-import { uploadFileToS3 } from '@/api/s3';
+import { FollowButton } from '@/components/feature/profile/FollowButton';
+import { ContactFields } from '@/components/feature/profile/contacts';
+import { useProfileImageUpload } from '@/components/feature/profile/hooks/useProfileImageUpload';
+import { useUpdateProfile } from '@/components/feature/profile/hooks/useUpdateProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Dialog,
   DialogClose,
@@ -37,7 +35,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field';
-import { FileInput, FileInputError, Input } from '@/components/ui/input';
+import { FileInput, Input } from '@/components/ui/input';
 import {
   InputGroup,
   InputGroupAddon,
@@ -46,11 +44,9 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { ContactFields } from '@/features/profile/util/contacts';
-import { useFollowUserMutation } from '@/features/user/api/follow-user';
-import { useUnfollowUserMutation } from '@/features/user/api/unfollow-user';
 import { useSession } from '@/lib/auth/client';
 import SyncError, { ErrorCode } from '@/lib/error';
+import ROUTES from '@/util/routes';
 
 interface ProfileOverviewProps {
   handle: string;
@@ -76,24 +72,28 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
   }, [error, isError]);
 
   if (!profile) {
-    return <Skeleton className="min-h-96 p-0" />;
+    return <Skeleton className="h-56 w-full" />;
   }
 
   return (
-    <Card className="min-h-96 p-0">
-      <CardHeader className="relative h-48 bg-muted">
-        <Avatar className="h-32 w-32 absolute left-8 -bottom-16">
+    <section className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+        <Avatar className="h-28 w-28 border">
           <AvatarImage src={profile.data.profileImageUrl ?? undefined} />
           <AvatarFallback></AvatarFallback>
         </Avatar>
-      </CardHeader>
 
-      {profile && (
-        <CardContent className="my-10 mx-4">
-          <div className="flex justify-between items-center">
+        <div className="flex flex-1 flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
-              <h2 className="text-3xl font-bold mt-3">{profile.data.name}</h2>
-              <p>{profile.data.profession}</p>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {profile.data.name}
+              </h2>
+              {profile.data.profession && (
+                <p className="text-muted-foreground">
+                  {profile.data.profession}
+                </p>
+              )}
             </div>
 
             <div className="h-9">
@@ -104,7 +104,7 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
                   ) : (
                     <>
                       <FollowButton handle={handle} />
-                      <Link href={`/messages?to=${handle}`}>
+                      <Link href={ROUTES.MESSAGES(handle)}>
                         <Button variant="outline">{t('header.message')}</Button>
                       </Link>
                     </>
@@ -114,29 +114,48 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse md:flex-row md:justify-between mt-2 gap-4">
-            {profile.data.bio && (
-              <div className="border-black border-l-2 p-2 w-96 text-pretty break-words">
-                {profile.data.bio}
-              </div>
-            )}
-
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-col">
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <p>
-                    <EnvelopeIcon />
-                  </p>
-                  <p>{profile.data.email}</p>
-                </div>
-
-                <ProfileContacts handle={handle} />
-              </div>
-            </div>
+          <div className="flex items-center gap-4 text-sm">
+            <Link
+              href={ROUTES.PROFILE_FOLLOWERS(handle)}
+              className="hover:underline"
+            >
+              <span className="font-semibold">
+                {profile.data.followerCount}
+              </span>{' '}
+              <span className="text-muted-foreground">
+                {t('header.followers')}
+              </span>
+            </Link>
+            <Link
+              href={ROUTES.PROFILE_FOLLOWING(handle)}
+              className="hover:underline"
+            >
+              <span className="font-semibold">
+                {profile.data.followingCount}
+              </span>{' '}
+              <span className="text-muted-foreground">
+                {t('header.following')}
+              </span>
+            </Link>
           </div>
-        </CardContent>
-      )}
-    </Card>
+
+          {profile.data.bio && (
+            <p className="max-w-2xl text-pretty break-words leading-relaxed text-foreground/90">
+              {profile.data.bio}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <EnvelopeIcon />
+              <p>{profile.data.email}</p>
+            </div>
+
+            <ProfileContacts handle={handle} />
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -254,21 +273,11 @@ function EditProfileDialog() {
 
   const { mutate: updateProfile, isPending: isUpdateProfilePending } =
     useUpdateProfile({
-      mutation: {
-        onSuccess: async (_data, _variables, _onMutateResult, context) => {
-          await refetchSession();
-
-          await context.client.invalidateQueries(
-            getGetAuthenticatedUserQueryOptions(),
-          );
-
-          await context.client.invalidateQueries(
-            getGetProfileByHandleQueryOptions(profile?.data.handle || ''),
-          );
-
-          toast.success(t('messages.success'));
-          closeDialog();
-        },
+      handle: profile?.data.handle || '',
+      onSuccess: async () => {
+        await refetchSession();
+        toast.success(t('messages.success'));
+        closeDialog();
       },
     });
 
@@ -440,110 +449,37 @@ function EditProfileDialog() {
 
 function ProfileImageField() {
   const t = useTranslations('pages.profile.edit.form.image');
+  const tCommon = useTranslations();
 
-  const { refetch: refetchSession } = useSession();
   const { data: profile } = useGetAuthenticatedUser();
 
-  const { mutate: updateProfile } = useUpdateProfile({
-    mutation: {
-      onSuccess: async (_data, _variables, _onMutateResult, context) => {
-        await refetchSession();
-
-        await context.client.invalidateQueries(
-          getGetAuthenticatedUserQueryOptions(),
-        );
-
-        await context.client.invalidateQueries(
-          getGetProfileByHandleQueryOptions(profile?.data.handle || ''),
-        );
-      },
-    },
+  const {
+    selectedImage,
+    error,
+    isUploadMediaPending,
+    handleFileChange,
+    handleFileError,
+    handleRemoveImage,
+  } = useProfileImageUpload({
+    handle: profile?.data.handle || '',
+    onUploadSuccess: () => toast.success(t('messages.success')),
   });
-
-  const { mutateAsync: uploadMedia, isPending: isUploadMediaPending } =
-    useUploadMedia();
-
-  const [selectedImage, setSelectedImage] = useState<{
-    file: File;
-    src: string;
-  } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleFileError = (error: FileInputError) => {
-    if (error === 'size') {
-      setError(t('errors.maxSize'));
-    } else if (error === 'type') {
-      setError(t('errors.unsupportedType'));
-    }
-  };
-
-  const handleFileChange = async (files: File[]) => {
-    const file = files[0];
-    if (!file) {
-      return;
-    }
-
-    setSelectedImage({
-      file,
-      src: URL.createObjectURL(file),
-    });
-    setError(null);
-
-    const {
-      data: { uploadUrl, mediaId },
-    } = await uploadMedia({
-      data: {
-        fileName: file.name,
-        fileSize: file.size,
-        mediaType: file.type,
-      },
-    });
-
-    const { success: uploadSuccess } = await uploadFileToS3({
-      file,
-      uploadUrl,
-    });
-
-    if (!uploadSuccess) {
-      toast.error(t('errors.uploadFailed'));
-      setSelectedImage(null);
-      return;
-    }
-
-    updateProfile(
-      {
-        data: {
-          profileImageId: mediaId,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success(t('messages.success'));
-          setSelectedImage(null);
-        },
-        onError: (error) => {
-          if (error instanceof Error) {
-            setError(error.message);
-          } else {
-            setError(t('errors.uploadFailed'));
-          }
-        },
-      },
-    );
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    updateProfile({
-      data: {
-        removeProfileImage: true,
-      },
-    });
-  };
 
   if (!profile) {
     return null;
   }
+
+  const errorMessage = error
+    ? error.code === 'maxSize'
+      ? t('errors.maxSize')
+      : error.code === 'unsupportedType'
+        ? t('errors.unsupportedType')
+        : error.code === 'network'
+          ? tCommon('errors.connection-failed')
+          : error.code === 'custom'
+            ? error.message
+            : t('errors.uploadFailed')
+    : null;
 
   return (
     <Field>
@@ -595,51 +531,7 @@ function ProfileImageField() {
         </div>
       </div>
 
-      {error && <div className="text-destructive">{error}</div>}
+      {errorMessage && <div className="text-destructive">{errorMessage}</div>}
     </Field>
   );
-}
-
-interface FollowButtonProps {
-  handle: string;
-}
-
-function FollowButton({ handle }: FollowButtonProps) {
-  const t = useTranslations('pages.profile.header');
-
-  const { data: session } = useSession();
-  const { data: profile, isPending } = useGetProfileByHandle(handle);
-
-  const { mutate: followUser } = useFollowUserMutation();
-  const { mutate: unfollowUser } = useUnfollowUserMutation();
-
-  if (isPending || !profile) {
-    return null;
-  }
-
-  if (session?.user.id === profile.data.userId) {
-    return null;
-  }
-
-  if (profile.data.isFollowing) {
-    return (
-      <Button
-        onClick={() => {
-          unfollowUser(handle);
-        }}
-      >
-        {t('unfollow')}
-      </Button>
-    );
-  } else {
-    return (
-      <Button
-        onClick={() => {
-          followUser(handle);
-        }}
-      >
-        {t('follow')}
-      </Button>
-    );
-  }
 }

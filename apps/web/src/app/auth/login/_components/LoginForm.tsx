@@ -2,14 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { useLogin } from '@/api/__generated__/auth/auth';
-import { Button } from '@/components/ui/button';
+import { Button, LinkButton } from '@/components/ui/button';
 import {
   Field,
   FieldError,
@@ -18,8 +17,14 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useSession } from '@/lib/auth/client';
+import ROUTES from '@/util/routes';
 
-export default function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: () => void;
+  redirectTo?: string;
+}
+
+export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
   const t = useTranslations('pages.login.form');
 
   const router = useRouter();
@@ -59,9 +64,15 @@ export default function LoginForm() {
         },
       },
       {
-        onSuccess: () => {
-          refetchSession();
-          router.push('/');
+        onSuccess: async () => {
+          await refetchSession();
+
+          if (onSuccess) {
+            onSuccess();
+            return;
+          }
+
+          router.replace(redirectTo ?? ROUTES.HOME());
         },
         onError: () => {
           toast.error(t('errors.invalid-credentials'));
@@ -131,9 +142,13 @@ export default function LoginForm() {
               {t('submit.label')}
             </Button>
 
-            <Button className="w-full" variant="link">
-              <Link href="/auth/register">{t('links.register.label')}</Link>
-            </Button>
+            <LinkButton
+              className="w-full"
+              variant="link"
+              href={ROUTES.REGISTER()}
+            >
+              {t('links.register.label')}
+            </LinkButton>
           </div>
         </FieldGroup>
       </form>

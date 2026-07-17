@@ -1,17 +1,30 @@
 package com.skkil.sync.project.service;
 
+import com.skkil.sync.media.model.Media;
+import com.skkil.sync.media.service.domain.MediaDomainService;
+import com.skkil.sync.project.constants.ProjectConstants;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
+import com.skkil.sync.project.dto.request.UpdateProjectRequest;
 import com.skkil.sync.project.dto.response.CreateProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
-import com.skkil.sync.project.dto.response.SearchProjectsResponse;
+import com.skkil.sync.project.dto.response.GetProjectsResponse;
+import com.skkil.sync.project.exception.ProjectHandleAlreadyExistsException;
 import com.skkil.sync.project.exception.ProjectNotFoundException;
-import com.skkil.sync.project.mapper.ProjectMapper;
+import com.skkil.sync.project.mapper.ProjectAssembler;
+import com.skkil.sync.project.model.InvitationStatus;
 import com.skkil.sync.project.model.Project;
 import com.skkil.sync.project.model.Teammate;
+import com.skkil.sync.project.repository.ProjectFollowRelationshipRepository;
+import com.skkil.sync.project.repository.ProjectInvitationRepository;
 import com.skkil.sync.project.repository.ProjectRepository;
+import com.skkil.sync.project.repository.TeammateRepository;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.domain.UserDomainService;
+import java.util.List;
+import java.util.Locale;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,25 +35,45 @@ public class ProjectService {
 
   private final ProjectRepository projectRepository;
 
-  private final ProjectMapper projectMapper;
+  private final TeammateRepository teammateRepository;
+
+  private final ProjectAssembler projectAssembler;
+
+  private final MediaDomainService mediaDomainService;
+
+  private final ProjectFollowRelationshipRepository projectFollowRelationshipRepository;
+
+  private final ProjectInvitationRepository projectInvitationRepository;
 
   public ProjectService(
       UserDomainService userDomainService,
       ProjectRepository projectRepository,
-      ProjectMapper projectMapper) {
+      TeammateRepository teammateRepository,
+      ProjectAssembler projectAssembler,
+      MediaDomainService mediaDomainService,
+      ProjectFollowRelationshipRepository projectFollowRelationshipRepository,
+      ProjectInvitationRepository projectInvitationRepository) {
     this.userDomainService = userDomainService;
     this.projectRepository = projectRepository;
-    this.projectMapper = projectMapper;
+    this.teammateRepository = teammateRepository;
+    this.projectAssembler = projectAssembler;
+    this.mediaDomainService = mediaDomainService;
+    this.projectFollowRelationshipRepository = projectFollowRelationshipRepository;
+    this.projectInvitationRepository = projectInvitationRepository;
   }
 
   @Transactional
   public CreateProjectResponse createProject(Long userId, CreateProjectRequest request) {
-    Project project = Project.builder().name(request.name()).handle(request.handle()).build();
+    Project project =
+        Project.builder()
+            .name(request.name())
+            .handle(request.handle())
+            .description(request.description())
+            .isPublic(request.isPublic())
+            .build();
 
     User user = userDomainService.getUserReference(userId);
-    Teammate owner = Teammate.builder().project(project).user(user).build();
-    owner.setOwner(true);
-
+    Teammate owner = Teammate.owner(project, user);
     project.addTeammate(owner);
 
     project = projectRepository.save(project);
@@ -49,40 +82,104 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public GetProjectResponse getProjectByHandle(String handle) {
+  public GetProjectResponse getProjectByHandle(Long requesterId, String handle) {
     Project project =
         projectRepository.findByHandle(handle).orElseThrow(ProjectNotFoundException::new);
 
-    var teammates =
-        project.getTeammates().stream()
-            .map(t -> new GetProjectResponse.Teammate(t.getUser().getId(), t.getIsOwner()))
-            .toList();
+    List<Teammate> teammates =
+        teammateRepository.findByProjectId(
+            project.getId(), PageRequest.of(0, ProjectConstants.INITIAL_TEAMMATE_LOAD_LIMIT + 1));
 
-    return new GetProjectResponse(project.getHandle(), project.getName(), teammates);
+    Teammate requester =
+        requesterId == null
+            ? null
+            : teammateRepository
+                .findByProjectIdAndUserId(project.getId(), requesterId)
+                .orElse(null);
+
+    boolean isFollowing =
+        requesterId != null
+            && projectFollowRelationshipRepository.existsByFollowerAndProject(
+                requesterId, project.getId());
+
+    boolean hasPendingInvitation =
+        requesterId != null
+            && projectInvitationRepository.existsByProjectIdAndInviteeIdAndStatus(
+                project.getId(), requesterId, InvitationStatus.PENDING);
+
+    return projectAssembler.toGetProjectResponse(
+        project,
+        teammates,
+        teammates.size() > ProjectConstants.INITIAL_TEAMMATE_LOAD_LIMIT,
+        requester != null ? requester.getRole() : null,
+        isFollowing,
+        hasPendingInvitation);
   }
 
   @Transactional(readOnly = true)
   public GetProjectHandleAvailabilityResponse isProjectHandleAvailable(String handle) {
-    return new GetProjectHandleAvailabilityResponse(!projectRepository.existsByHandle(handle));
+    boolean isReserved =
+        ProjectConstants.RESERVED_HANDLES.contains(handle.toLowerCase(Locale.ROOT));
+
+    return new GetProjectHandleAvailabilityResponse(
+        !isReserved && !projectRepository.existsByHandle(handle));
   }
 
   @Transactional(readOnly = true)
-  public SearchProjectsResponse searchMyProjects(Long userId, String query) {
-    var projects =
-        projectRepository.searchMyProjects(userId, query).stream()
-            .map(projectMapper::toSearchProjectsResponseProject)
-            .toList();
+  public GetProjectsResponse getProjectsByUser(String handle) {
+    User user = userDomainService.getUserByHandle(handle);
 
-    return new SearchProjectsResponse(projects);
+    return projectAssembler.toGetProjectsResponse(projectRepository.findMyProjects(user.getId()));
   }
 
   @Transactional(readOnly = true)
-  public SearchProjectsResponse searchProjects(String query) {
-    var projects =
-        projectRepository.searchProjects(query).stream()
-            .map(projectMapper::toSearchProjectsResponseProject)
-            .toList();
+  public GetProjectsResponse searchMyProjects(Long userId, String query) {
+    return projectAssembler.toGetProjectsResponse(
+        projectRepository.searchMyProjects(userId, query));
+  }
 
-    return new SearchProjectsResponse(projects);
+  @Transactional(readOnly = true)
+  public GetProjectsResponse searchProjects(String query) {
+    return projectAssembler.toGetProjectsResponse(projectRepository.searchProjects(query));
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
+  public void updateProject(Long requesterId, String handle, UpdateProjectRequest request) {
+    Project project =
+        projectRepository.findByHandle(handle).orElseThrow(ProjectNotFoundException::new);
+
+    project.update(request.name(), request.description(), request.website());
+
+    if (request.handle() != null) {
+      String trimmedHandle = request.handle().trim();
+
+      if (!trimmedHandle.equals(project.getHandle())) {
+        if (projectRepository.existsByHandle(trimmedHandle)) {
+          throw new ProjectHandleAlreadyExistsException();
+        }
+
+        project.updateHandle(trimmedHandle);
+      }
+    }
+
+    if (Boolean.TRUE.equals(request.removeIcon())) {
+      project.removeIcon();
+    }
+
+    if (request.iconMediaId() != null) {
+      Media icon =
+          mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(request.iconMediaId()));
+      project.setIcon(icon);
+    }
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'DELETE')")
+  public void deleteProject(String handle) {
+    Project project =
+        projectRepository.findByHandle(handle).orElseThrow(ProjectNotFoundException::new);
+
+    projectRepository.delete(project);
   }
 }
