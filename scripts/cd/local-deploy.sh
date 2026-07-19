@@ -53,6 +53,7 @@ minikube image load sync-server:local
 info "Building the web application..."
 cd "$PROJECT_ROOT_DIR/apps/web"
 docker build \
+    --build-context docs="$PROJECT_ROOT_DIR/docs" \
     --build-arg NEXT_PUBLIC_BACKEND_URL=http://localhost:8080 \
     -t sync-web:local .
 
@@ -103,7 +104,7 @@ kubectl port-forward svc/web -n sync 3000:3000 &
 WEB_CLIENT_PID=$!
 
 info "Exposing the server application on port 8080..."
-kubectl port-forward svc/server -n sync 8080:8080
+kubectl port-forward svc/server -n sync 8080:8080 &
 SERVER_PID=$!
 
 trap 'kill $WEB_CLIENT_PID $SERVER_PID' EXIT

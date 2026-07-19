@@ -43,18 +43,18 @@ module "s3" {
 }
 
 module "secrets" {
-  source                  = "../../modules/secrets"
-  project_name            = var.project_name
-  environment             = var.environment
-  kms_key_arn             = module.kms.key_arn
-  postgres_host           = var.postgres_host
-  postgres_db_name        = var.postgres_db_name
-  postgres_username       = var.postgres_username
-  postgres_password       = var.postgres_password
-  google_client_id        = var.google_client_id
-  google_client_secret    = var.google_client_secret
-  mail_username           = var.mail_username
-  mail_password           = var.mail_password
-  slack_webhook_url       = var.slack_webhook_url
-  better_auth_secret      = var.better_auth_secret
+  source               = "../../modules/secrets"
+  project_name         = var.project_name
+  environment          = var.environment
+  kms_key_arn          = module.kms.key_arn
+  postgres_host        = var.postgres_host
+  postgres_db_name     = var.postgres_db_name
+  postgres_username    = var.postgres_username
+  postgres_password    = var.postgres_password
+  google_client_id     = var.google_client_id
+  google_client_secret = var.google_client_secret
+  mail_username        = var.mail_username
+  mail_password        = var.mail_password
+  slack_webhook_url    = var.slack_webhook_url
+  better_auth_secret   = var.better_auth_secret
 }
