@@ -25,8 +25,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { ModalType } from '@/constants/modal';
 import { useModal } from '@/hooks/store';
 import { useMounted } from '@/hooks/use-mounted';
-import { isAuthenticated } from '@/lib/auth';
 import { signOut, useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 interface UserAvatarProps {

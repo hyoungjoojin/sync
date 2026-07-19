@@ -12,6 +12,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Async;
@@ -28,15 +29,26 @@ public class PostSummarizationService {
   @Value("classpath:/prompts/post/summary.st")
   private Resource resource;
 
-  private final ChatModel chatModel;
+  private final ObjectProvider<ChatModel> chatModelProvider;
   private final PostRepository postRepository;
 
   @Value("${app.ai.enabled:true}")
   private boolean aiEnabled;
 
-  public PostSummarizationService(ChatModel chatModel, PostRepository postRepository) {
-    this.chatModel = chatModel;
+  public PostSummarizationService(
+      ObjectProvider<ChatModel> chatModelProvider, PostRepository postRepository) {
+    this.chatModelProvider = chatModelProvider;
     this.postRepository = postRepository;
+  }
+
+  private ChatModel requireChatModel() {
+    ChatModel chatModel = chatModelProvider.getIfAvailable();
+    if (chatModel == null) {
+      throw new IllegalStateException(
+          "AI features are enabled but no ChatModel bean is available"
+              + " (check AI_PROVIDER configuration)");
+    }
+    return chatModel;
   }
 
   @Async
@@ -63,7 +75,7 @@ public class PostSummarizationService {
 
     log.debug("Summarizing post {}", event.getPostId());
     PostSummaryDto response =
-        ChatClient.create(chatModel).prompt(prompt).call().entity(PostSummaryDto.class);
+        ChatClient.create(requireChatModel()).prompt(prompt).call().entity(PostSummaryDto.class);
     log.debug("Summarized post {}", event.getPostId());
 
     updateGeneratedSummary(event.getPostId(), response.summary());

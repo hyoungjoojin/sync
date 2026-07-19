@@ -2,8 +2,8 @@
 
 import { redirect } from 'next/navigation';
 
-import { isAuthenticated, isOnboarded } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import { isAuthenticated, isOnboarded } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 /**

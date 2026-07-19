@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useMounted } from '@/hooks/use-mounted';
-import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 import SearchBar from './_components/SearchBar';

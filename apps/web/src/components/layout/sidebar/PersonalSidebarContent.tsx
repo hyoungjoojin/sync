@@ -32,8 +32,8 @@ import {
 } from '@/components/ui/sidebar';
 import { useMounted } from '@/hooks/use-mounted';
 import { useRequireAuth } from '@/hooks/use-require-auth';
-import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 import SidebarCloseButton from './SidebarCloseButton';

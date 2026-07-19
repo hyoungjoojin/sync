@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { LinkButton } from '@/components/ui/button';
 import { Copyright } from '@/components/ui/copyright';
 import { Logo } from '@/components/ui/logo';
-import { isAuthenticated } from '@/lib/auth';
 import { getSession } from '@/lib/auth/session';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 interface LegalLayoutProps {
