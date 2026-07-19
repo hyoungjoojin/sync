@@ -16,13 +16,13 @@ interface ErrorResponse {
 }
 
 async function invalidateClientSessionIfAuthenticated() {
-  const sessionRes = await fetch('/api/auth/get-session', {
+  const sessionRes = await fetch('/api/better-auth/get-session', {
     credentials: 'include',
   });
 
   const session = sessionRes.ok ? await sessionRes.json() : null;
   if (session) {
-    await fetch('/api/auth/sign-out', {
+    await fetch('/api/better-auth/sign-out', {
       method: 'POST',
       credentials: 'include',
     });

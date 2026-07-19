@@ -20,6 +20,10 @@ async function hashSpringSessionCookie(value: string) {
 }
 
 export const auth = betterAuth({
+  // Spring 서버가 /api/auth/* (csrf·login·register·email-verification)를 이미
+  // 소유하므로, Better Auth는 /api/better-auth 로 분리해 네임스페이스 충돌을 없앤다.
+  // 라우트 폴더도 app/api/better-auth/[...all] 로 함께 옮겨야 한다.
+  basePath: '/api/better-auth',
   user: {
     additionalFields: {
       handle: {
@@ -174,15 +178,3 @@ export const auth = betterAuth({
     },
   ],
 });
-
-type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
-
-export function isAuthenticated(
-  session: Session,
-): session is NonNullable<Session> {
-  return session !== null && session.user !== null;
-}
-
-export function isOnboarded(session: Session) {
-  return session !== null && session.user !== null && session.user.isOnboarded;
-}

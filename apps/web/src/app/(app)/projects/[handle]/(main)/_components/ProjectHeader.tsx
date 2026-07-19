@@ -19,8 +19,8 @@ import { Button, LinkButton } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRequireAuth } from '@/hooks/use-require-auth';
-import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 // TODO: project creation date isn't returned by the API yet — derives a

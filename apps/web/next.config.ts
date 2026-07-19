@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         port: '4566',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'skkil-sync-media.s3.ap-northeast-2.amazonaws.com',
+        pathname: '/**',
+      },
     ],
   },
 };

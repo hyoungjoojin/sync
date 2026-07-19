@@ -3,8 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { TwoColumnFullPageLayout } from '@/components/layout/TwoColumnLayout';
-import { isOnboarded } from '@/lib/auth';
 import { requireSession } from '@/lib/auth/guards';
+import { isOnboarded } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 interface OnboardingLayoutProps {
