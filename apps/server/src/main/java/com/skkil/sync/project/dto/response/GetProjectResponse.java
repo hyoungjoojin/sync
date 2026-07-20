@@ -15,6 +15,7 @@ public record GetProjectResponse(
     Role role,
     boolean isFollowing,
     boolean hasPendingInvitation,
+    boolean hasPendingJoinRequest,
     List<Activity> recentActivities) {
 
   public record Activity(String id, String timestamp, String text) {}

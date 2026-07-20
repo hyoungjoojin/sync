@@ -17,6 +17,7 @@ import com.skkil.sync.project.model.Project;
 import com.skkil.sync.project.model.Teammate;
 import com.skkil.sync.project.repository.ProjectFollowRelationshipRepository;
 import com.skkil.sync.project.repository.ProjectInvitationRepository;
+import com.skkil.sync.project.repository.ProjectJoinRequestRepository;
 import com.skkil.sync.project.repository.ProjectRepository;
 import com.skkil.sync.project.repository.TeammateRepository;
 import com.skkil.sync.user.model.User;
@@ -45,6 +46,8 @@ public class ProjectService {
 
   private final ProjectInvitationRepository projectInvitationRepository;
 
+  private final ProjectJoinRequestRepository projectJoinRequestRepository;
+
   public ProjectService(
       UserDomainService userDomainService,
       ProjectRepository projectRepository,
@@ -52,7 +55,8 @@ public class ProjectService {
       ProjectAssembler projectAssembler,
       MediaDomainService mediaDomainService,
       ProjectFollowRelationshipRepository projectFollowRelationshipRepository,
-      ProjectInvitationRepository projectInvitationRepository) {
+      ProjectInvitationRepository projectInvitationRepository,
+      ProjectJoinRequestRepository projectJoinRequestRepository) {
     this.userDomainService = userDomainService;
     this.projectRepository = projectRepository;
     this.teammateRepository = teammateRepository;
@@ -60,6 +64,7 @@ public class ProjectService {
     this.mediaDomainService = mediaDomainService;
     this.projectFollowRelationshipRepository = projectFollowRelationshipRepository;
     this.projectInvitationRepository = projectInvitationRepository;
+    this.projectJoinRequestRepository = projectJoinRequestRepository;
   }
 
   @Transactional
@@ -70,6 +75,7 @@ public class ProjectService {
             .handle(request.handle())
             .description(request.description())
             .isPublic(request.isPublic())
+            .joinPolicy(request.joinPolicy())
             .build();
 
     User user = userDomainService.getUserReference(userId);
@@ -107,13 +113,19 @@ public class ProjectService {
             && projectInvitationRepository.existsByProjectIdAndInviteeIdAndStatus(
                 project.getId(), requesterId, InvitationStatus.PENDING);
 
+    boolean hasPendingJoinRequest =
+        requesterId != null
+            && projectJoinRequestRepository.existsByProjectIdAndRequesterId(
+                project.getId(), requesterId);
+
     return projectAssembler.toGetProjectResponse(
         project,
         teammates,
         teammates.size() > ProjectConstants.INITIAL_TEAMMATE_LOAD_LIMIT,
         requester != null ? requester.getRole() : null,
         isFollowing,
-        hasPendingInvitation);
+        hasPendingInvitation,
+        hasPendingJoinRequest);
   }
 
   @Transactional(readOnly = true)
@@ -150,6 +162,7 @@ public class ProjectService {
         projectRepository.findByHandle(handle).orElseThrow(ProjectNotFoundException::new);
 
     project.update(request.name(), request.description(), request.website());
+    project.updateJoinPolicy(request.joinPolicy());
 
     if (request.handle() != null) {
       String trimmedHandle = request.handle().trim();

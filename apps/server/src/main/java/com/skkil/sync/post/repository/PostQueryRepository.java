@@ -316,6 +316,7 @@ public class PostQueryRepository {
         PROJECTS.DESCRIPTION.as("projectDescription"),
         PROJECTS.WEBSITE_URL.as("projectWebsite"),
         PROJECTS.IS_PUBLIC.as("projectIsPublic"),
+        PROJECTS.JOIN_POLICY.as("projectJoinPolicy"),
         content.as("content"),
         POSTS.CREATED_AT.as("createdAt"),
         POSTS.UPDATED_AT.as("updatedAt"),

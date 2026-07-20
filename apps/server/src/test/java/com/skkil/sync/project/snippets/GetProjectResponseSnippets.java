@@ -25,6 +25,7 @@ public class GetProjectResponseSnippets {
         .role(Role.ADMIN)
         .isFollowing(false)
         .hasPendingInvitation(false)
+        .hasPendingJoinRequest(false)
         .recentActivities(
             List.of(new GetProjectResponse.Activity("1", "2024-01-01T00:00:00Z", "활동 내용")))
         .build();
@@ -56,6 +57,9 @@ public class GetProjectResponseSnippets {
             fieldWithPath("hasPendingInvitation")
                 .type(JsonFieldType.BOOLEAN)
                 .description("현재 사용자의 대기 중인 초대 존재 여부"),
+            fieldWithPath("hasPendingJoinRequest")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 대기 중인 가입 요청 존재 여부"),
             fieldWithPath("recentActivities")
                 .type(JsonFieldType.ARRAY)
                 .description("최근 활동 목록")

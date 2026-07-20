@@ -2,7 +2,9 @@ package com.skkil.sync.project.snippets;
 
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 
+import com.skkil.sync.common.util.restdocs.RestDocsUtils;
 import com.skkil.sync.project.dto.summary.ProjectSummary;
+import com.skkil.sync.project.model.JoinPolicy;
 import java.util.List;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -16,6 +18,7 @@ public class ProjectSummarySnippets {
         .description("프로젝트 설명")
         .website("https://example.com")
         .isPublic(true)
+        .joinPolicy(JoinPolicy.INVITE)
         .iconUrl("https://example.com/icon.png")
         .build();
   }
@@ -33,6 +36,10 @@ public class ProjectSummarySnippets {
             .optional()
             .description("프로젝트 웹사이트"),
         fieldWithPath(prefix + "isPublic").type(JsonFieldType.BOOLEAN).description("공개 여부"),
+        fieldWithPath(prefix + "joinPolicy")
+            .type(RestDocsUtils.ENUM_TYPE)
+            .description("프로젝트 참여 정책")
+            .attributes(RestDocsUtils.getEnumAttributes(JoinPolicy.class)),
         fieldWithPath(prefix + "iconUrl")
             .type(JsonFieldType.STRING)
             .optional()
