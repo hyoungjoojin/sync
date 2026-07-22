@@ -23,6 +23,7 @@ public class GetProjectResponseSnippets {
         .hasMoreTeammates(false)
         .isViewer(true)
         .role(Role.ADMIN)
+        .isOwner(true)
         .isFollowing(false)
         .hasPendingInvitation(false)
         .hasPendingJoinRequest(false)
@@ -51,6 +52,7 @@ public class GetProjectResponseSnippets {
                 .optional()
                 .description("현재 사용자 역할")
                 .attributes(RestDocsUtils.getEnumAttributes(Role.class)),
+            fieldWithPath("isOwner").type(JsonFieldType.BOOLEAN).description("현재 사용자의 프로젝트 소유자 여부"),
             fieldWithPath("isFollowing")
                 .type(JsonFieldType.BOOLEAN)
                 .description("현재 사용자의 프로젝트 팔로우 여부"),

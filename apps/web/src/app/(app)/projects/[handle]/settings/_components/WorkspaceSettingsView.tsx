@@ -11,12 +11,22 @@ import {
   useGetProjectByHandle,
   useUpdateProject,
 } from '@/api/__generated__/project/project';
-import { GetProjectResponseRole } from '@/api/__generated__/types';
+import {
+  GetProjectResponseRole,
+  UpdateProjectRequestJoinPolicy,
+} from '@/api/__generated__/types';
 import { uploadFileToS3 } from '@/api/s3';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { FileInput, FileInputError, Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
@@ -84,6 +94,18 @@ export default function WorkspaceSettingsView() {
           </p>
         </div>
         <ProjectHandleField handle={handle} isAdmin={isAdmin} />
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium">{t('join-policy.heading')}</h3>
+          <p className="text-xs text-muted-foreground">
+            {t('join-policy.description')}
+          </p>
+        </div>
+        <ProjectJoinPolicyField handle={handle} isAdmin={isAdmin} />
       </section>
 
       <Separator />
@@ -484,6 +506,73 @@ function ProjectHandleField({
         {t('save')}
       </Button>
     </>
+  );
+}
+
+function ProjectJoinPolicyField({
+  handle,
+  isAdmin,
+}: {
+  handle: string;
+  isAdmin: boolean;
+}) {
+  const t = useTranslations(
+    'pages.projects.project.settings.workspace.join-policy',
+  );
+
+  const { data } = useGetProjectByHandle(handle);
+  const project = data?.data;
+
+  const { mutate: updateProject, isPending } = useUpdateProject({
+    mutation: {
+      onSuccess: async (_data, _variables, _onMutateResult, context) => {
+        await context.client.invalidateQueries(
+          getGetProjectByHandleQueryOptions(handle),
+        );
+        toast.success(t('messages.success'));
+      },
+      onError: () => {
+        toast.error(t('messages.error'));
+      },
+    },
+  });
+
+  if (!project) {
+    return null;
+  }
+
+  const onValueChange = (value: string) => {
+    const joinPolicy = value as UpdateProjectRequestJoinPolicy;
+    if (joinPolicy === project.summary.joinPolicy) {
+      return;
+    }
+
+    updateProject({ handle, data: { joinPolicy } });
+  };
+
+  return (
+    <div className="max-w-sm space-y-2">
+      <Label htmlFor="project-join-policy">{t('label')}</Label>
+      <Select
+        value={project.summary.joinPolicy}
+        disabled={!isAdmin || isPending}
+        onValueChange={onValueChange}
+      >
+        <SelectTrigger id="project-join-policy" className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.values(UpdateProjectRequestJoinPolicy).map((policy) => (
+            <SelectItem key={policy} value={policy}>
+              {t(`options.${policy}.label`)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <p className="text-xs text-muted-foreground">
+        {t(`options.${project.summary.joinPolicy}.description`)}
+      </p>
+    </div>
   );
 }
 

@@ -5,8 +5,10 @@ import {
   CompassIcon,
   FileTextIcon,
   HouseIcon,
+  NotePencilIcon,
   PencilSimpleIcon,
   PlusIcon,
+  StackSimpleIcon,
   TagIcon,
   TrendUpIcon,
 } from '@phosphor-icons/react';
@@ -69,6 +71,12 @@ const nav = [
 
 const yours = [
   {
+    labelKey: 'nav.my-posts',
+    href: ROUTES.MY_POSTS(),
+    icon: NotePencilIcon,
+    authenticated: true,
+  },
+  {
     labelKey: 'nav.drafts',
     href: ROUTES.DRAFTS(),
     icon: FileTextIcon,
@@ -81,6 +89,12 @@ const yours = [
     namespace: 'navigation' as const,
     href: ROUTES.BOOKMARKS(),
     icon: BookmarkSimpleIcon,
+    authenticated: true,
+  },
+  {
+    labelKey: 'nav.collections',
+    href: ROUTES.COLLECTIONS(),
+    icon: StackSimpleIcon,
     authenticated: true,
   },
 ] as const;

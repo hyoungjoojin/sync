@@ -4,6 +4,7 @@ import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.post.dto.response.GetPostResponse;
 import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.post.service.PostQueryService;
@@ -28,7 +29,7 @@ public class PostQueryController {
 
   @GetMapping("/posts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getPosts(
+  public PaginatedGetPostsResponse getPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @Validated CursorPaginationRequest pagination) {
     return postQueryService.getPosts(user == null ? null : user.userId(), pagination);
@@ -36,7 +37,7 @@ public class PostQueryController {
 
   @GetMapping("/posts/drafts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getDrafts(
+  public PaginatedGetPostsResponse getDrafts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestParam(required = false) PostType type,
       @RequestParam(required = false) PostScope scope,
@@ -52,9 +53,25 @@ public class PostQueryController {
     return postQueryService.getPostBySlug(user == null ? null : user.userId(), slug);
   }
 
+  @GetMapping("/posts/{slug}/references")
+  @ResponseStatus(HttpStatus.OK)
+  public GetPostsResponse getPostReferences(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable String slug) {
+    return postQueryService.getPostReferences(user == null ? null : user.userId(), slug);
+  }
+
+  @GetMapping("/posts/{slug}/referenced-by")
+  @ResponseStatus(HttpStatus.OK)
+  public PaginatedGetPostsResponse getPostBacklinks(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable String slug,
+      @Validated CursorPaginationRequest pagination) {
+    return postQueryService.getPostBacklinks(user == null ? null : user.userId(), slug, pagination);
+  }
+
   @GetMapping("/users/{userId}/posts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getUserPosts(
+  public PaginatedGetPostsResponse getUserPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable Long userId,
       @RequestParam(required = false) PostType type,
@@ -65,7 +82,7 @@ public class PostQueryController {
 
   @GetMapping("/users/{userId}/posts/commented")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getCommentedPosts(
+  public PaginatedGetPostsResponse getCommentedPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable Long userId,
       @RequestParam(required = false) String projectHandle,
@@ -76,7 +93,7 @@ public class PostQueryController {
 
   @GetMapping("/tags/{tagId}/posts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getPostsByTag(
+  public PaginatedGetPostsResponse getPostsByTag(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable Long tagId,
       @Validated CursorPaginationRequest pagination) {
@@ -85,7 +102,7 @@ public class PostQueryController {
 
   @GetMapping("/projects/{handle}/posts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getPostsByProject(
+  public PaginatedGetPostsResponse getPostsByProject(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable String handle,
       @RequestParam(required = false) PostType type,

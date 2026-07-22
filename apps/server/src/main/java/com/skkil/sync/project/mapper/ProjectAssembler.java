@@ -65,6 +65,7 @@ public class ProjectAssembler {
       List<Teammate> teammates,
       boolean hasMoreTeammates,
       Role requesterRole,
+      boolean isOwner,
       boolean isFollowing,
       boolean hasPendingInvitation,
       boolean hasPendingJoinRequest) {
@@ -74,6 +75,7 @@ public class ProjectAssembler {
         .hasMoreTeammates(hasMoreTeammates)
         .isViewer(requesterRole != null)
         .role(requesterRole)
+        .isOwner(isOwner)
         .isFollowing(isFollowing)
         .hasPendingInvitation(hasPendingInvitation)
         .hasPendingJoinRequest(hasPendingJoinRequest)
@@ -212,6 +214,7 @@ public class ProjectAssembler {
                 ProjectTeammateSummary.builder()
                     .user(userSummaries.get(t.getUser().getId()))
                     .role(t.getRole())
+                    .isOwner(t.isProjectOwner())
                     .build())
         .toList();
   }

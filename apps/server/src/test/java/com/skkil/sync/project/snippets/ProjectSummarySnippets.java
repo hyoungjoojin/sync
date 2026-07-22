@@ -19,6 +19,7 @@ public class ProjectSummarySnippets {
         .website("https://example.com")
         .isPublic(true)
         .joinPolicy(JoinPolicy.INVITE)
+        .followerCount(42)
         .iconUrl("https://example.com/icon.png")
         .build();
   }
@@ -40,6 +41,9 @@ public class ProjectSummarySnippets {
             .type(RestDocsUtils.ENUM_TYPE)
             .description("프로젝트 참여 정책")
             .attributes(RestDocsUtils.getEnumAttributes(JoinPolicy.class)),
+        fieldWithPath(prefix + "followerCount")
+            .type(JsonFieldType.NUMBER)
+            .description("프로젝트 팔로워 수"),
         fieldWithPath(prefix + "iconUrl")
             .type(JsonFieldType.STRING)
             .optional()

@@ -4,11 +4,14 @@ import {
   DotsThreeIcon,
   PencilSimpleIcon,
   SirenIcon,
+  StackSimpleIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { AddToCollectionDialog } from '@/components/feature/collection/AddToCollectionDialog';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import {
   AlertDialog,
@@ -27,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { RelativeTime } from '@/components/ui/relative-time';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import ROUTES from '@/util/routes';
 
 import { useDeletePostDialog } from '../hooks/useDeletePostDialog';
@@ -48,7 +52,10 @@ export function PostViewHeader({
   const tCopyLink = useTranslations('pages.posts.copy-link');
   const tViewer = useTranslations('components.post.viewer');
   const tEdit = useTranslations('pages.posts.edit');
+  const tCollection = useTranslations('pages.collections');
   const router = useRouter();
+  const { requireAuth } = useRequireAuth();
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
 
   const isPreview = variant === 'preview';
   const report = useReportPostDialog();
@@ -106,6 +113,17 @@ export function PostViewHeader({
             <DropdownMenuItem onSelect={handleCopyLink}>
               {tCopyLink('trigger')}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                if (!requireAuth({ intent: 'collection' })) {
+                  return;
+                }
+                setAddToCollectionOpen(true);
+              }}
+            >
+              <StackSimpleIcon />
+              {tCollection('add-to-collection.trigger')}
+            </DropdownMenuItem>
             {summary.isAuthor ? (
               <>
                 <DropdownMenuItem
@@ -145,6 +163,15 @@ export function PostViewHeader({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      <div onClick={stopPropagation}>
+        <AddToCollectionDialog
+          open={addToCollectionOpen}
+          onOpenChange={setAddToCollectionOpen}
+          postHandle={summary.slug}
+          projectHandle={summary.project?.handle}
+        />
       </div>
 
       {!isPreview && (

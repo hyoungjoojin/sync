@@ -13,6 +13,7 @@ public record GetProjectResponse(
     boolean hasMoreTeammates,
     boolean isViewer,
     Role role,
+    boolean isOwner,
     boolean isFollowing,
     boolean hasPendingInvitation,
     boolean hasPendingJoinRequest,

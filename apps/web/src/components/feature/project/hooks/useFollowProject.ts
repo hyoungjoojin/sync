@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import {
   getGetFollowedProjectsQueryKey,
+  getGetProjectByHandleQueryOptions,
   useFollowProject as useFollowProjectMutation,
   useUnfollowProject as useUnfollowProjectMutation,
 } from '@/api/__generated__/project/project';
@@ -14,7 +15,13 @@ export function useFollowProject() {
 
   return useFollowProjectMutation({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (_data, { handle }) => {
+        // The project header reads `isFollowing` off the project detail, so
+        // refresh it whenever the follow state changes.
+        queryClient.invalidateQueries(
+          getGetProjectByHandleQueryOptions(handle),
+        );
+
         if (!session?.user.handle) {
           return;
         }
@@ -36,6 +43,11 @@ export function useUnfollowProject() {
   return useUnfollowProjectMutation({
     mutation: {
       onSuccess: (_data, { handle }) => {
+        // Keep the project detail's `isFollowing` in sync with the toggle.
+        queryClient.invalidateQueries(
+          getGetProjectByHandleQueryOptions(handle),
+        );
+
         if (!session?.user.handle) {
           return;
         }

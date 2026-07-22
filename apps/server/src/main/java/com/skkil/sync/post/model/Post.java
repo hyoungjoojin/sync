@@ -1,6 +1,7 @@
 package com.skkil.sync.post.model;
 
 import com.skkil.sync.common.domain.BaseEntity;
+import com.skkil.sync.media.model.Media;
 import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.exception.PostTagLimitExceededException;
 import com.skkil.sync.post.util.PostContentUtils;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "posts")
@@ -38,6 +40,10 @@ public class Post extends BaseEntity {
   @JoinColumn(name = "project_id", nullable = true)
   private Project project;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "cover_media_id")
+  private @Nullable Media coverMedia;
+
   @Column(name = "title")
   private String title;
 
@@ -48,10 +54,6 @@ public class Post extends BaseEntity {
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   private PostStatus status = PostStatus.PUBLISHED;
-
-  @Column(name = "scope", nullable = false)
-  @Enumerated(EnumType.STRING)
-  private PostScope scope = PostScope.PUBLIC;
 
   @Column(name = "content", columnDefinition = "TEXT", nullable = false)
   private String content;
@@ -64,6 +66,9 @@ public class Post extends BaseEntity {
 
   @Column(name = "resolved", nullable = false)
   private boolean resolved = false;
+
+  @Column(name = "is_series_post", nullable = false)
+  private boolean isSeriesPost = false;
 
   @Column(name = "visibility", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -105,15 +110,20 @@ public class Post extends BaseEntity {
       String title,
       String content,
       PostType type,
-      PostStatus status) {
+      PostStatus status,
+      @Nullable Media coverMedia) {
     this.slug = slug;
     this.author = author;
     this.project = project;
     this.title = title;
     this.type = type == null ? PostType.SHORT : type;
     this.status = status == null ? PostStatus.PUBLISHED : status;
-    this.scope = PostScope.fromProject(project);
     this.content = content;
+    this.coverMedia = coverMedia;
+  }
+
+  public void updateCoverMedia(@Nullable Media coverMedia) {
+    this.coverMedia = coverMedia;
   }
 
   public void updateContent(String content, String text, int mediaCount) {
@@ -155,8 +165,12 @@ public class Post extends BaseEntity {
     return status == PostStatus.PUBLISHED;
   }
 
+  public PostScope getScope() {
+    return PostScope.fromProject(project);
+  }
+
   public boolean isPublic() {
-    return scope == PostScope.PUBLIC;
+    return getScope() == PostScope.PUBLIC;
   }
 
   public void hide(User reviewer, String reason) {
@@ -168,5 +182,13 @@ public class Post extends BaseEntity {
 
   public void resolve() {
     this.resolved = true;
+  }
+
+  public void markInSeries() {
+    this.isSeriesPost = true;
+  }
+
+  public void unmarkInSeries() {
+    this.isSeriesPost = false;
   }
 }

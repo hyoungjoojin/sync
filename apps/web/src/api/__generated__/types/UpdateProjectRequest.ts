@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { UpdateProjectRequestJoinPolicy } from './UpdateProjectRequestJoinPolicy';
 
 export interface UpdateProjectRequest {
   /**
@@ -36,4 +37,9 @@ export interface UpdateProjectRequest {
    * @nullable
    */
   iconMediaId?: string | null;
+  /**
+   * 프로젝트 참여 정책
+   * @nullable
+   */
+  joinPolicy?: UpdateProjectRequestJoinPolicy;
 }

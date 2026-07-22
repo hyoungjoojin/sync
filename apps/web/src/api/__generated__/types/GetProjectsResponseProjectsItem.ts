@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { GetProjectsResponseProjectsItemJoinPolicy } from './GetProjectsResponseProjectsItemJoinPolicy';
 
 export type GetProjectsResponseProjectsItem = {
   /**
@@ -27,4 +28,8 @@ export type GetProjectsResponseProjectsItem = {
    * @nullable
    */
   iconUrl?: string | null;
+  /** 프로젝트 참여 정책 */
+  joinPolicy: GetProjectsResponseProjectsItemJoinPolicy;
+  /** 프로젝트 팔로워 수 */
+  followerCount: number;
 };

@@ -11,9 +11,12 @@ import { COMMENT_PAGE_SIZE } from '@/components/feature/post/constants';
 import type { PostType } from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
 import PostComments from '@/components/feature/post/viewer/PostComments';
+import { PostSeriesCard } from '@/components/feature/post/viewer/PostSeriesCard';
+import { RelatedPosts } from '@/components/feature/post/viewer/RelatedPosts';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import SyncError, { ErrorCode } from '@/lib/error';
 import { getQueryClient } from '@/lib/query';
+import { buildPostJsonLd, buildPostMetadata, isPostIndexable } from '@/lib/seo';
 import ROUTES from '@/util/routes';
 
 interface PostProps {
@@ -29,10 +32,13 @@ export async function generateMetadata({
 
   try {
     const { data: post } = await getPostBySlug(slug);
-    const title =
-      post.summary.title ?? post.summary.preview.slice(0, 40) ?? undefined;
 
-    return { title };
+    // 프로젝트 게시물은 프로젝트 경로가 정규 URL이다.
+    const canonicalPath = post.summary.project?.handle
+      ? ROUTES.PROJECT_POST(post.summary.project.handle, slug)
+      : ROUTES.POST(slug);
+
+    return buildPostMetadata(post.summary, canonicalPath);
   } catch {
     return {};
   }
@@ -45,6 +51,7 @@ export default async function Post({ params }: PostProps) {
   let commentsEnabled = false;
   let postType: PostType | undefined;
   let isPostAuthor = false;
+  let jsonLd: Record<string, unknown> | null = null;
 
   try {
     const { data: post } = await queryClient.fetchQuery(
@@ -57,6 +64,10 @@ export default async function Post({ params }: PostProps) {
 
     if (post.summary.project?.handle) {
       redirect(ROUTES.PROJECT_POST(post.summary.project.handle, slug));
+    }
+
+    if (isPostIndexable(post.summary)) {
+      jsonLd = buildPostJsonLd(post.summary, ROUTES.POST(slug));
     }
   } catch (error) {
     if (error instanceof SyncError) {
@@ -90,18 +101,28 @@ export default async function Post({ params }: PostProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <TwoColumnLayout
         main={<PostCard slug={slug} />}
         side={
-          commentsEnabled && postType ? (
-            <PostComments
-              slug={slug}
-              postType={postType}
-              isPostAuthor={isPostAuthor}
-            />
-          ) : null
+          <>
+            <PostSeriesCard slug={slug} />
+            {commentsEnabled && postType ? (
+              <PostComments
+                slug={slug}
+                postType={postType}
+                isPostAuthor={isPostAuthor}
+              />
+            ) : null}
+          </>
         }
       />
+      <RelatedPosts slug={slug} />
     </HydrationBoundary>
   );
 }

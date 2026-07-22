@@ -7,6 +7,7 @@ const ROUTES = {
   EXPLORE_PROJECTS: () => '/explore/projects',
   EXPLORE_TAGS: () => '/explore/tags',
   DRAFTS: () => '/posts/drafts',
+  MY_POSTS: () => '/posts/my',
   LOGIN: () => '/auth/login',
   REGISTER: () => '/auth/register',
   ONBOARDING: () => '/onboarding',
@@ -41,6 +42,8 @@ const ROUTES = {
     ROUTES.PROJECT(handle) + '/posts/my-comments',
   PROJECT_BOOKMARKS: (handle: string) =>
     ROUTES.PROJECT(handle) + '/posts/bookmarks',
+  PROJECT_COLLECTIONS: (handle: string) =>
+    ROUTES.PROJECT(handle) + '/collections',
   PROJECT_DRAFTS: (handle: string) => ROUTES.PROJECT(handle) + '/posts/drafts',
   TAG: (id: string) => `/tags/${id}`,
   PROJECT_TAG: (handle: string, id: string) =>
@@ -58,7 +61,10 @@ const ROUTES = {
     ROUTES.PROJECT(handle) + '/settings/teammates',
   PROJECTS: () => '/projects',
   PROJECT_INVITATIONS: () => '/projects/invitations',
+  PROJECT_JOIN_REQUESTS: () => '/projects/join-requests',
   BOOKMARKS: () => '/bookmarks',
+  COLLECTIONS: () => '/collections',
+  COLLECTION: (externalId: string) => `/collections/${externalId}`,
   COOKIES: () => '/cookies',
   PROFILE: (handle: string) => `/@${handle}`,
   PROFILE_FOLLOWERS: (handle: string) => ROUTES.PROFILE(handle) + '/followers',

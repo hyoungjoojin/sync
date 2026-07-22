@@ -20,10 +20,10 @@ import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
 import com.skkil.sync.common.util.pagination.snippets.CursorPaginationRequestSnippets;
 import com.skkil.sync.config.SecurityConfig;
-import com.skkil.sync.post.dto.response.GetPostRecommendationsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.model.PostRecommendationType;
 import com.skkil.sync.post.service.PostRecommendationService;
-import com.skkil.sync.post.snippets.GetPostRecommendationsResponseSnippets;
+import com.skkil.sync.post.snippets.PaginatedGetPostsResponseSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,8 +54,8 @@ class PostRecommendationControllerTests {
   @WithAuthenticatedUser
   void getRecommendations() throws Exception {
     AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
-    GetPostRecommendationsResponse response =
-        GetPostRecommendationsResponseSnippets.getGetPostRecommendationsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
     MultiValueMap<String, String> queryParams =
         CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams();
 
@@ -72,13 +72,13 @@ class PostRecommendationControllerTests {
                     .tag("post")
                     .summary("Get Post Recommendations")
                     .description("추천 게시글 목록을 조회합니다.")
-                    .responseSchema(schema(GetPostRecommendationsResponse.class.getSimpleName())),
+                    .responseSchema(schema(PaginatedGetPostsResponse.class.getSimpleName())),
                 preprocessRequest(),
                 preprocessResponse(prettyPrint()),
                 Function.identity(),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
                     .and(parameterWithName("type").description("추천 게시글 종류").optional()),
-                GetPostRecommendationsResponseSnippets.getGetPostRecommendationsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -86,8 +86,8 @@ class PostRecommendationControllerTests {
   @WithAuthenticatedUser
   void getRecommendations_withType_shouldUseOnlyThatChannel() throws Exception {
     AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
-    GetPostRecommendationsResponse response =
-        GetPostRecommendationsResponseSnippets.getGetPostRecommendationsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postRecommendationService.getRecommendations(
             eq(user.userId()), eq(PostRecommendationType.TRENDING), any()))

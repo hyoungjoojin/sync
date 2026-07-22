@@ -3,7 +3,7 @@ package com.skkil.sync.post.service;
 import com.skkil.sync.common.recommendation.merger.CandidateMerger;
 import com.skkil.sync.common.recommendation.merger.RRFCandidateMerger;
 import com.skkil.sync.post.dto.data.PostDto;
-import com.skkil.sync.post.dto.response.SearchPostsResponse;
+import com.skkil.sync.post.dto.response.GetPostsResponse;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.repository.PostQueryRepository;
 import com.skkil.sync.post.repository.PostSearchRepository;
@@ -36,7 +36,7 @@ public class PostSearchService {
     this.postAssembler = postAssembler;
   }
 
-  public SearchPostsResponse searchPosts(
+  public GetPostsResponse searchPosts(
       Long requesterId, String query, @Nullable String projectHandle) {
     // Spring binds a query param passed as `?projectHandle=` to "", not null — normalize so the
     // repository's `:projectHandle IS NULL` scope check treats blank the same as omitted.
@@ -57,10 +57,10 @@ public class PostSearchService {
               : postQueryRepository.getPostsByIdsInProject(
                   requesterId, ids, normalizedProjectHandle);
 
-      return new SearchPostsResponse(postAssembler.toPostResponses(posts, requesterId));
+      return new GetPostsResponse(postAssembler.toPostResponses(posts, requesterId));
     } catch (Exception e) {
       log.error("Post search failed for query '{}'", query, e);
-      return new SearchPostsResponse(List.of());
+      return new GetPostsResponse(List.of());
     }
   }
 

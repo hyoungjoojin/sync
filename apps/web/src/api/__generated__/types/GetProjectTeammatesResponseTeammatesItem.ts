@@ -10,6 +10,8 @@ import type { GetProjectTeammatesResponseTeammatesItemUser } from './GetProjectT
 export type GetProjectTeammatesResponseTeammatesItem = {
   /** 팀원 역할 */
   role: GetProjectTeammatesResponseTeammatesItemRole;
+  /** 프로젝트 소유자 여부 */
+  isOwner: boolean;
   /** 팀원 유저 정보 */
   user: GetProjectTeammatesResponseTeammatesItemUser;
 };

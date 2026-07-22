@@ -116,7 +116,7 @@ export default function PostComments({
   isPostAuthor,
 }: PostCommentsProps) {
   const t = useTranslations('pages.posts.comments');
-  const { data: session } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
   const { requireAuth } = useRequireAuth();
 
   const showAcceptance = postType === PostType.QUESTION;
@@ -175,7 +175,7 @@ export default function PostComments({
 
       <Separator />
 
-      {session?.user && (
+      {!isSessionPending && session?.user && (
         <>
           <div className="flex items-start gap-3 px-5 py-4">
             <Avatar size="sm">
@@ -211,7 +211,7 @@ export default function PostComments({
         </>
       )}
 
-      {!session?.user && (
+      {!isSessionPending && !session?.user && (
         <>
           <div className="px-5 py-4">
             <Button

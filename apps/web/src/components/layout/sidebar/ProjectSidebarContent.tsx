@@ -12,6 +12,7 @@ import {
   PencilIcon,
   QuestionIcon,
   RssIcon,
+  StackSimpleIcon,
   TagIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
@@ -23,6 +24,7 @@ import {
   useGetProjectByHandle,
   useSearchMyProjects,
 } from '@/api/__generated__/project/project';
+import { GetProjectResponseRole } from '@/api/__generated__/types';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
 import {
   DropdownMenu,
@@ -55,9 +57,11 @@ interface ProjectSidebarContentProps {
 export default function ProjectSidebarContent({
   handle,
 }: ProjectSidebarContentProps) {
-  const { isAuthenticated } = useRequireAuth();
   const { data: projectData } = useGetProjectByHandle(handle);
   const isViewer = !!projectData?.data.isViewer;
+  const isManager =
+    !!projectData?.data.isOwner ||
+    projectData?.data.role === GetProjectResponseRole.Admin;
 
   return (
     <>
@@ -74,12 +78,12 @@ export default function ProjectSidebarContent({
       <SidebarContent>
         <Browse handle={handle} />
 
-        {isAuthenticated && (
+        {isViewer && (
           <>
             <SidebarSeparator />
-            <MyContributions handle={handle} isViewer={isViewer} />
+            <MyContributions handle={handle} />
 
-            {isViewer && (
+            {isManager && (
               <>
                 <SidebarSeparator />
                 <Settings handle={handle} />
@@ -207,6 +211,9 @@ function Browse({ handle }: SectionProps) {
   const type = searchParams.get('type');
   const authorHandle = searchParams.get('authorHandle');
   const isTagsPath = pathname.startsWith(ROUTES.PROJECT_TAGS(handle));
+  const isCollectionsPath = pathname.startsWith(
+    ROUTES.PROJECT_COLLECTIONS(handle),
+  );
 
   const items = [
     {
@@ -239,6 +246,12 @@ function Browse({ handle }: SectionProps) {
       icon: TagIcon,
       isActive: isTagsPath,
     },
+    {
+      labelKey: 'nav.collections',
+      href: ROUTES.PROJECT_COLLECTIONS(handle),
+      icon: StackSimpleIcon,
+      isActive: isCollectionsPath,
+    },
   ] as const;
 
   return (
@@ -265,11 +278,7 @@ function Browse({ handle }: SectionProps) {
   );
 }
 
-interface MyContributionsProps extends SectionProps {
-  isViewer: boolean;
-}
-
-function MyContributions({ handle, isViewer }: MyContributionsProps) {
+function MyContributions({ handle }: SectionProps) {
   const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -292,22 +301,18 @@ function MyContributions({ handle, isViewer }: MyContributionsProps) {
       icon: ChatCircleIcon,
       isActive: pathname === ROUTES.PROJECT_MY_COMMENTS(handle),
     },
-    ...(isViewer
-      ? ([
-          {
-            labelKey: 'nav.bookmarks',
-            href: ROUTES.PROJECT_BOOKMARKS(handle),
-            icon: BookmarkSimpleIcon,
-            isActive: pathname === ROUTES.PROJECT_BOOKMARKS(handle),
-          },
-          {
-            labelKey: 'nav.drafts',
-            href: ROUTES.PROJECT_DRAFTS(handle),
-            icon: NotePencilIcon,
-            isActive: pathname === ROUTES.PROJECT_DRAFTS(handle),
-          },
-        ] as const)
-      : []),
+    {
+      labelKey: 'nav.bookmarks',
+      href: ROUTES.PROJECT_BOOKMARKS(handle),
+      icon: BookmarkSimpleIcon,
+      isActive: pathname === ROUTES.PROJECT_BOOKMARKS(handle),
+    },
+    {
+      labelKey: 'nav.drafts',
+      href: ROUTES.PROJECT_DRAFTS(handle),
+      icon: NotePencilIcon,
+      isActive: pathname === ROUTES.PROJECT_DRAFTS(handle),
+    },
   ] as const;
 
   return (

@@ -10,6 +10,7 @@ import com.skkil.sync.post.dto.summary.TagSummary;
 import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
+import com.skkil.sync.post.security.PostAccessLevel;
 import com.skkil.sync.project.snippets.ProjectSummarySnippets;
 import com.skkil.sync.user.snippets.UserSummarySnippets;
 import java.util.ArrayList;
@@ -31,9 +32,11 @@ public class PostSummarySnippets {
         .type(PostType.SHORT)
         .status(status)
         .scope(PostScope.WORKSPACE)
+        .accessLevel(PostAccessLevel.FULL)
         .author(UserSummarySnippets.getUserSummary())
         .project(ProjectSummarySnippets.getProjectSummary())
         .resolved(false)
+        .isSeriesPost(false)
         .isAuthor(false)
         .createdAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .updatedAt(DateTimeTestUtils.defaultTestOffsetDateTime())
@@ -60,6 +63,7 @@ public class PostSummarySnippets {
                     .build()))
         .mediaCount(1)
         .wordCount(120)
+        .coverImageUrl("https://example.com/cover.png")
         .build();
   }
 
@@ -87,6 +91,11 @@ public class PostSummarySnippets {
             .type(RestDocsUtils.ENUM_TYPE)
             .description("게시글 공개 범위")
             .attributes(RestDocsUtils.getEnumAttributes(PostScope.class)));
+    fields.add(
+        fieldWithPath(prefix + "accessLevel")
+            .type(RestDocsUtils.ENUM_TYPE)
+            .description("요청자의 열람 수준 (FULL: 본문까지 열람, PREVIEW: 유료 게이트로 본문 잠김)")
+            .attributes(RestDocsUtils.getEnumAttributes(PostAccessLevel.class)));
     fields.add(fieldWithPath(prefix + "author").type(JsonFieldType.OBJECT).description("작성자 정보"));
     fields.addAll(UserSummarySnippets.getUserSummaryFields(prefix + "author."));
     fields.add(
@@ -101,6 +110,10 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "resolved")
             .type(JsonFieldType.BOOLEAN)
             .description("Whether the question post has been resolved"));
+    fields.add(
+        fieldWithPath(prefix + "isSeriesPost")
+            .type(JsonFieldType.BOOLEAN)
+            .description("게시글이 어떤 시리즈에 속해 있는지 여부"));
     fields.add(
         fieldWithPath(prefix + "isAuthor")
             .type(JsonFieldType.BOOLEAN)
@@ -177,6 +190,11 @@ public class PostSummarySnippets {
             .description("게시물에 첨부된 전체 미디어 수"));
     fields.add(
         fieldWithPath(prefix + "wordCount").type(JsonFieldType.NUMBER).description("게시물 본문의 단어 수"));
+    fields.add(
+        fieldWithPath(prefix + "coverImageUrl")
+            .type(JsonFieldType.STRING)
+            .description("게시물 커버 이미지 URL (없으면 없음)")
+            .optional());
     return fields;
   }
 }

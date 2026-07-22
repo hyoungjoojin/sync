@@ -120,6 +120,18 @@ public class MediaDomainService {
   }
 
   @Transactional(readOnly = true)
+  public Map<Long, URL> generatePresignedGetUrlsByIds(List<Long> mediaIds) {
+    List<Media> medias = mediaRepository.findAllByIdIn(mediaIds);
+
+    Map<Long, URL> mediaIdToUrl = new HashMap<>();
+    for (Media media : medias) {
+      mediaIdToUrl.put(media.getId(), generatePresignedGetUrl(media));
+    }
+
+    return mediaIdToUrl;
+  }
+
+  @Transactional(readOnly = true)
   public <T> Map<Long, URL> generatePresignedGetUrls(List<Media> medias) {
     Map<Long, URL> result = new HashMap<>();
     for (Media media : medias) {

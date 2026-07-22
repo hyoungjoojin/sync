@@ -17,11 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import ROUTES from '@/util/routes';
 
-type ScopeFilter = 'ALL' | PostScope;
 type TypeFilter = 'ALL' | PostType;
 
 const PAGE_SIZE = '50';
@@ -31,16 +29,15 @@ export default function DraftPostsPage() {
   const t = useTranslations('pages.posts.drafts');
   const tPost = useTranslations('components.post');
 
-  const [scope, setScope] = useState<ScopeFilter>('ALL');
   const [type, setType] = useState<TypeFilter>('ALL');
 
   const params = useMemo(
     () => ({
       first: PAGE_SIZE,
-      scope: scope === 'ALL' ? undefined : scope,
+      scope: PostScope.PUBLIC,
       type: type === 'ALL' ? undefined : type,
     }),
-    [scope, type],
+    [type],
   );
 
   const {
@@ -77,21 +74,6 @@ export default function DraftPostsPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Tabs
-          value={scope}
-          onValueChange={(value) => setScope(value as ScopeFilter)}
-        >
-          <TabsList>
-            <TabsTrigger value="ALL">{t('filters.all')}</TabsTrigger>
-            <TabsTrigger value={PostScope.PUBLIC}>
-              {t('filters.public')}
-            </TabsTrigger>
-            <TabsTrigger value={PostScope.WORKSPACE}>
-              {t('filters.workspace')}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
         <Select
           value={type}
           onValueChange={(value) => setType(value as TypeFilter)}

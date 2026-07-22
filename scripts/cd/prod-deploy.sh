@@ -68,6 +68,7 @@ if [[ "$DO_BUILD" == true ]]; then
   docker build \
       --build-context docs="$PROJECT_ROOT_DIR/docs" \
       --build-arg NEXT_PUBLIC_BACKEND_URL="https://${APP_DOMAIN}/api" \
+      --build-arg NEXT_PUBLIC_SITE_URL="https://${APP_DOMAIN}" \
       -t "$WEB_IMAGE" .
 
   info "Building the nginx image..."

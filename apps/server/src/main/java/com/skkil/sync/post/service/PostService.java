@@ -1,6 +1,7 @@
 package com.skkil.sync.post.service;
 
 import com.skkil.sync.media.model.Media;
+import com.skkil.sync.media.service.domain.MediaDomainService;
 import com.skkil.sync.post.dto.request.CreatePostRequest;
 import com.skkil.sync.post.dto.request.CreateProjectPostRequest;
 import com.skkil.sync.post.dto.request.PostContentRequest;
@@ -35,8 +36,10 @@ public class PostService {
 
   private final UserDomainService userDomainService;
   private final ProjectDomainService projectDomainService;
+  private final MediaDomainService mediaDomainService;
 
   private final TagService tagService;
+  private final PostReferenceService postReferenceService;
   private final PostContentMediaService contentMediaService;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -45,13 +48,17 @@ public class PostService {
   public PostService(
       UserDomainService userDomainService,
       ProjectDomainService projectDomainService,
+      MediaDomainService mediaDomainService,
       TagService tagService,
+      PostReferenceService postReferenceService,
       PostContentMediaService contentMediaService,
       PostRepository postRepository,
       ApplicationEventPublisher eventPublisher) {
     this.userDomainService = userDomainService;
     this.projectDomainService = projectDomainService;
+    this.mediaDomainService = mediaDomainService;
     this.tagService = tagService;
+    this.postReferenceService = postReferenceService;
     this.contentMediaService = contentMediaService;
     this.postRepository = postRepository;
     this.eventPublisher = eventPublisher;
@@ -67,6 +74,8 @@ public class PostService {
         request.content(),
         request.tags(),
         List.of(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
         null);
   }
 
@@ -84,6 +93,8 @@ public class PostService {
         request.content(),
         request.tags(),
         request.projectTags(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
         project);
   }
 
@@ -95,6 +106,8 @@ public class PostService {
       PostContentRequest content,
       List<String> tags,
       @Nullable List<String> projectTags,
+      @Nullable List<Long> referencedPostIds,
+      @Nullable String coverMediaId,
       @Nullable Project project) {
     status = status == null ? PostStatus.PUBLISHED : status;
     projectTags = projectTags == null ? List.of() : projectTags;
@@ -105,6 +118,8 @@ public class PostService {
     List<Media> mediaFiles =
         contentMediaService.resolveMediaFilesForCreate(authorId, content.mediaIds());
 
+    Media coverMedia = type == PostType.LONG ? resolveCover(authorId, coverMediaId) : null;
+
     Post.PostBuilder postBuilder =
         Post.builder()
             .slug(slug)
@@ -112,7 +127,8 @@ public class PostService {
             .type(type)
             .status(status)
             .title(title)
-            .content(content.json());
+            .content(content.json())
+            .coverMedia(coverMedia);
     if (project != null) {
       postBuilder.project(project);
     }
@@ -123,6 +139,7 @@ public class PostService {
 
     post = postRepository.save(post);
     contentMediaService.savePostMediaFiles(post, mediaFiles);
+    postReferenceService.replaceReferences(post, referencedPostIds);
 
     applyPublishSideEffects(post, false, content.text());
 
@@ -141,7 +158,10 @@ public class PostService {
         request.status(),
         request.content(),
         request.tags(),
-        List.of());
+        List.of(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
+        request.removeCover());
   }
 
   @Transactional
@@ -157,7 +177,10 @@ public class PostService {
         request.status(),
         request.content(),
         request.tags(),
-        request.projectTags());
+        request.projectTags(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
+        request.removeCover());
   }
 
   private Post getPostById(Long postId) {
@@ -190,7 +213,10 @@ public class PostService {
       PostStatus status,
       PostContentRequest content,
       List<String> tags,
-      List<String> projectTags) {
+      List<String> projectTags,
+      @Nullable List<Long> referencedPostIds,
+      @Nullable String coverMediaId,
+      @Nullable Boolean removeCover) {
     if (post.isPublished() && status == PostStatus.DRAFT) {
       throw new InvalidPostPublishRequestException("Published posts cannot be reverted to draft.");
     }
@@ -200,11 +226,40 @@ public class PostService {
         contentMediaService.resolveMediaFilesForUpdate(
             post.getAuthor().getId(), post.getId(), content.mediaIds());
 
+    Media coverMedia =
+        type == PostType.LONG
+            ? resolveUpdatedCover(post.getAuthor().getId(), post, coverMediaId, removeCover)
+            : null;
+
     post.update(title, type, status, content.json(), content.text(), mediaFiles.size());
+    post.updateCoverMedia(coverMedia);
     tagService.replaceTags(post, tags, projectTags);
+    postReferenceService.replaceReferences(post, referencedPostIds);
     contentMediaService.replaceMediaFiles(post, mediaFiles);
 
     applyPublishSideEffects(post, wasPublished, content.text());
+  }
+
+  private @Nullable Media resolveCover(Long requesterId, @Nullable String coverMediaId) {
+    if (coverMediaId == null) {
+      return null;
+    }
+    Media cover = mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(coverMediaId));
+    cover.markAsUploaded();
+    return cover;
+  }
+
+  private @Nullable Media resolveUpdatedCover(
+      Long requesterId, Post post, @Nullable String coverMediaId, @Nullable Boolean removeCover) {
+    if (Boolean.TRUE.equals(removeCover)) {
+      return null;
+    }
+    if (coverMediaId != null) {
+      Media cover = mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(coverMediaId));
+      cover.markAsUploaded();
+      return cover;
+    }
+    return post.getCoverMedia();
   }
 
   /**

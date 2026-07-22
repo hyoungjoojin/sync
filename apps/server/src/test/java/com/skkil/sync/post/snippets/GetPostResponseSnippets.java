@@ -29,7 +29,11 @@ public class GetPostResponseSnippets {
     List<FieldDescriptor> fields = new ArrayList<>();
     fields.add(fieldWithPath("summary").type(JsonFieldType.OBJECT).description("포스트 정보"));
     fields.addAll(PostSummarySnippets.getPostSummaryFields("summary."));
-    fields.add(fieldWithPath("content").type(JsonFieldType.OBJECT).description("Post Content"));
+    fields.add(
+        fieldWithPath("content")
+            .type(JsonFieldType.OBJECT)
+            .description("게시글 본문. summary.accessLevel 이 PREVIEW(유료 게이트)이면 이 필드 자체가 응답에서 빠진다")
+            .optional());
     fields.add(
         fieldWithPath("content.json").type(JsonFieldType.STRING).description("Post Content JSON"));
     fields.add(

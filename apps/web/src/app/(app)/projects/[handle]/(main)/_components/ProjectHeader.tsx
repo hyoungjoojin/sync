@@ -2,25 +2,27 @@
 
 import { PencilIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import {
-  useGetFollowedProjects,
   useGetProjectByHandle,
   useGetProjectTeammates,
 } from '@/api/__generated__/project/project';
-import { GetProjectResponseRole } from '@/api/__generated__/types';
+import {
+  GetProjectResponseRole,
+  GetProjectResponseSummaryJoinPolicy,
+} from '@/api/__generated__/types';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
 import {
   useFollowProject,
   useUnfollowProject,
 } from '@/components/feature/project/hooks/useFollowProject';
+import { useJoinProject } from '@/components/feature/project/hooks/useProjectJoinRequest';
 import { Badge } from '@/components/ui/badge';
 import { Button, LinkButton } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRequireAuth } from '@/hooks/use-require-auth';
-import { useSession } from '@/lib/auth/client';
-import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 // TODO: project creation date isn't returned by the API yet — derives a
@@ -39,31 +41,24 @@ interface ProjectHeaderProps {
 
 export default function ProjectHeader({ handle }: ProjectHeaderProps) {
   const t = useTranslations('pages.projects.project.header');
-  const { data: session } = useSession();
   const { requireAuth } = useRequireAuth();
 
   const { data, isPending } = useGetProjectByHandle(handle);
   const { data: teammatesData } = useGetProjectTeammates(handle);
-  const { data: followedProjectsData } = useGetFollowedProjects(
-    session?.user.handle || '',
-    { query: { enabled: isAuthenticated(session) } },
-  );
 
   const { mutate: followProject, isPending: isFollowPending } =
     useFollowProject();
   const { mutate: unfollowProject, isPending: isUnfollowPending } =
     useUnfollowProject();
+  const { mutate: joinProject, isPending: isJoinPending } = useJoinProject();
 
   if (isPending || !data) {
     return <ProjectHeaderSkeleton />;
   }
 
-  const { summary, role } = data.data;
+  const { summary, role, hasPendingJoinRequest, isFollowing } = data.data;
   const memberCount = teammatesData?.data.teammates.length ?? 0;
   const isMember = !!role;
-  const isFollowing =
-    followedProjectsData?.data.projects.some((p) => p.handle === handle) ??
-    false;
 
   const handleFollowToggle = () => {
     if (!requireAuth({ intent: 'follow' })) {
@@ -77,6 +72,32 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
 
     followProject({ handle });
   };
+
+  const handleJoin = () => {
+    if (!requireAuth({ intent: 'join' })) {
+      return;
+    }
+
+    joinProject(
+      { handle },
+      {
+        onSuccess: () => {
+          toast.success(
+            summary.joinPolicy === GetProjectResponseSummaryJoinPolicy.Open
+              ? t('join.joined')
+              : t('join.requested'),
+          );
+        },
+        onError: () => {
+          toast.error(t('join.error'));
+        },
+      },
+    );
+  };
+
+  const canJoin =
+    summary.joinPolicy === GetProjectResponseSummaryJoinPolicy.Open ||
+    summary.joinPolicy === GetProjectResponseSummaryJoinPolicy.Request;
 
   return (
     <Card>
@@ -111,13 +132,30 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          {/* Membership — joining the project is separate from following it. */}
           {isMember ? (
             <Button variant="outline" disabled>
               {t('status.member')}
             </Button>
           ) : (
+            canJoin &&
+            (hasPendingJoinRequest ? (
+              <Button variant="outline" disabled>
+                {t('join.requested-status')}
+              </Button>
+            ) : (
+              <Button disabled={isJoinPending} onClick={handleJoin}>
+                {summary.joinPolicy === GetProjectResponseSummaryJoinPolicy.Open
+                  ? t('join.join')
+                  : t('join.request')}
+              </Button>
+            ))
+          )}
+
+          {/* Following — for non-members only; membership already subscribes. */}
+          {!isMember && (
             <Button
-              variant={isFollowing ? 'outline' : 'default'}
+              variant="outline"
               disabled={isFollowPending || isUnfollowPending}
               onClick={handleFollowToggle}
             >
@@ -125,22 +163,13 @@ export default function ProjectHeader({ handle }: ProjectHeaderProps) {
             </Button>
           )}
 
-          <LinkButton
-            href={ROUTES.NEW_PROJECT_POST(handle)}
-            onClick={(event) => {
-              if (
-                !requireAuth({
-                  intent: 'write',
-                  redirectTo: ROUTES.NEW_PROJECT_POST(handle),
-                })
-              ) {
-                event.preventDefault();
-              }
-            }}
-          >
-            <PencilIcon />
-            {t('actions.write')}
-          </LinkButton>
+          {/* Writing — teammates only. */}
+          {isMember && (
+            <LinkButton href={ROUTES.NEW_PROJECT_POST(handle)}>
+              <PencilIcon />
+              {t('actions.write')}
+            </LinkButton>
+          )}
         </div>
       </CardContent>
     </Card>

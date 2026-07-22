@@ -21,7 +21,12 @@ import {
 import type { GetPostReportsResponseReportsContentItem } from '@/api/__generated__/types/GetPostReportsResponseReportsContentItem';
 import { ReportPostRequestReason } from '@/api/__generated__/types/ReportPostRequestReason';
 import { ReviewPostReportRequestResolution } from '@/api/__generated__/types/ReviewPostReportRequestResolution';
+import { ReadOnlyCodeBlockNode } from '@/components/feature/post/editor/extensions/nodes/code-block';
 import { ImageNode } from '@/components/feature/post/editor/extensions/nodes/image';
+import {
+  TaskItemNode,
+  TaskListNode,
+} from '@/components/feature/post/editor/extensions/nodes/task-list';
 import { deserialize } from '@/components/feature/post/editor/utils/serializer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -350,7 +355,13 @@ function formatDate(value: string) {
 
 function PostContentPreview({ content }: { content: string }) {
   const editor = useEditor({
-    extensions: [StarterKit, ImageNode],
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      ReadOnlyCodeBlockNode,
+      TaskListNode,
+      TaskItemNode,
+      ImageNode,
+    ],
     content: toEditorContent(content),
     editable: false,
     immediatelyRender: false,

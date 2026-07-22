@@ -43,6 +43,8 @@ class PostServiceTests {
 
   @Mock private TagService tagService;
 
+  @Mock private PostReferenceService postReferenceService;
+
   @Mock private PostRepository postRepository;
 
   @InjectMocks private PostService postService;
@@ -62,6 +64,7 @@ class PostServiceTests {
 
     assertThat(response.slug()).startsWith("user-1-");
     verify(tagService).addTagsToPost(any(Post.class), any(), any(), any());
+    verify(postReferenceService).replaceReferences(any(Post.class), any());
   }
 
   @Test
@@ -82,7 +85,10 @@ class PostServiceTests {
             PostType.LONG,
             PostStatus.DRAFT,
             new PostContentRequest("content", "{\"text\":\"content\"}", List.of()),
-            List.of());
+            List.of(),
+            List.of(),
+            null,
+            null);
 
     when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 

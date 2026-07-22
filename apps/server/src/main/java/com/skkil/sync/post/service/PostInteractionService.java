@@ -2,7 +2,7 @@ package com.skkil.sync.post.service;
 
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.service.PaginationService;
-import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.repository.PostLikeRepository;
 import com.skkil.sync.post.repository.PostQueryRepository;
@@ -47,7 +47,7 @@ public class PostInteractionService {
   }
 
   @Transactional(readOnly = true)
-  public GetPostsResponse getLikedPosts(
+  public PaginatedGetPostsResponse getLikedPosts(
       Long userId, @Nullable String projectHandle, CursorPaginationRequest pagination) {
     var page =
         paginationService.paginate(
@@ -56,6 +56,6 @@ public class PostInteractionService {
             pagination);
     var likedPosts = postAssembler.toPostResponses(page, userId);
 
-    return new GetPostsResponse(likedPosts);
+    return new PaginatedGetPostsResponse(likedPosts);
   }
 }

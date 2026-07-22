@@ -66,19 +66,60 @@
     padding: 0.25em 0.3em;
   }
 
+  /*
+   * 코드 블록은 code-block.tsx의 NodeView가 배경/여백/헤더를 담당한다.
+   * 여기서는 폰트와 code 리셋만 적용하고, 토큰 색상은 아래 `.hljs-*`에서 처리한다.
+   */
   pre {
-    background: var(--black);
-    border-radius: calc(var(--radius) - 4px);
-    color: var(--white);
     font-family: 'JetBrainsMono', monospace;
-    margin: 1.5rem 0;
-    padding: 0.75rem 1rem;
+    margin: 0;
 
     code {
       background: none;
       color: inherit;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       padding: 0;
+    }
+  }
+
+  /* 링크 */
+  a {
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* 할 일 목록 (체크박스) */
+  ul[data-type='taskList'] {
+    list-style: none;
+    margin: 1.25rem 0;
+    padding: 0;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      > label {
+        flex: 0 0 auto;
+        margin-top: 0.2rem;
+        user-select: none;
+      }
+
+      > div {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+
+    input[type='checkbox'] {
+      cursor: pointer;
+    }
+
+    li[data-checked='true'] > div {
+      color: var(--muted-foreground);
+      text-decoration: line-through;
     }
   }
 

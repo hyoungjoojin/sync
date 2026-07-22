@@ -53,6 +53,8 @@ export interface PostSummary {
   previewMedia: PostPreviewMedia[];
   /** 게시물에 첨부된 전체 미디어 수 */
   mediaCount: number;
+  /** 자동 생성 또는 업로드된 커버 이미지 URL */
+  coverImageUrl?: string | null;
 }
 
 export type PostContent =
@@ -61,7 +63,11 @@ export type PostContent =
 
 export interface PostViewSource {
   summary: PostSummary;
-  content: PostContent;
+  /**
+   * 본문. `summary.accessLevel` 이 `PREVIEW`(유료 게이트)이면 서버가 응답에서 본문을
+   * 통째로 빼므로 `undefined` 가 된다.
+   */
+  content?: PostContent;
 }
 
 export type PostCardVariant = 'preview' | 'detail';
@@ -94,7 +100,7 @@ export function toPostSummary(raw: RawPostSummary): PostSummary {
 
 export function toPostViewSource(raw: {
   summary: RawPostSummary;
-  content: PostContent;
+  content?: PostContent;
 }): PostViewSource {
   return {
     summary: toPostSummary(raw.summary),

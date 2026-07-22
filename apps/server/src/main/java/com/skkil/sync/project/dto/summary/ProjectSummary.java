@@ -11,4 +11,5 @@ public record ProjectSummary(
     String website,
     boolean isPublic,
     JoinPolicy joinPolicy,
+    long followerCount,
     String iconUrl) {}

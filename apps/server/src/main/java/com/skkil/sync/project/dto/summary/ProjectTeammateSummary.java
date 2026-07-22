@@ -5,4 +5,4 @@ import com.skkil.sync.user.dto.summary.UserSummary;
 import lombok.Builder;
 
 @Builder
-public record ProjectTeammateSummary(UserSummary user, Role role) {}
+public record ProjectTeammateSummary(UserSummary user, Role role, boolean isOwner) {}

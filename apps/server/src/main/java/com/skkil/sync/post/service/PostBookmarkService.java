@@ -2,7 +2,7 @@ package com.skkil.sync.post.service;
 
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.service.PaginationService;
-import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.repository.PostBookmarkRepository;
 import com.skkil.sync.post.repository.PostQueryRepository;
@@ -50,7 +50,7 @@ public class PostBookmarkService {
 
   @Transactional(readOnly = true)
   @PreAuthorize("#projectHandle == null or hasPermission(#projectHandle, 'PROJECT', 'READ')")
-  public GetPostsResponse getBookmarkedPosts(
+  public PaginatedGetPostsResponse getBookmarkedPosts(
       Long userId, @Nullable String projectHandle, CursorPaginationRequest pagination) {
     var page =
         paginationService.paginate(
@@ -59,6 +59,6 @@ public class PostBookmarkService {
             pagination);
     var bookmarkedPosts = postAssembler.toPostResponses(page, userId);
 
-    return new GetPostsResponse(bookmarkedPosts);
+    return new PaginatedGetPostsResponse(bookmarkedPosts);
   }
 }

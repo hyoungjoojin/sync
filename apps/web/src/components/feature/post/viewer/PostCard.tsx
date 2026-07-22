@@ -8,6 +8,7 @@ import { useGetPostBySlug } from '@/api/__generated__/post/post';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
 import { PostType } from '../types/post';
@@ -56,7 +57,15 @@ function PostCardBySource({ source }: { source: PostViewSource }) {
     ? ROUTES.PROJECT_POST(summary.project.handle, summary.slug)
     : ROUTES.POST(summary.slug);
 
-  const typeCardProps: TypePostCardProps = { summary, editor, postPath };
+  // 유료 게이트로 본문이 빠진 응답에서는 요약의 미리보기 텍스트로 대체한다.
+  const lockedPreview = content === undefined ? summary.preview : undefined;
+
+  const typeCardProps: TypePostCardProps = {
+    summary,
+    editor,
+    postPath,
+    lockedPreview,
+  };
 
   switch (summary.type) {
     case PostType.QUESTION:
@@ -73,9 +82,15 @@ interface TypePostCardProps {
   summary: PostSummary;
   editor: Editor | null;
   postPath: string;
+  lockedPreview?: string;
 }
 
-function ShortTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
+function ShortTypePostCard({
+  summary,
+  editor,
+  postPath,
+  lockedPreview,
+}: TypePostCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -90,7 +105,7 @@ function ShortTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
         {summary.title && (
           <h3 className="text-lg font-semibold">{summary.title}</h3>
         )}
-        <PostBody editor={editor} />
+        <PostBody editor={editor} lockedPreview={lockedPreview} />
         <PostCardActions
           postId={summary.id}
           liked={summary.liked}
@@ -104,9 +119,22 @@ function ShortTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
   );
 }
 
-function LongTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
+function LongTypePostCard({
+  summary,
+  editor,
+  postPath,
+  lockedPreview,
+}: TypePostCardProps) {
   return (
     <Card>
+      {summary.coverImageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={summary.coverImageUrl}
+          alt=""
+          className="aspect-[2.5/1] w-full object-cover"
+        />
+      )}
       <CardHeader>
         <PostViewHeader
           summary={summary}
@@ -119,7 +147,11 @@ function LongTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
         {summary.title && (
           <h3 className="text-lg font-semibold">{summary.title}</h3>
         )}
-        <PostBody editor={editor} className="line-clamp-4" />
+        <PostBody
+          editor={editor}
+          className="line-clamp-4"
+          lockedPreview={lockedPreview}
+        />
         <PostCardActions
           postId={summary.id}
           liked={summary.liked}
@@ -137,6 +169,7 @@ function QuestionTypePostCard({
   summary,
   editor,
   postPath,
+  lockedPreview,
 }: TypePostCardProps) {
   return (
     <Card>
@@ -152,7 +185,7 @@ function QuestionTypePostCard({
         {summary.title && (
           <h3 className="text-lg font-semibold">{summary.title}</h3>
         )}
-        <PostBody editor={editor} />
+        <PostBody editor={editor} lockedPreview={lockedPreview} />
         <PostCardActions
           postId={summary.id}
           liked={summary.liked}
@@ -170,17 +203,26 @@ function QuestionTypePostCard({
 
 export interface PostPreviewCardProps {
   summary: PostSummary;
+  /**
+   * 카드가 부모의 높이를 가득 채우도록 한다(`h-full`). 관련 게시물처럼 여러 카드를
+   * 한 행/캐러셀에 나란히 배치해 높이를 맞춰야 할 때 사용한다. 부모가
+   * stretch(그리드/flex 기본값)일 때 모든 카드가 가장 큰 카드 높이에 맞춰진다.
+   */
+  fillHeight?: boolean;
 }
 
-export function PostPreviewCard({ summary }: PostPreviewCardProps) {
+export function PostPreviewCard({ summary, fillHeight }: PostPreviewCardProps) {
   return (
     <PostRenderErrorBoundary>
-      <PostPreviewCardBySummary summary={summary} />
+      <PostPreviewCardBySummary summary={summary} fillHeight={fillHeight} />
     </PostRenderErrorBoundary>
   );
 }
 
-function PostPreviewCardBySummary({ summary }: PostPreviewCardProps) {
+function PostPreviewCardBySummary({
+  summary,
+  fillHeight,
+}: PostPreviewCardProps) {
   const router = useRouter();
 
   const postPath = summary.project?.handle
@@ -190,6 +232,7 @@ function PostPreviewCardBySummary({ summary }: PostPreviewCardProps) {
   const typePreviewCardProps: TypePostPreviewCardProps = {
     summary,
     postPath,
+    fillHeight,
     onClick: () => router.push(postPath),
   };
 
@@ -208,15 +251,17 @@ interface TypePostPreviewCardProps {
   summary: PostSummary;
   postPath: string;
   onClick: () => void;
+  fillHeight?: boolean;
 }
 
 function ShortTypePostPreviewCard({
   summary,
   postPath,
   onClick,
+  fillHeight,
 }: TypePostPreviewCardProps) {
   return (
-    <Card onClick={onClick}>
+    <Card onClick={onClick} className={cn(fillHeight && 'h-full')}>
       <CardHeader>
         <PostViewHeader
           summary={summary}
@@ -250,15 +295,20 @@ function ShortTypePostPreviewCard({
 function LongTypePostPreviewCard({
   summary,
   onClick,
+  fillHeight,
 }: TypePostPreviewCardProps) {
   const stopPropagation = (event: React.MouseEvent) => event.stopPropagation();
 
   return (
-    <Card onClick={onClick} className="overflow-hidden py-0">
+    <Card
+      onClick={onClick}
+      className={cn('overflow-hidden py-0', fillHeight && 'h-full')}
+    >
       <ArticlePreviewMedia
         previewMedia={summary.previewMedia}
         wordCount={summary.wordCount}
         project={summary.project}
+        coverImageUrl={summary.coverImageUrl}
       />
 
       <CardContent className="space-y-4 py-4">
@@ -299,11 +349,12 @@ function QuestionTypePostPreviewCard({
   summary,
   postPath,
   onClick,
+  fillHeight,
 }: TypePostPreviewCardProps) {
   const t = useTranslations('components.post.viewer');
 
   return (
-    <Card onClick={onClick}>
+    <Card onClick={onClick} className={cn(fillHeight && 'h-full')}>
       <CardContent className="flex gap-4">
         <div className="flex w-14 shrink-0 flex-col items-center gap-2 text-center">
           <div>
@@ -354,23 +405,26 @@ function ArticlePreviewMedia({
   previewMedia,
   wordCount,
   project,
+  coverImageUrl,
 }: {
   previewMedia: PostPreviewMedia[];
   wordCount: number;
   project?: PostProjectSummary;
+  coverImageUrl?: string | null;
 }) {
   const t = useTranslations('components.post.viewer');
   const readingMinutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
   // TODO: no category field on posts yet — falls back to the project name,
   // or a generic label.
   const category = project?.name?.toUpperCase() ?? t('article');
-  const thumbnail = previewMedia[0];
+  // The author-picked cover takes precedence over the first inline image.
+  const backgroundUrl = coverImageUrl ?? previewMedia[0]?.url;
 
   return (
     <div
       className="relative flex h-40 items-end bg-gradient-to-br from-primary/20 to-success-tint bg-cover bg-center p-4"
       style={
-        thumbnail ? { backgroundImage: `url(${thumbnail.url})` } : undefined
+        backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined
       }
     >
       <span className="absolute top-3 right-3 rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium">

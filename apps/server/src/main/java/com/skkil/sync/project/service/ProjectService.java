@@ -123,6 +123,7 @@ public class ProjectService {
         teammates,
         teammates.size() > ProjectConstants.INITIAL_TEAMMATE_LOAD_LIMIT,
         requester != null ? requester.getRole() : null,
+        requester != null && requester.isProjectOwner(),
         isFollowing,
         hasPendingInvitation,
         hasPendingJoinRequest);

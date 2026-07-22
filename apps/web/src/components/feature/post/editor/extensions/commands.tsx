@@ -1,6 +1,11 @@
 import { computePosition, flip, shift } from '@floating-ui/react';
 import {
+  CodeIcon,
   ImageIcon,
+  ListBulletsIcon,
+  ListChecksIcon,
+  ListNumbersIcon,
+  QuotesIcon,
   TextBIcon,
   TextHTwoIcon,
   TextItalicIcon,
@@ -29,7 +34,17 @@ import { NodeType } from './nodes';
 const MAX_COMMAND_QUERY_LENGTH = 6;
 
 interface CommandsItemProps {
-  name: 'h1' | 'h2' | 'bold' | 'italic' | 'image';
+  name:
+    | 'h1'
+    | 'h2'
+    | 'bold'
+    | 'italic'
+    | 'bullet'
+    | 'numbered'
+    | 'todo'
+    | 'quote'
+    | 'code'
+    | 'image';
   icon: React.ReactNode;
   command: (props: { editor: Editor; range: Range }) => void;
 }
@@ -71,6 +86,41 @@ const commands: CommandsItemProps[] = [
     icon: <TextItalicIcon />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setMark('italic').run();
+    },
+  },
+  {
+    name: 'bullet',
+    icon: <ListBulletsIcon />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).toggleBulletList().run();
+    },
+  },
+  {
+    name: 'numbered',
+    icon: <ListNumbersIcon />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).toggleOrderedList().run();
+    },
+  },
+  {
+    name: 'todo',
+    icon: <ListChecksIcon />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).toggleTaskList().run();
+    },
+  },
+  {
+    name: 'quote',
+    icon: <QuotesIcon />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).toggleBlockquote().run();
+    },
+  },
+  {
+    name: 'code',
+    icon: <CodeIcon />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).setCodeBlock().run();
     },
   },
   {

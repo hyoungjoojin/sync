@@ -55,29 +55,29 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
       return false;
     }
 
-    if (!post.isPublished()) {
-      return user != null && user.userId().equals(post.getAuthor().getId());
-    }
+    boolean isAuthor = user != null && user.userId().equals(post.getAuthor().getId());
 
-    if (post.isPublic() || (post.getProject() != null && post.getProject().isPublic())) {
-      return true;
-    }
-
-    if (user == null) {
-      return false;
-    }
-
-    if (user.userId().equals(post.getAuthor().getId())) {
-      return true;
-    }
-
+    // 프로젝트에 속하지 않은 개인 게시글: 기존 규칙(작성자 또는 공개)을 유지한다.
     if (post.getProject() == null) {
-      return false;
+      if (!post.isPublished()) {
+        return isAuthor;
+      }
+      return post.isPublic() || isAuthor;
     }
 
-    return teammateRepository
-        .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
-        .isPresent();
+    // 워크스페이스(프로젝트) 게시글: 현재 프로젝트 팀원에게만 접근을 허용한다.
+    // 작성자라도 프로젝트에서 나가거나 추방되면(팀원 레코드 삭제) 접근 권한을 잃는다.
+    boolean isTeammate =
+        user != null
+            && teammateRepository
+                .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
+                .isPresent();
+
+    if (!post.isPublished()) {
+      return isTeammate;
+    }
+
+    return post.getProject().isPublic() || isTeammate;
   }
 
   private boolean canEdit(AuthenticatedUser user, Post post) {
