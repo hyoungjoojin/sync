@@ -3185,7 +3185,7 @@ export const getGetPostsByTagUrl = (
 };
 
 /**
- * Get Posts By Tag
+ * 태그가 붙은 공개 게시글 목록을 조회합니다.
  * @summary Get Posts By Tag
  */
 export const getPostsByTag = async (

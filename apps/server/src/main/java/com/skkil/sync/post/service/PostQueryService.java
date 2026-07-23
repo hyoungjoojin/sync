@@ -89,9 +89,9 @@ public class PostQueryService {
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#tagId, 'TAG', 'READ')")
   public GetPostsResponse getPostsByTag(
-      Long requesterId, Long tagId, CursorPaginationRequest pagination) {
+      Long requesterId, Long tagId, PostType type, CursorPaginationRequest pagination) {
     return getPostsResponse(
-        requesterId, postQueryRepository.getPostsByTag(requesterId, tagId), pagination);
+        requesterId, postQueryRepository.getPostsByTag(requesterId, tagId, type), pagination);
   }
 
   @Transactional(readOnly = true)

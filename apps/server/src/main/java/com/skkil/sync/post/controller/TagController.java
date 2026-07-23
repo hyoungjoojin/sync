@@ -48,7 +48,7 @@ public class TagController {
   @ResponseStatus(HttpStatus.OK)
   public GetTagResponse getTag(
       @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
-    return new GetTagResponse(tagService.getTag(user.userId(), id));
+    return new GetTagResponse(tagService.getTag(user == null ? null : user.userId(), id));
   }
 
   @GetMapping("/tags")

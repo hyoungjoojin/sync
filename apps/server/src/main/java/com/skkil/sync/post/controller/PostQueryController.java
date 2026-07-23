@@ -79,8 +79,10 @@ public class PostQueryController {
   public GetPostsResponse getPostsByTag(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable Long tagId,
+      @RequestParam(required = false) PostType type,
       @Validated CursorPaginationRequest pagination) {
-    return postQueryService.getPostsByTag(user == null ? null : user.userId(), tagId, pagination);
+    return postQueryService.getPostsByTag(
+        user == null ? null : user.userId(), tagId, type, pagination);
   }
 
   @GetMapping("/projects/{handle}/posts")

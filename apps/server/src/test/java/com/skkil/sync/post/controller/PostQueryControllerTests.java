@@ -228,20 +228,22 @@ class PostQueryControllerTests {
   }
 
   @Test
-  @DisplayName("[getPostsByTag] API 문서화 테스트")
-  @WithAuthenticatedUser
+  @DisplayName("[getPostsByTag] 공개 태그 게시글 API 문서화 테스트")
   void getPostsByTag() throws Exception {
     Long tagId = 1L;
+    PostType type = PostType.LONG;
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
-    when(postQueryService.getPostsByTag(any(), eq(tagId), eq(pagination))).thenReturn(response);
+    when(postQueryService.getPostsByTag(isNull(), eq(tagId), eq(type), eq(pagination)))
+        .thenReturn(response);
 
     mockMvc
         .perform(
             get("/tags/{tagId}/posts", tagId)
+                .queryParam("type", type.name())
                 .queryParams(
                     CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
         .andExpect(status().isOk())
@@ -251,13 +253,14 @@ class PostQueryControllerTests {
                 ResourceSnippetParameters.builder()
                     .tag("post")
                     .summary("Get Posts By Tag")
-                    .description("Get Posts By Tag")
+                    .description("태그가 붙은 공개 게시글 목록을 조회합니다.")
                     .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("tagId").description("태그 ID")),
-                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
+                    .and(parameterWithName("type").description("게시글 타입").optional()),
                 GetPostsResponseSnippets.getPostsResponseFields()));
   }
 

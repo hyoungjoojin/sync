@@ -17,7 +17,9 @@ import com.skkil.sync.post.exception.TagNotFoundException;
 import com.skkil.sync.post.exception.TagPoolMismatchException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Post;
+import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostTag;
+import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.post.model.Tag;
 import com.skkil.sync.post.repository.TagFollowRelationshipRepository;
 import com.skkil.sync.post.repository.TagRepository;
@@ -293,7 +295,8 @@ class TagServiceTests {
     Set<Long> followedTagIds = Set.of(5L);
 
     when(tagFollowRelationshipRepository.findTagIdsByFollowerId(1L)).thenReturn(followedTagIds);
-    when(tagRepository.searchTags(query)).thenReturn(List.of());
+    when(tagRepository.searchTags(query, PostStatus.PUBLISHED, PostVisibility.VISIBLE))
+        .thenReturn(List.of());
 
     tagService.searchTags(1L, null, query);
 

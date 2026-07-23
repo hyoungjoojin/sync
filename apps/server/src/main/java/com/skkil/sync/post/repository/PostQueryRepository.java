@@ -72,9 +72,13 @@ public class PostQueryRepository {
     };
   }
 
-  public CursorPaginationDataFetcher<PostDto> getPostsByTag(Long requesterId, Long tagId) {
+  public CursorPaginationDataFetcher<PostDto> getPostsByTag(
+      Long requesterId, Long tagId, PostType type) {
     return (condition, orderFields, size) -> {
       Condition tagCondition = condition.and(POST_TAGS.TAG_ID.eq(tagId));
+      if (type != null) {
+        tagCondition = tagCondition.and(POSTS.POST_TYPE.eq(type.name()));
+      }
 
       return dsl.select(post(requesterId))
           .from(POSTS)

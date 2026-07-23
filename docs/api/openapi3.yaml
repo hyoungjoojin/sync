@@ -2184,8 +2184,8 @@ paths:
       tags:
       - tag
       summary: Get Tag
-      description: "태그 ID로 태그 상세 정보를 조회합니다. 로그인한 사용자만 접근할 수 있으며, 프로젝트 태그는 프로젝트가 공개\
-        이거나 요청자가 프로젝트 팀원인 경우에만 조회할 수 있습니다."
+      description: 태그 ID로 태그 상세 정보를 조회합니다. 프로젝트 태그는 프로젝트가 공개이거나 요청자가 프로젝트 팀원인 경우에만
+        조회할 수 있습니다.
       operationId: GetTag
       parameters:
       - name: id
@@ -2286,7 +2286,7 @@ paths:
       tags:
       - post
       summary: Get Posts By Tag
-      description: Get Posts By Tag
+      description: 태그가 붙은 공개 게시글 목록을 조회합니다.
       operationId: GetPostsByTag
       parameters:
       - name: tagId
@@ -2318,6 +2318,12 @@ paths:
         in: query
         description: "Cursor for pagination, indicating the position before which\
           \ to return items"
+        required: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: 게시글 타입
         required: false
         schema:
           type: string
