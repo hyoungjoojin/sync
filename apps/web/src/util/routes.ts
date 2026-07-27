@@ -13,6 +13,7 @@ const ROUTES = {
   ONBOARDING: () => '/onboarding',
   POST: (slug: string) => `/posts/${slug}`,
   POST_EDIT: (slug: string) => `/posts/${slug}/edit`,
+  POST_OG_IMAGE: (slug: string) => `/og/posts/${encodeURIComponent(slug)}`,
   NEW_POST: () => `/posts/new`,
   PROJECT: (handle: string) => `/projects/${handle}`,
   NEW_PROJECT: () => '/projects/new',

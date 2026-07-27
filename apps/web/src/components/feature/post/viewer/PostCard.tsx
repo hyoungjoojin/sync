@@ -147,11 +147,9 @@ function LongTypePostCard({
         {summary.title && (
           <h3 className="text-lg font-semibold">{summary.title}</h3>
         )}
-        <PostBody
-          editor={editor}
-          className="line-clamp-4"
-          lockedPreview={lockedPreview}
-        />
+        {/* 상세 화면이므로 본문을 자르지 않는다. 잘린 미리보기는 피드 카드
+            (`LongTypePostPreviewCard`)의 역할이다. */}
+        <PostBody editor={editor} lockedPreview={lockedPreview} />
         <PostCardActions
           postId={summary.id}
           liked={summary.liked}

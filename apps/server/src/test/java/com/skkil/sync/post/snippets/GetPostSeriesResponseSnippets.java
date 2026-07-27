@@ -16,7 +16,7 @@ public class GetPostSeriesResponseSnippets {
     return new GetPostSeriesResponse(
         PostSeriesSummarySnippets.getPostSeriesSummary(),
         1L,
-        List.of(new GetPostSeriesResponse.Post(1L, 1, "게시글 제목")));
+        List.of(new GetPostSeriesResponse.Post(1L, 1, "post-slug", "게시글 제목")));
   }
 
   public static ResponseFieldsSnippet getGetPostSeriesResponseFields() {
@@ -47,6 +47,11 @@ public class GetPostSeriesResponseSnippets {
         fieldWithPath("posts[].position")
             .type(JsonFieldType.NUMBER)
             .description("시리즈 내 게시글 위치 (1부터 시작)"));
+    fields.add(
+        fieldWithPath("posts[].slug")
+            .type(JsonFieldType.STRING)
+            .description("게시글 slug (열람 권한이 없거나 삭제된 경우 없음)")
+            .optional());
     fields.add(
         fieldWithPath("posts[].title")
             .type(JsonFieldType.STRING)

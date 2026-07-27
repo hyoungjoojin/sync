@@ -68,6 +68,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/projects/recommendations")
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/tags/recommendations", "/tags/unverified")
+                    .authenticated()
                     .requestMatchers("/search/**")
                     .authenticated()
                     .requestMatchers(
@@ -77,6 +79,8 @@ public class SecurityConfig {
                         "/posts/**",
                         "/comments/**",
                         "/users/**",
+                        "/tags/{tagId}",
+                        "/tags/{tagId}/posts",
                         "/team-building/**",
                         "/projects/**",
                         "/contests/**")

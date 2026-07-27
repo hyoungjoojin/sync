@@ -1571,6 +1571,7 @@ paths:
                       "posts" : [ {
                         "seriesPostId" : 1,
                         "position" : 1,
+                        "slug" : "post-slug",
                         "title" : "게시글 제목"
                       } ]
                     }
@@ -3138,8 +3139,8 @@ paths:
       tags:
       - tag
       summary: Get Tag
-      description: "태그 ID로 태그 상세 정보를 조회합니다. 로그인한 사용자만 접근할 수 있으며, 프로젝트 태그는 프로젝트가 공개\
-        이거나 요청자가 프로젝트 팀원인 경우에만 조회할 수 있습니다."
+      description: 태그 ID로 태그 상세 정보를 조회합니다. 프로젝트 태그는 프로젝트가 공개이거나 요청자가 프로젝트 팀원인 경우에만
+        조회할 수 있습니다.
       operationId: GetTag
       parameters:
       - name: id
@@ -3240,7 +3241,7 @@ paths:
       tags:
       - post
       summary: Get Posts By Tag
-      description: Get Posts By Tag
+      description: 태그가 붙은 공개 게시글 목록을 조회합니다.
       operationId: GetPostsByTag
       parameters:
       - name: tagId
@@ -3272,6 +3273,12 @@ paths:
         in: query
         description: "Cursor for pagination, indicating the position before which\
           \ to return items"
+        required: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: 게시글 타입
         required: false
         schema:
           type: string
@@ -4590,66 +4597,6 @@ components:
         handle:
           type: string
           description: 생성된 프로젝트 핸들
-    GetPostSeriesResponse:
-      title: GetPostSeriesResponse
-      required:
-      - posts
-      type: object
-      properties:
-        currentSeriesPostId:
-          type: number
-          description: 조회 기준 게시글의 시리즈-게시글 연결 ID (시리즈에 속하지 않으면 없음)
-          nullable: true
-        series:
-          type: object
-          properties:
-            scope:
-              type: string
-              description: "시리즈 공개 범위 (PUBLIC: 개인 시리즈, WORKSPACE: 프로젝트 시리즈)"
-              nullable: true
-              enum:
-              - PUBLIC
-              - WORKSPACE
-            creatorId:
-              type: number
-              description: 시리즈 생성자 ID
-              nullable: true
-            name:
-              type: string
-              description: 시리즈 이름
-              nullable: true
-            postCount:
-              type: number
-              description: 시리즈에 포함된 게시글 수
-              nullable: true
-            externalId:
-              type: string
-              description: 시리즈 외부 식별자
-              nullable: true
-            projectHandle:
-              type: string
-              description: 프로젝트 시리즈인 경우 소속 프로젝트 핸들 (개인 시리즈인 경우 없음)
-              nullable: true
-          description: 게시글이 속한 시리즈 (어떤 시리즈에도 속하지 않으면 없음)
-        posts:
-          type: array
-          description: "시리즈에 포함된 게시글 목록 (순서대로, 시리즈에 속하지 않으면 빈 배열)"
-          items:
-            required:
-            - position
-            - seriesPostId
-            type: object
-            properties:
-              seriesPostId:
-                type: number
-                description: 시리즈-게시글 연결 ID (순서 변경/삭제 시 사용)
-              position:
-                type: number
-                description: 시리즈 내 게시글 위치 (1부터 시작)
-              title:
-                type: string
-                description: 게시글 제목 (열람 권한이 없거나 삭제된 경우 없음)
-                nullable: true
     GetAllTagsResponse:
       title: GetAllTagsResponse
       type: object
@@ -5224,6 +5171,70 @@ components:
           type: string
           description: 변경할 태그 설명
           nullable: true
+    GetPostSeriesResponse:
+      title: GetPostSeriesResponse
+      required:
+      - posts
+      type: object
+      properties:
+        currentSeriesPostId:
+          type: number
+          description: 조회 기준 게시글의 시리즈-게시글 연결 ID (시리즈에 속하지 않으면 없음)
+          nullable: true
+        series:
+          type: object
+          properties:
+            scope:
+              type: string
+              description: "시리즈 공개 범위 (PUBLIC: 개인 시리즈, WORKSPACE: 프로젝트 시리즈)"
+              nullable: true
+              enum:
+              - PUBLIC
+              - WORKSPACE
+            creatorId:
+              type: number
+              description: 시리즈 생성자 ID
+              nullable: true
+            name:
+              type: string
+              description: 시리즈 이름
+              nullable: true
+            postCount:
+              type: number
+              description: 시리즈에 포함된 게시글 수
+              nullable: true
+            externalId:
+              type: string
+              description: 시리즈 외부 식별자
+              nullable: true
+            projectHandle:
+              type: string
+              description: 프로젝트 시리즈인 경우 소속 프로젝트 핸들 (개인 시리즈인 경우 없음)
+              nullable: true
+          description: 게시글이 속한 시리즈 (어떤 시리즈에도 속하지 않으면 없음)
+        posts:
+          type: array
+          description: "시리즈에 포함된 게시글 목록 (순서대로, 시리즈에 속하지 않으면 빈 배열)"
+          items:
+            required:
+            - position
+            - seriesPostId
+            type: object
+            properties:
+              seriesPostId:
+                type: number
+                description: 시리즈-게시글 연결 ID (순서 변경/삭제 시 사용)
+              position:
+                type: number
+                description: 시리즈 내 게시글 위치 (1부터 시작)
+              title:
+                type: string
+                description: 게시글 제목 (열람 권한이 없거나 삭제된 경우 없음)
+                nullable: true
+              slug:
+                type: string
+                description: 게시글 slug (열람 권한이 없거나 삭제된 경우 없음)
+                nullable: true
     GetProjectTeammatesResponse:
       title: GetProjectTeammatesResponse
       required:

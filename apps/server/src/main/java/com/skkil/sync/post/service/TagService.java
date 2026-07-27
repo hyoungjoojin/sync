@@ -16,7 +16,9 @@ import com.skkil.sync.post.exception.TagNotFoundException;
 import com.skkil.sync.post.exception.TagPoolMismatchException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Post;
+import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostTag;
+import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.post.model.Tag;
 import com.skkil.sync.post.repository.PostTagRepository;
 import com.skkil.sync.post.repository.TagFollowRelationshipRepository;
@@ -96,7 +98,7 @@ public class TagService {
   }
 
   private List<TagSummary> searchGlobalTags(String query, Set<Long> followedTagIds) {
-    return tagRepository.searchTags(query).stream()
+    return tagRepository.searchTags(query, PostStatus.PUBLISHED, PostVisibility.VISIBLE).stream()
         .map(tag -> tagMapper.toTagSummary(tag, followedTagIds))
         .toList();
   }
@@ -409,6 +411,8 @@ public class TagService {
   }
 
   private Set<Long> followedTagIds(Long requesterId) {
-    return tagFollowRelationshipRepository.findTagIdsByFollowerId(requesterId);
+    return requesterId == null
+        ? Set.of()
+        : tagFollowRelationshipRepository.findTagIdsByFollowerId(requesterId);
   }
 }

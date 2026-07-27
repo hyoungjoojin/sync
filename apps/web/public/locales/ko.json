@@ -634,8 +634,12 @@
       },
       "tabs": {
         "posts": "게시물",
+        "tags": "태그",
         "users": "사용자",
         "projects": "프로젝트"
+      },
+      "tags": {
+        "post-count": "{count}개의 게시물"
       }
     },
     "auth": {
@@ -1350,9 +1354,7 @@
         "series": {
           "label": "시리즈",
           "part": "{total}편 중 {position}번째",
-          "hidden": "비공개 게시글",
-          "move-up": "위로 이동",
-          "move-down": "아래로 이동"
+          "hidden": "비공개 게시글"
         }
       }
     },
@@ -1673,6 +1675,10 @@
         "clear": "시리즈 선택 해제"
       }
     }
+  },
+  "metadata": {
+    "description": "개인 기록과 팀 지식을 연결하고 검색할 수 있는 개발자 지식 플랫폼",
+    "tagDescription": "{name} 태그가 붙은 글을 모아 봅니다. sync에서 {name} 관련 지식과 경험을 찾아보세요."
   },
   "errors": {
     "connection-failed": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요."

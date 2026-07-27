@@ -15,4 +15,9 @@ export type GetPostSeriesResponsePostsItem = {
    * @nullable
    */
   title?: string | null;
+  /**
+   * 게시글 slug (열람 권한이 없거나 삭제된 경우 없음)
+   * @nullable
+   */
+  slug?: string | null;
 };

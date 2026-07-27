@@ -3,6 +3,7 @@ package com.skkil.sync.post.controller;
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -138,8 +139,8 @@ class TagControllerTests {
                     .tag("tag")
                     .summary("Get Tag")
                     .description(
-                        "태그 ID로 태그 상세 정보를 조회합니다. 로그인한 사용자만 접근할 수 있으며, 프로젝트 태그는 프로젝트가 "
-                            + "공개이거나 요청자가 프로젝트 팀원인 경우에만 조회할 수 있습니다.")
+                        "태그 ID로 태그 상세 정보를 조회합니다. 프로젝트 태그는 프로젝트가 공개이거나 요청자가 프로젝트 팀원인 경우에만 "
+                            + "조회할 수 있습니다.")
                     .responseSchema(schema(GetTagResponse.class.getSimpleName())),
                 null,
                 null,
@@ -149,9 +150,14 @@ class TagControllerTests {
   }
 
   @Test
-  @DisplayName("[getTag] 로그인하지 않은 사용자는 접근할 수 없다")
-  void getTag_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
-    mockMvc.perform(get("/tags/{id}", 1L)).andExpect(status().isUnauthorized());
+  @DisplayName("[getTag] 로그인하지 않은 사용자도 공개 태그를 조회할 수 있다")
+  void getTag_unauthenticatedUser_shouldReturnOk() throws Exception {
+    Long id = 1L;
+    GetTagResponse response = GetTagResponseSnippets.getGetTagResponse();
+
+    when(tagService.getTag(isNull(), eq(id))).thenReturn(response.tag());
+
+    mockMvc.perform(get("/tags/{id}", id)).andExpect(status().isOk());
   }
 
   @Test

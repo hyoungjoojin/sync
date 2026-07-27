@@ -49,7 +49,9 @@ public class PostSeriesAssembler {
   private GetPostSeriesResponse.Post toItem(
       PostSeriesPost item, Map<Long, PostSummary> visibleSummaries) {
     PostSummary summary = visibleSummaries.get(item.getPost().getId());
+    // 열람할 수 없는 항목은 불투명 slot 이므로 제목뿐 아니라 이동 경로(slug)도 노출하지 않는다.
+    String slug = summary == null ? null : summary.slug();
     String title = summary == null ? null : summary.title();
-    return new GetPostSeriesResponse.Post(item.getId(), item.getPosition(), title);
+    return new GetPostSeriesResponse.Post(item.getId(), item.getPosition(), slug, title);
   }
 }

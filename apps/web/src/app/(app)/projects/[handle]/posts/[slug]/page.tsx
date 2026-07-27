@@ -1,12 +1,10 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getGetPostCommentsInfiniteQueryOptions } from '@/api/__generated__/comment/comment';
-import {
-  getGetPostBySlugQueryOptions,
-  getPostBySlug,
-} from '@/api/__generated__/post/post';
+import { getGetPostBySlugQueryKey } from '@/api/__generated__/post/post';
 import { COMMENT_PAGE_SIZE } from '@/components/feature/post/constants';
 import type { PostType } from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
@@ -15,8 +13,14 @@ import { PostSeriesCard } from '@/components/feature/post/viewer/PostSeriesCard'
 import { RelatedPosts } from '@/components/feature/post/viewer/RelatedPosts';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import SyncError, { ErrorCode } from '@/lib/error';
+import { getPostBySlugCached } from '@/lib/post-query';
 import { getQueryClient } from '@/lib/query';
-import { buildPostJsonLd, buildPostMetadata, isPostIndexable } from '@/lib/seo';
+import {
+  NON_INDEXABLE_METADATA,
+  buildPostJsonLd,
+  createPostMetadata,
+  isPostIndexable,
+} from '@/lib/seo';
 import ROUTES from '@/util/routes';
 
 interface PostProps {
@@ -29,14 +33,15 @@ interface PostProps {
 export async function generateMetadata({
   params,
 }: PostProps): Promise<Metadata> {
-  const { handle, slug } = await params;
+  const { slug } = await params;
+  const t = await getTranslations('metadata');
 
   try {
-    const { data: post } = await getPostBySlug(slug);
+    const { data: post } = await getPostBySlugCached(slug);
 
-    return buildPostMetadata(post.summary, ROUTES.PROJECT_POST(handle, slug));
+    return createPostMetadata(post.summary, t('description'));
   } catch {
-    return {};
+    return NON_INDEXABLE_METADATA;
   }
 }
 
@@ -50,9 +55,10 @@ export default async function Post({ params }: PostProps) {
   let jsonLd: Record<string, unknown> | null = null;
 
   try {
-    const { data: post } = await queryClient.fetchQuery(
-      getGetPostBySlugQueryOptions(slug),
-    );
+    const response = await getPostBySlugCached(slug);
+    const post = response.data;
+
+    queryClient.setQueryData(getGetPostBySlugQueryKey(slug), response);
     commentsEnabled = post.summary.status === 'PUBLISHED';
     postType = post.summary.type as PostType;
     isPostAuthor = post.summary.isAuthor;
@@ -101,7 +107,7 @@ export default async function Post({ params }: PostProps) {
       <TwoColumnLayout
         main={<PostCard slug={slug} />}
         side={
-          <>
+          <div className="flex flex-col gap-6">
             <PostSeriesCard slug={slug} />
             {commentsEnabled && postType ? (
               <PostComments
@@ -110,7 +116,7 @@ export default async function Post({ params }: PostProps) {
                 isPostAuthor={isPostAuthor}
               />
             ) : null}
-          </>
+          </div>
         }
       />
       <RelatedPosts slug={slug} />
