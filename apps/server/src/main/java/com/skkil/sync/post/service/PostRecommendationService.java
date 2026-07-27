@@ -5,7 +5,7 @@ import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest
 import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.post.dto.data.PostDto;
 import com.skkil.sync.post.dto.data.PostRecommendationCandidate;
-import com.skkil.sync.post.dto.response.GetPostRecommendationsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.model.PostRecommendationType;
 import com.skkil.sync.post.repository.PostQueryRepository;
@@ -43,7 +43,7 @@ public class PostRecommendationService {
   }
 
   @Transactional(readOnly = true)
-  public GetPostRecommendationsResponse getRecommendations(
+  public PaginatedGetPostsResponse getRecommendations(
       Long requesterId, @Nullable PostRecommendationType type, CursorPaginationRequest pagination) {
     var candidates =
         (type != null)
@@ -60,6 +60,6 @@ public class PostRecommendationService {
         postAssembler.toPostResponses(
             candidates.map(candidate -> postsById.get(candidate.id())), requesterId);
 
-    return new GetPostRecommendationsResponse(posts);
+    return new PaginatedGetPostsResponse(posts);
   }
 }

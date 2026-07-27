@@ -12,6 +12,8 @@ import type { GetProjectResponseTeammatesItem } from './GetProjectResponseTeamma
 export interface GetProjectResponse {
   /** 프로젝트 정보 */
   summary: GetProjectResponseSummary;
+  /** 현재 사용자의 대기 중인 가입 요청 존재 여부 */
+  hasPendingJoinRequest: boolean;
   /** 팀원 목록 */
   teammates: GetProjectResponseTeammatesItem[];
   /** 현재 사용자의 프로젝트 팔로우 여부 */
@@ -21,6 +23,8 @@ export interface GetProjectResponse {
    * @nullable
    */
   role?: GetProjectResponseRole;
+  /** 현재 사용자의 프로젝트 소유자 여부 */
+  isOwner: boolean;
   /** 최근 활동 목록 */
   recentActivities?: GetProjectResponseRecentActivitiesItem[];
   /** 현재 사용자의 프로젝트 팀원 여부 */

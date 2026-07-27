@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import z from 'zod';
 
 import { useGetProjectHandleAvailability } from '@/api/__generated__/project/project';
+import { CreateProjectRequestJoinPolicy } from '@/api/__generated__/types';
 import { useCreateProject } from '@/components/feature/project/hooks/useCreateProject';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +45,7 @@ export default function CreateProjectPage() {
       }),
     description: z.string().optional(),
     isPublic: z.boolean(),
+    joinPolicy: z.enum(CreateProjectRequestJoinPolicy),
   });
 
   type CreateProjectFormValues = z.infer<typeof CreateProjectFormSchema>;
@@ -56,6 +58,7 @@ export default function CreateProjectPage() {
       handle: '',
       description: '',
       isPublic: true,
+      joinPolicy: CreateProjectRequestJoinPolicy.Invite,
     },
   });
 
@@ -93,6 +96,7 @@ export default function CreateProjectPage() {
           handle: values.handle,
           description: values.description || null,
           isPublic: values.isPublic,
+          joinPolicy: values.joinPolicy,
         },
       },
       {
@@ -202,6 +206,41 @@ export default function CreateProjectPage() {
                         </p>
                       </div>
                     </label>
+                  </RadioGroup>
+                </Field>
+              )}
+            />
+            <Controller
+              name="joinPolicy"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t('form.join_policy.label')}</FieldLabel>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="mt-1"
+                  >
+                    {[
+                      CreateProjectRequestJoinPolicy.Open,
+                      CreateProjectRequestJoinPolicy.Request,
+                      CreateProjectRequestJoinPolicy.Invite,
+                    ].map((policy) => (
+                      <label
+                        key={policy}
+                        className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary"
+                      >
+                        <RadioGroupItem value={policy} className="mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {t(`form.join_policy.${policy}.label`)}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {t(`form.join_policy.${policy}.description`)}
+                          </p>
+                        </div>
+                      </label>
+                    ))}
                   </RadioGroup>
                 </Field>
               )}

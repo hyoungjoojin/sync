@@ -5,9 +5,11 @@ import { ModalType } from '@/constants/modal';
 export type AuthRequiredIntent =
   | 'like'
   | 'bookmark'
+  | 'collection'
   | 'comment'
   | 'follow'
-  | 'write';
+  | 'write'
+  | 'join';
 
 export interface AuthRequiredModalPayload {
   intent: AuthRequiredIntent;

@@ -1,6 +1,7 @@
 package com.skkil.sync.project.dto.request;
 
 import com.skkil.sync.project.constants.ProjectConstants;
+import com.skkil.sync.project.model.JoinPolicy;
 import com.skkil.sync.project.validator.NotReservedHandle;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,4 +15,5 @@ public record CreateProjectRequest(
     @NotBlank @Size(min = ProjectConstants.MIN_NAME_LENGTH, max = ProjectConstants.MAX_NAME_LENGTH)
         String name,
     @Size(max = ProjectConstants.MAX_DESCRIPTION_LENGTH) String description,
-    @NotNull Boolean isPublic) {}
+    @NotNull Boolean isPublic,
+    JoinPolicy joinPolicy) {}

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 @ValidPublishablePost
@@ -16,5 +17,7 @@ public record CreatePostRequest(
     @NotNull PostType type,
     PostStatus status,
     @Valid @NotNull PostContentRequest content,
-    List<String> tags)
+    List<String> tags,
+    List<Long> referencedPostIds,
+    @Nullable String coverMediaId)
     implements PublishablePostRequest {}

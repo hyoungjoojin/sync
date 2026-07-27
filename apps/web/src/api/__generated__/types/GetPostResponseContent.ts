@@ -7,7 +7,7 @@
 import type { GetPostResponseContentMediaItem } from './GetPostResponseContentMediaItem';
 
 /**
- * Post Content
+ * 게시글 본문. summary.accessLevel 이 PREVIEW(유료 게이트)이면 이 필드 자체가 응답에서 빠진다
  */
 export type GetPostResponseContent = {
   /** Post Content JSON */

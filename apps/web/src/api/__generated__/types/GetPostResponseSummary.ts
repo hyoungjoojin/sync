@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { GetPostResponseSummaryAccessLevel } from './GetPostResponseSummaryAccessLevel';
 import type { GetPostResponseSummaryAuthor } from './GetPostResponseSummaryAuthor';
 import type { GetPostResponseSummaryPreviewMediaItem } from './GetPostResponseSummaryPreviewMediaItem';
 import type { GetPostResponseSummaryProject } from './GetPostResponseSummaryProject';
@@ -20,6 +21,13 @@ export type GetPostResponseSummary = {
   preview: string;
   /** 게시물 본문의 단어 수 */
   wordCount: number;
+  /** 요청자의 열람 수준 (FULL: 본문까지 열람, PREVIEW: 유료 게이트로 본문 잠김) */
+  accessLevel: GetPostResponseSummaryAccessLevel;
+  /**
+   * 게시물 커버 이미지 URL (없으면 없음)
+   * @nullable
+   */
+  coverImageUrl?: string | null;
   /** Whether the current user bookmarked this post */
   bookmarked: boolean;
   /** 작성자 정보 */
@@ -45,6 +53,8 @@ export type GetPostResponseSummary = {
   isAuthor: boolean;
   /** Creation Timestamp */
   createdAt: string;
+  /** 게시글이 어떤 시리즈에 속해 있는지 여부 */
+  isSeriesPost: boolean;
   /** 게시글 공개 범위 */
   scope: GetPostResponseSummaryScope;
   /** 게시물에 첨부된 전체 미디어 수 */

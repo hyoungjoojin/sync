@@ -2,6 +2,7 @@ package com.skkil.sync.common.seeder;
 
 import com.skkil.sync.project.dto.request.AddTeammateRequest;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
+import com.skkil.sync.project.model.JoinPolicy;
 import com.skkil.sync.project.service.ProjectService;
 import com.skkil.sync.project.service.TeammateService;
 import com.skkil.sync.user.model.User;
@@ -20,7 +21,8 @@ class ProjectSeeder {
 
   String seed(User owner, String handle, String name, String description) {
     projectService.createProject(
-        owner.getId(), new CreateProjectRequest(handle, name, description, true));
+        owner.getId(),
+        new CreateProjectRequest(handle, name, description, true, JoinPolicy.INVITE));
     return handle;
   }
 

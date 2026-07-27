@@ -1,7 +1,7 @@
 package com.skkil.sync.post.controller;
 
 import com.skkil.sync.auth.AuthenticatedUser;
-import com.skkil.sync.post.dto.response.SearchPostsResponse;
+import com.skkil.sync.post.dto.response.GetPostsResponse;
 import com.skkil.sync.post.service.PostSearchService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +27,7 @@ public class PostSearchController {
 
   @GetMapping("/search/posts")
   @ResponseStatus(HttpStatus.OK)
-  public SearchPostsResponse searchPosts(
+  public GetPostsResponse searchPosts(
       @AuthenticationPrincipal @NotNull AuthenticatedUser user,
       @RequestParam @NotBlank @Size(min = 1, max = 100) String query,
       @RequestParam(required = false) @Nullable String projectHandle) {

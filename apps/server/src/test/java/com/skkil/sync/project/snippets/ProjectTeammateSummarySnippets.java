@@ -17,6 +17,7 @@ public class ProjectTeammateSummarySnippets {
     return ProjectTeammateSummary.builder()
         .user(UserSummarySnippets.getUserSummary())
         .role(role)
+        .isOwner(role == Role.ADMIN)
         .build();
   }
 
@@ -29,6 +30,8 @@ public class ProjectTeammateSummarySnippets {
             .type(RestDocsUtils.ENUM_TYPE)
             .description("팀원 역할")
             .attributes(RestDocsUtils.getEnumAttributes(Role.class)));
+    fields.add(
+        fieldWithPath(prefix + "isOwner").type(JsonFieldType.BOOLEAN).description("프로젝트 소유자 여부"));
     return fields;
   }
 }

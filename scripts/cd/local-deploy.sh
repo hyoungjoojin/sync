@@ -55,6 +55,7 @@ cd "$PROJECT_ROOT_DIR/apps/web"
 docker build \
     --build-context docs="$PROJECT_ROOT_DIR/docs" \
     --build-arg NEXT_PUBLIC_BACKEND_URL=http://localhost:8080 \
+    --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
     -t sync-web:local .
 
 info "Uploading web image to minikube..."

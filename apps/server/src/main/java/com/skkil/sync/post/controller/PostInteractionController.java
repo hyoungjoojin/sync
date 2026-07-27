@@ -2,7 +2,7 @@ package com.skkil.sync.post.controller;
 
 import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
-import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.service.PostInteractionService;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ public class PostInteractionController {
 
   @GetMapping("/posts/likes")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getLikedPosts(
+  public PaginatedGetPostsResponse getLikedPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestParam(required = false) @Nullable String projectHandle,
       @Validated CursorPaginationRequest pagination) {

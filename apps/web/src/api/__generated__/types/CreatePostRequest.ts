@@ -5,11 +5,22 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { CreatePostRequestContent } from './CreatePostRequestContent';
+import type { CreatePostRequestReferencedPostIdsItem } from './CreatePostRequestReferencedPostIdsItem';
 import type { CreatePostRequestStatus } from './CreatePostRequestStatus';
 import type { CreatePostRequestTagsItem } from './CreatePostRequestTagsItem';
 import type { CreatePostRequestType } from './CreatePostRequestType';
 
 export interface CreatePostRequest {
+  /**
+   * 커버 이미지로 사용할 미디어 ID (없으면 커버 없음)
+   * @nullable
+   */
+  coverMediaId?: string | null;
+  /**
+   * 이 글이 참조하는 게시글 ID 목록 (지정한 순서대로 노출, 최대 50개)
+   * @nullable
+   */
+  referencedPostIds?: CreatePostRequestReferencedPostIdsItem[] | null;
   /** Post Type */
   type: CreatePostRequestType;
   /**

@@ -1,8 +1,8 @@
 import type { MetadataRoute } from 'next';
 
 import type {
-  GetPostsResponse,
-  GetPostsResponsePostsNodesItemContent,
+  PaginatedGetPostsResponse,
+  PaginatedGetPostsResponsePostsNodesItemContent,
 } from '@/api/__generated__/types';
 import { env } from '@/lib/env';
 import { getPostCanonicalUrl, getSiteUrl, isPostIndexable } from '@/lib/seo';
@@ -53,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 }
 
 async function getPublicPosts() {
-  const posts: GetPostsResponsePostsNodesItemContent[] = [];
+  const posts: PaginatedGetPostsResponsePostsNodesItemContent[] = [];
   const visitedCursors = new Set<string>();
   let after: string | undefined;
 
@@ -90,7 +90,7 @@ async function getPublicPosts() {
   return posts;
 }
 
-async function getPostPage(after?: string): Promise<GetPostsResponse> {
+async function getPostPage(after?: string): Promise<PaginatedGetPostsResponse> {
   const baseUrl = env.NEXT_PUBLIC_BACKEND_URL.endsWith('/')
     ? env.NEXT_PUBLIC_BACKEND_URL
     : `${env.NEXT_PUBLIC_BACKEND_URL}/`;
@@ -113,5 +113,5 @@ async function getPostPage(after?: string): Promise<GetPostsResponse> {
     );
   }
 
-  return response.json() as Promise<GetPostsResponse>;
+  return response.json() as Promise<PaginatedGetPostsResponse>;
 }

@@ -22,6 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata');
+  const description = t('description');
 
   return {
     metadataBase: getSiteUrl(),
@@ -29,11 +30,29 @@ export async function generateMetadata(): Promise<Metadata> {
       default: 'sync',
       template: '%s | sync',
     },
-    description: t('description'),
+    description,
     applicationName: 'sync',
     creator: 'sync',
     publisher: 'sync',
     robots: INDEXABLE_ROBOTS,
+    alternates: {
+      canonical: '/',
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'ko_KR',
+      siteName: 'sync',
+      title: 'sync',
+      description,
+      url: getSiteUrl(),
+      images: ['/og-default.png'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'sync',
+      description,
+      images: ['/og-default.png'],
+    },
   };
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { TrashIcon } from '@phosphor-icons/react';
+import { CheckIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import {
   useGetProjectByHandle,
   useGetProjectInvitations,
+  useGetProjectJoinRequests,
   useGetProjectTeammates,
 } from '@/api/__generated__/project/project';
 import {
@@ -17,6 +18,10 @@ import {
   UpdateTeammateRequestRole,
 } from '@/api/__generated__/types';
 import { useCancelProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
+import {
+  useApproveJoinRequest,
+  useDeclineJoinRequest,
+} from '@/components/feature/project/hooks/useProjectJoinRequest';
 import {
   ProjectOwnerCannotBeModifiedError,
   useRemoveProjectTeammate,
@@ -76,8 +81,13 @@ export default function TeammatesSettingsView() {
 
   const isAdmin = projectData?.data.role === GetProjectResponseRole.Admin;
 
+  const { data: joinRequestsData } = useGetProjectJoinRequests(handle, {
+    query: { enabled: isAdmin },
+  });
+
   const teammates = teammatesData?.data.teammates ?? [];
   const invitations = invitationsData?.data.invitations ?? [];
+  const joinRequests = joinRequestsData?.data.joinRequests ?? [];
 
   return (
     <div className="space-y-6">
@@ -132,6 +142,18 @@ export default function TeammatesSettingsView() {
                   invitationId={invitation.invitation.id}
                   name={invitation.invitee.name}
                   handle={invitation.invitee.handle}
+                />
+              ))}
+
+            {isAdmin &&
+              joinRequests.map((request) => (
+                <JoinRequestRow
+                  key={request.id}
+                  projectHandle={handle}
+                  requestId={request.id}
+                  name={request.requester.name}
+                  handle={request.requester.handle}
+                  profileImageUrl={request.requester.profileImageUrl}
                 />
               ))}
           </TableBody>
@@ -344,6 +366,90 @@ function PendingInvitationRow({
             onClick={onCancel}
           >
             <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function JoinRequestRow({
+  projectHandle,
+  requestId,
+  name,
+  handle,
+  profileImageUrl,
+}: {
+  projectHandle: string;
+  requestId: number;
+  name: string;
+  handle: string;
+  profileImageUrl?: string | null;
+}) {
+  const t = useTranslations('pages.projects.project.settings.teammates');
+
+  const { mutate: approveRequest, isPending: isApproving } =
+    useApproveJoinRequest();
+  const { mutate: declineRequest, isPending: isDeclining } =
+    useDeclineJoinRequest();
+  const isPending = isApproving || isDeclining;
+
+  const onApprove = () => {
+    approveRequest(
+      { handle: projectHandle, requestId: requestId.toString() },
+      {
+        onSuccess: () => toast.success(t('messages.approve-success')),
+        onError: () => toast.error(t('messages.approve-error')),
+      },
+    );
+  };
+
+  const onDecline = () => {
+    declineRequest(
+      { handle: projectHandle, requestId: requestId.toString() },
+      {
+        onSuccess: () => toast.success(t('messages.decline-success')),
+        onError: () => toast.error(t('messages.decline-error')),
+      },
+    );
+  };
+
+  return (
+    <TableRow className="border-0">
+      <TableCell className="border-l-0">
+        <div className="flex items-center gap-3">
+          <Avatar>
+            <AvatarImage src={profileImageUrl ?? undefined} />
+            <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-sm font-medium">{name}</p>
+            <p className="text-xs text-muted-foreground">@{handle}</p>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="border-l-0">
+        <Badge variant="secondary">{t('status.join-requested')}</Badge>
+      </TableCell>
+      <TableCell className="border-l-0">
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('actions.approve-request')}
+            disabled={isPending}
+            onClick={onApprove}
+          >
+            <CheckIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('actions.decline-request')}
+            disabled={isPending}
+            onClick={onDecline}
+          >
+            <XIcon className="h-4 w-4" />
           </Button>
         </div>
       </TableCell>

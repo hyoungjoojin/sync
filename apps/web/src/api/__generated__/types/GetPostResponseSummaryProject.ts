@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { GetPostResponseSummaryProjectJoinPolicy } from './GetPostResponseSummaryProjectJoinPolicy';
 
 /**
  * 소속 프로젝트 정보
@@ -39,4 +40,14 @@ export type GetPostResponseSummaryProject = {
    * @nullable
    */
   iconUrl?: string | null;
+  /**
+   * 프로젝트 참여 정책
+   * @nullable
+   */
+  joinPolicy?: GetPostResponseSummaryProjectJoinPolicy;
+  /**
+   * 프로젝트 팔로워 수
+   * @nullable
+   */
+  followerCount?: number | null;
 };

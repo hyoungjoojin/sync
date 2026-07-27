@@ -11,6 +11,8 @@ import {
 } from '@/api/__generated__/post/post';
 import PostEditor from '@/components/feature/post/editor/PostEditor';
 import { invalidatePostQueries } from '@/components/feature/post/hooks/postQueryKeys';
+import { useApplySeriesSelection } from '@/components/feature/post/hooks/useApplySeriesSelection';
+import { usePostSeriesMembership } from '@/components/feature/post/hooks/usePostSeriesMembership';
 import { PostStatus } from '@/components/feature/post/types/post';
 import { toPostSummary } from '@/components/feature/post/viewer/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,17 +26,20 @@ export default function EditProjectPostPage() {
   const queryClient = useQueryClient();
   useAuthGuard();
 
+  const applySeries = useApplySeriesSelection();
   const { data, isPending, isError } = useGetPostBySlug(slug);
+  const {
+    initialSeries,
+    initialSeriesMembership,
+    isPending: isSeriesPending,
+  } = usePostSeriesMembership(slug);
   const { mutate: updateProjectPost, isPending: isUpdating } =
-    useUpdateProjectPost({
-      mutation: {
-        onSuccess: () => invalidatePostQueries(queryClient),
-      },
-    });
+    useUpdateProjectPost();
 
   const post = data?.data;
 
-  if (isPending) {
+  // 에디터는 시리즈 초기값을 마운트 시점에 한 번만 읽으므로 시리즈 조회까지 기다린다.
+  if (isPending || isSeriesPending) {
     return <Skeleton className="h-96 w-full" />;
   }
 
@@ -73,9 +78,20 @@ export default function EditProjectPostPage() {
       routeProjectHandle={handle}
       summary={summary}
       content={content}
+      initialSeries={initialSeries}
       isSubmitting={isUpdating}
       project={editorProject}
-      onSubmit={({ title, type, status, tags, projectTags, content }) => {
+      onSubmit={({
+        title,
+        type,
+        status,
+        tags,
+        projectTags,
+        series,
+        coverMediaId,
+        removeCover,
+        content,
+      }) => {
         updateProjectPost(
           {
             handle,
@@ -86,6 +102,8 @@ export default function EditProjectPostPage() {
               status,
               tags,
               projectTags,
+              coverMediaId,
+              removeCover,
               content: {
                 json: content.json,
                 text: content.text,
@@ -94,7 +112,14 @@ export default function EditProjectPostPage() {
             },
           },
           {
-            onSuccess: () => {
+            onSuccess: async () => {
+              await applySeries({
+                slug: summary.slug,
+                projectHandle: handle,
+                selection: series,
+                initial: initialSeriesMembership,
+              });
+              invalidatePostQueries(queryClient);
               toast.success(t('messages.update-success'));
               if (status === PostStatus.PUBLISHED) {
                 router.push(detailPath);

@@ -4,8 +4,9 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
-import type { GetPostsResponsePosts } from './GetPostsResponsePosts';
+import type { GetPostsResponsePostsItem } from './GetPostsResponsePostsItem';
 
 export interface GetPostsResponse {
-  posts?: GetPostsResponsePosts;
+  /** 관련 게시글 목록 (최대 N개) */
+  posts: GetPostsResponsePostsItem[];
 }

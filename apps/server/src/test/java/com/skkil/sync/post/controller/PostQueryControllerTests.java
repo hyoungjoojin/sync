@@ -21,11 +21,13 @@ import com.skkil.sync.common.util.pagination.snippets.CursorPaginationRequestSni
 import com.skkil.sync.config.SecurityConfig;
 import com.skkil.sync.post.dto.response.GetPostResponse;
 import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.post.service.PostQueryService;
 import com.skkil.sync.post.snippets.GetPostResponseSnippets;
 import com.skkil.sync.post.snippets.GetPostsResponseSnippets;
+import com.skkil.sync.post.snippets.PaginatedGetPostsResponseSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +57,8 @@ class PostQueryControllerTests {
   void getPosts() throws Exception {
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postQueryService.getPosts(any(), eq(pagination))).thenReturn(response);
 
@@ -72,12 +75,12 @@ class PostQueryControllerTests {
                     .tag("post")
                     .summary("Get Posts")
                     .description("Get Posts")
-                    .responseSchema(schema("GetPostsResponse")),
+                    .responseSchema(schema("PaginatedGetPostsResponse")),
                 null,
                 null,
                 Function.identity(),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
-                GetPostsResponseSnippets.getPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -90,7 +93,8 @@ class PostQueryControllerTests {
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetDraftPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getGetDraftPostsResponse();
 
     when(postQueryService.getDrafts(
             eq(user.userId()), eq(type), eq(scope), isNull(), eq(pagination)))
@@ -111,7 +115,7 @@ class PostQueryControllerTests {
                     .tag("post")
                     .summary("Get Draft Posts")
                     .description("Get Draft Posts")
-                    .responseSchema(schema("GetPostsResponse")),
+                    .responseSchema(schema("PaginatedGetPostsResponse")),
                 null,
                 null,
                 Function.identity(),
@@ -122,7 +126,7 @@ class PostQueryControllerTests {
                         parameterWithName("projectHandle")
                             .description("프로젝트로 검색 범위 제한 (선택)")
                             .optional()),
-                GetPostsResponseSnippets.getPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -153,6 +157,72 @@ class PostQueryControllerTests {
   }
 
   @Test
+  @DisplayName("[getPostReferences] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void getPostReferences() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    String slug = "test-slug";
+    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+
+    when(postQueryService.getPostReferences(eq(user.userId()), eq(slug))).thenReturn(response);
+
+    mockMvc
+        .perform(get("/posts/{slug}/references", slug))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetPostReferences",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Get Post References")
+                    .description("이 게시글이 가리키는 참조(forward reference) 목록을 조회합니다.")
+                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("slug").description("게시글 slug")),
+                GetPostsResponseSnippets.getPostsResponseFields(
+                    "이 글이 참조하는 게시글 목록 (작성자가 지정한 순서, 열람 불가한 참조는 제외)")));
+  }
+
+  @Test
+  @DisplayName("[getPostBacklinks] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void getPostBacklinks() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    String slug = "test-slug";
+
+    CursorPaginationRequest pagination =
+        CursorPaginationRequestSnippets.getCursorPaginationRequest();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
+
+    when(postQueryService.getPostBacklinks(eq(user.userId()), eq(slug), eq(pagination)))
+        .thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/posts/{slug}/referenced-by", slug)
+                .queryParams(
+                    CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams()))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetPostBacklinks",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Get Post Backlinks")
+                    .description("이 게시글을 가리키는(역참조, backlink) 게시글 목록을 조회합니다.")
+                    .responseSchema(schema(PaginatedGetPostsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("slug").description("게시글 slug")),
+                CursorPaginationRequestSnippets.getCursorPaginationRequestParameters(),
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
+  }
+
+  @Test
   @DisplayName("[getUserPosts] API 문서화 테스트")
   void getUserPosts() throws Exception {
     Long userId = 1L;
@@ -160,7 +230,8 @@ class PostQueryControllerTests {
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postQueryService.getUserPosts(any(), eq(userId), eq(type), eq(pagination)))
         .thenReturn(response);
@@ -179,14 +250,14 @@ class PostQueryControllerTests {
                     .tag("post")
                     .summary("Get Posts")
                     .description("Get Posts")
-                    .responseSchema(schema("GetPostsResponse")),
+                    .responseSchema(schema("PaginatedGetPostsResponse")),
                 null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("userId").description("User ID")),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
                     .and(parameterWithName("type").description("게시글 타입").optional()),
-                GetPostsResponseSnippets.getPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -196,7 +267,8 @@ class PostQueryControllerTests {
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     String projectHandle = "sync";
 
@@ -217,14 +289,14 @@ class PostQueryControllerTests {
                     .tag("post")
                     .summary("Get Commented Posts")
                     .description("Get Commented Posts")
-                    .responseSchema(schema("GetPostsResponse")),
+                    .responseSchema(schema("PaginatedGetPostsResponse")),
                 null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("userId").description("User ID")),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
                     .and(parameterWithName("projectHandle").description("프로젝트 핸들").optional()),
-                GetPostsResponseSnippets.getPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -235,7 +307,8 @@ class PostQueryControllerTests {
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postQueryService.getPostsByTag(isNull(), eq(tagId), eq(type), eq(pagination)))
         .thenReturn(response);
@@ -254,14 +327,14 @@ class PostQueryControllerTests {
                     .tag("post")
                     .summary("Get Posts By Tag")
                     .description("태그가 붙은 공개 게시글 목록을 조회합니다.")
-                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                    .responseSchema(schema(PaginatedGetPostsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("tagId").description("태그 ID")),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
                     .and(parameterWithName("type").description("게시글 타입").optional()),
-                GetPostsResponseSnippets.getPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -273,7 +346,8 @@ class PostQueryControllerTests {
 
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postQueryService.getPostsByProject(
             any(), eq(handle), eq(type), eq(authorHandle), eq(pagination)))
@@ -294,7 +368,7 @@ class PostQueryControllerTests {
                     .tag("post")
                     .summary("Get Posts By Project")
                     .description("Get Posts By Project")
-                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                    .responseSchema(schema(PaginatedGetPostsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
@@ -302,7 +376,7 @@ class PostQueryControllerTests {
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
                     .and(parameterWithName("type").description("게시글 타입").optional())
                     .and(parameterWithName("authorHandle").description("작성자 핸들").optional()),
-                GetPostsResponseSnippets.getPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test

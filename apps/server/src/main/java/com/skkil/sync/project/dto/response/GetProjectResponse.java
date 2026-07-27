@@ -13,8 +13,10 @@ public record GetProjectResponse(
     boolean hasMoreTeammates,
     boolean isViewer,
     Role role,
+    boolean isOwner,
     boolean isFollowing,
     boolean hasPendingInvitation,
+    boolean hasPendingJoinRequest,
     List<Activity> recentActivities) {
 
   public record Activity(String id, String timestamp, String text) {}

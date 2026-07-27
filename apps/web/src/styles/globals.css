@@ -271,3 +271,88 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * 코드 블록 문법 강조 (highlight.js / lowlight) 토큰 색상.
+ * GitHub 라이트/다크 테마 기반. `.dark` 클래스로 전환된다.
+ */
+@layer base {
+  :root {
+    --hljs-comment: #6a737d;
+    --hljs-keyword: #d73a49;
+    --hljs-string: #032f62;
+    --hljs-number: #005cc5;
+    --hljs-title: #6f42c1;
+    --hljs-attr: #005cc5;
+    --hljs-type: #22863a;
+    --hljs-tag: #22863a;
+    --hljs-meta: #6a737d;
+  }
+
+  .dark {
+    --hljs-comment: #8b949e;
+    --hljs-keyword: #ff7b72;
+    --hljs-string: #a5d6ff;
+    --hljs-number: #79c0ff;
+    --hljs-title: #d2a8ff;
+    --hljs-attr: #79c0ff;
+    --hljs-type: #7ee787;
+    --hljs-tag: #7ee787;
+    --hljs-meta: #8b949e;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    color: var(--hljs-comment);
+    font-style: italic;
+  }
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-doctag,
+  .hljs-name {
+    color: var(--hljs-keyword);
+  }
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-addition {
+    color: var(--hljs-string);
+  }
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet,
+  .hljs-link {
+    color: var(--hljs-number);
+  }
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-section {
+    color: var(--hljs-title);
+  }
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-variable,
+  .hljs-template-variable {
+    color: var(--hljs-attr);
+  }
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-class .hljs-title,
+  .hljs-selector-class {
+    color: var(--hljs-type);
+  }
+  .hljs-tag,
+  .hljs-selector-id {
+    color: var(--hljs-tag);
+  }
+  .hljs-meta,
+  .hljs-deletion {
+    color: var(--hljs-meta);
+  }
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  .hljs-strong {
+    font-weight: 600;
+  }
+}

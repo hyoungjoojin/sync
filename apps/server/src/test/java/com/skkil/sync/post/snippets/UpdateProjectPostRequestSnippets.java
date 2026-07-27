@@ -25,7 +25,10 @@ public class UpdateProjectPostRequestSnippets {
         PostStatus.PUBLISHED,
         content,
         List.of("java"),
-        List.of("roadmap"));
+        List.of("roadmap"),
+        List.of(10L, 11L),
+        "100",
+        false);
   }
 
   public static RequestFieldsSnippet getUpdateProjectPostRequestFields() {
@@ -47,9 +50,18 @@ public class UpdateProjectPostRequestSnippets {
             .description("사용된 미디어 ID 목록")
             .optional(),
         fieldWithPath("tags").type(JsonFieldType.ARRAY).description("전역 태그 목록").optional(),
-        fieldWithPath("projectTags")
+        fieldWithPath("projectTags").type(JsonFieldType.ARRAY).description("프로젝트 태그 목록").optional(),
+        fieldWithPath("referencedPostIds")
             .type(JsonFieldType.ARRAY)
-            .description("프로젝트 태그 목록")
+            .description("이 글이 참조하는 게시글 ID 목록 (지정한 순서대로 노출, 최대 50개)")
+            .optional(),
+        fieldWithPath("coverMediaId")
+            .type(JsonFieldType.STRING)
+            .description("새 커버 이미지로 사용할 미디어 ID (null 이면 기존 커버 유지)")
+            .optional(),
+        fieldWithPath("removeCover")
+            .type(JsonFieldType.BOOLEAN)
+            .description("true 이면 기존 커버 이미지를 제거한다")
             .optional());
   }
 }

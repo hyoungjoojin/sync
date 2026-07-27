@@ -5,11 +5,27 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { UpdatePostRequestContent } from './UpdatePostRequestContent';
+import type { UpdatePostRequestReferencedPostIdsItem } from './UpdatePostRequestReferencedPostIdsItem';
 import type { UpdatePostRequestStatus } from './UpdatePostRequestStatus';
 import type { UpdatePostRequestTagsItem } from './UpdatePostRequestTagsItem';
 import type { UpdatePostRequestType } from './UpdatePostRequestType';
 
 export interface UpdatePostRequest {
+  /**
+   * 새 커버 이미지로 사용할 미디어 ID (null 이면 기존 커버 유지)
+   * @nullable
+   */
+  coverMediaId?: string | null;
+  /**
+   * true 이면 기존 커버 이미지를 제거한다
+   * @nullable
+   */
+  removeCover?: boolean | null;
+  /**
+   * 이 글이 참조하는 게시글 ID 목록 (지정한 순서대로 노출, 최대 50개)
+   * @nullable
+   */
+  referencedPostIds?: UpdatePostRequestReferencedPostIdsItem[] | null;
   /** Post Type */
   type: UpdatePostRequestType;
   /**

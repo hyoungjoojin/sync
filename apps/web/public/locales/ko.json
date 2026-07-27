@@ -143,9 +143,6 @@
         "title": "내 초안",
         "new-post": "새 글",
         "filters": {
-          "all": "전체",
-          "public": "공개",
-          "workspace": "워크스페이스",
           "all-types": "모든 타입"
         },
         "empty": {
@@ -249,6 +246,21 @@
             "handle_max_length": "핸들은 최대 {length}자 이하여야 합니다.",
             "handle_invalid_characters": "핸들에는 영문자, 숫자, 밑줄만 사용할 수 있습니다.",
             "handle_in_use": "이미 사용 중인 핸들입니다."
+          },
+          "join_policy": {
+            "label": "참여 정책",
+            "OPEN": {
+              "label": "공개 가입",
+              "description": "누구나 바로 이 프로젝트에 참여할 수 있습니다."
+            },
+            "REQUEST": {
+              "label": "가입 요청",
+              "description": "참여를 원하는 사용자가 요청하면 관리자가 승인합니다."
+            },
+            "INVITE": {
+              "label": "초대 전용",
+              "description": "초대를 받은 사용자만 참여할 수 있습니다."
+            }
           }
         }
       },
@@ -376,6 +388,14 @@
           },
           "actions": {
             "write": "질문 · 글쓰기"
+          },
+          "join": {
+            "join": "가입하기",
+            "request": "가입 요청",
+            "requested-status": "요청됨",
+            "joined": "프로젝트에 참여했습니다.",
+            "requested": "가입 요청을 보냈습니다.",
+            "error": "요청을 처리하지 못했습니다."
           }
         },
         "dashboard": {
@@ -413,7 +433,10 @@
           }
         },
         "settings": {
-          "tabs": { "workspace": "워크스페이스", "teammates": "팀원" },
+          "tabs": {
+            "workspace": "워크스페이스",
+            "teammates": "팀원"
+          },
           "workspace": {
             "heading": "워크스페이스 설정",
             "description": "프로젝트의 기본 정보를 관리합니다.",
@@ -429,7 +452,9 @@
                 "upload-failed": "업로드에 실패했습니다.",
                 "network": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요."
               },
-              "messages": { "success": "프로젝트 아이콘이 변경되었습니다." }
+              "messages": {
+                "success": "프로젝트 아이콘이 변경되었습니다."
+              }
             },
             "name": {
               "heading": "프로젝트 이름",
@@ -441,7 +466,9 @@
                 "network": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요.",
                 "unknown": "이름을 변경하지 못했습니다."
               },
-              "messages": { "success": "프로젝트 이름이 변경되었습니다." }
+              "messages": {
+                "success": "프로젝트 이름이 변경되었습니다."
+              }
             },
             "handle": {
               "heading": "URL 슬러그",
@@ -454,7 +481,9 @@
                 "network": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요.",
                 "unknown": "슬러그를 변경하지 못했습니다."
               },
-              "messages": { "success": "프로젝트 슬러그가 변경되었습니다." }
+              "messages": {
+                "success": "프로젝트 슬러그가 변경되었습니다."
+              }
             },
             "danger-zone": {
               "heading": "위험 구역",
@@ -469,18 +498,54 @@
                 "description": "프로젝트와 모든 데이터를 영구적으로 삭제합니다.",
                 "action": "삭제"
               }
+            },
+            "join-policy": {
+              "heading": "참여 정책",
+              "description": "사용자가 이 프로젝트에 참여하는 방식을 설정합니다.",
+              "label": "참여 정책",
+              "options": {
+                "OPEN": {
+                  "label": "공개 가입",
+                  "description": "누구나 바로 이 프로젝트에 참여할 수 있습니다."
+                },
+                "REQUEST": {
+                  "label": "가입 요청",
+                  "description": "참여를 원하는 사용자가 요청하면 관리자가 승인합니다."
+                },
+                "INVITE": {
+                  "label": "초대 전용",
+                  "description": "초대를 받은 사용자만 참여할 수 있습니다."
+                }
+              },
+              "messages": {
+                "success": "참여 정책을 변경했습니다.",
+                "error": "참여 정책 변경에 실패했습니다."
+              }
             }
           },
           "teammates": {
             "heading": "팀원",
             "member-count": "프로젝트의 팀원 {count}명",
-            "table": { "columns": { "name": "이름", "role": "역할" } },
-            "role": { "admin": "관리자", "member": "멤버" },
-            "status": { "pending": "초대 대기 중" },
+            "table": {
+              "columns": {
+                "name": "이름",
+                "role": "역할"
+              }
+            },
+            "role": {
+              "admin": "관리자",
+              "member": "멤버"
+            },
+            "status": {
+              "pending": "초대 대기 중",
+              "join-requested": "가입 요청"
+            },
             "actions": {
               "edit-role": "역할 수정",
               "remove": "팀원 삭제",
-              "cancel-invitation": "초대 취소"
+              "cancel-invitation": "초대 취소",
+              "approve-request": "가입 요청 승인",
+              "decline-request": "가입 요청 거절"
             },
             "remove-dialog": {
               "title": "팀원을 삭제할까요?",
@@ -495,7 +560,11 @@
               "remove-error": "팀원 삭제에 실패했습니다.",
               "owner-protected": "워크스페이스 소유자는 수정하거나 삭제할 수 없습니다.",
               "cancel-success": "초대를 취소했습니다.",
-              "cancel-error": "초대 취소에 실패했습니다."
+              "cancel-error": "초대 취소에 실패했습니다.",
+              "approve-success": "가입 요청을 승인했습니다.",
+              "approve-error": "가입 요청 승인에 실패했습니다.",
+              "decline-success": "가입 요청을 거절했습니다.",
+              "decline-error": "가입 요청 거절에 실패했습니다."
             },
             "add-dropdown": {
               "trigger": "팀원 추가",
@@ -519,13 +588,40 @@
           "description": "새로운 프로젝트 초대를 받으면 여기에 표시됩니다."
         },
         "invited-by": "초대자: {name}",
-        "role": { "admin": "관리자", "member": "멤버" },
-        "actions": { "accept": "수락", "decline": "거절" },
+        "role": {
+          "admin": "관리자",
+          "member": "멤버"
+        },
+        "actions": {
+          "accept": "수락",
+          "decline": "거절"
+        },
         "messages": {
           "accept-success": "초대를 수락했습니다.",
           "accept-error": "초대 수락에 실패했습니다.",
           "decline-success": "초대를 거절했습니다.",
           "decline-error": "초대 거절에 실패했습니다."
+        }
+      },
+      "requests": {
+        "back": "프로젝트 대시보드로 돌아가기",
+        "tabs": {
+          "invitations": "초대",
+          "join-requests": "가입 요청"
+        },
+        "join-requests": {
+          "heading": "보낸 가입 요청",
+          "empty": {
+            "title": "보낸 가입 요청이 없습니다",
+            "description": "프로젝트에 가입을 요청하면 여기에 표시됩니다."
+          },
+          "actions": {
+            "cancel": "요청 취소"
+          },
+          "messages": {
+            "cancel-success": "가입 요청을 취소했습니다.",
+            "cancel-error": "가입 요청 취소에 실패했습니다."
+          }
         }
       }
     },
@@ -1073,6 +1169,80 @@
       "description": "삭제되었거나 잘못 입력된 링크일 수 있어요.",
       "back": "홈으로 돌아가기",
       "explore": "탐색하기"
+    },
+    "collections": {
+      "title": "컬렉션",
+      "description": "포스트를 주제별로 모아 컬렉션으로 정리하세요.",
+      "post-count": "포스트 {count}개",
+      "visibility": {
+        "public": "공개",
+        "private": "비공개"
+      },
+      "actions": {
+        "create": "새 컬렉션",
+        "edit": "수정",
+        "delete": "삭제",
+        "cancel": "취소",
+        "options": "컬렉션 옵션",
+        "remove-item": "컬렉션에서 제거"
+      },
+      "empty": {
+        "title": "아직 담긴 포스트가 없습니다",
+        "description": "포스트 메뉴에서 이 컬렉션에 포스트를 추가해 보세요."
+      },
+      "list-empty": {
+        "title": "아직 컬렉션이 없습니다",
+        "description": "관심 있는 포스트를 컬렉션으로 모아 보세요."
+      },
+      "item": {
+        "unavailable": "열람할 수 없는 포스트입니다"
+      },
+      "delete-confirm": {
+        "title": "이 컬렉션을 삭제할까요?"
+      },
+      "messages": {
+        "delete-success": "컬렉션을 삭제했습니다.",
+        "delete-error": "컬렉션을 삭제하지 못했습니다.",
+        "remove-error": "포스트를 제거하지 못했습니다."
+      },
+      "form": {
+        "title": {
+          "create": "새 컬렉션",
+          "edit": "컬렉션 수정"
+        },
+        "fields": {
+          "name": "이름",
+          "name-placeholder": "컬렉션 이름을 입력하세요",
+          "description": "설명",
+          "description-placeholder": "컬렉션에 대한 설명을 입력하세요 (선택)",
+          "public": "다른 사람에게 공개"
+        },
+        "actions": {
+          "cancel": "취소",
+          "create": "만들기",
+          "save": "저장"
+        },
+        "messages": {
+          "name-required": "컬렉션 이름을 입력하세요.",
+          "create-success": "컬렉션을 만들었습니다.",
+          "update-success": "컬렉션을 수정했습니다.",
+          "error": "요청을 처리하지 못했습니다."
+        }
+      },
+      "add-to-collection": {
+        "trigger": "컬렉션에 추가",
+        "title": "컬렉션에 추가",
+        "create-new": "새 컬렉션 만들기",
+        "empty": "아직 컬렉션이 없습니다. 새로 만들어 보세요.",
+        "messages": {
+          "success": "컬렉션에 추가했습니다.",
+          "error": "컬렉션에 추가하지 못했습니다."
+        },
+        "sections": {
+          "personal": "내 컬렉션",
+          "project": "프로젝트 컬렉션"
+        }
+      }
     }
   },
   "modals": {
@@ -1083,7 +1253,9 @@
         "bookmark": "나중에 다시 볼 글을 저장하려면 로그인하세요.",
         "comment": "댓글을 작성하고 대화에 참여하려면 로그인하세요.",
         "follow": "관심 있는 사람이나 프로젝트를 팔로우하려면 로그인하세요.",
-        "write": "새 글을 작성하고 지식을 공유하려면 로그인하세요."
+        "write": "새 글을 작성하고 지식을 공유하려면 로그인하세요.",
+        "join": "프로젝트에 참여하려면 로그인하세요.",
+        "collection": "포스트를 컬렉션에 담으려면 로그인하세요."
       },
       "oauth-divider": "또는",
       "actions": {
@@ -1132,7 +1304,9 @@
               }
             }
           },
-          "messages": { "success": "테마가 저장되었습니다." },
+          "messages": {
+            "success": "테마가 저장되었습니다."
+          },
           "errors": {
             "network": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요.",
             "unknown": "테마를 저장하지 못했습니다."
@@ -1173,6 +1347,14 @@
         "empty": {
           "title": "표시할 포스트가 없습니다",
           "description": "더 많은 사용자, 프로젝트, 태그를 팔로우하면 여기에 포스트가 모입니다."
+        },
+        "related": {
+          "title": "관련 게시물"
+        },
+        "series": {
+          "label": "시리즈",
+          "part": "{total}편 중 {position}번째",
+          "hidden": "비공개 게시글"
         }
       }
     },
@@ -1266,7 +1448,8 @@
           "my-posts": "내 게시물",
           "my-comments": "내 댓글",
           "bookmarks": "북마크",
-          "settings": "설정"
+          "settings": "설정",
+          "collections": "컬렉션"
         }
       }
     },
@@ -1329,6 +1512,26 @@
           "title": "기울임",
           "description": ""
         },
+        "bullet": {
+          "title": "글머리 기호 목록",
+          "description": ""
+        },
+        "numbered": {
+          "title": "번호 매기기 목록",
+          "description": ""
+        },
+        "todo": {
+          "title": "할 일 목록",
+          "description": ""
+        },
+        "quote": {
+          "title": "인용구",
+          "description": ""
+        },
+        "code": {
+          "title": "코드 블록",
+          "description": ""
+        },
         "image": {
           "title": "이미지",
           "description": ""
@@ -1337,6 +1540,16 @@
           "title": "/ 를 입력하기",
           "key": "ESC"
         }
+      },
+      "code-block": {
+        "search-placeholder": "언어 검색",
+        "no-language": "일치하는 언어가 없습니다",
+        "copy": "복사",
+        "copied": "복사됨"
+      },
+      "link": {
+        "placeholder": "링크 URL 입력",
+        "apply": "적용"
       },
       "image": {
         "placeholders": {
@@ -1369,7 +1582,9 @@
         "save-draft": "초안으로 저장",
         "publish": "게시하기",
         "update-draft": "초안으로 저장",
-        "update-published": "변경사항 저장"
+        "update-published": "변경사항 저장",
+        "back-to-post": "포스트로 돌아가기",
+        "back-to-drafts": "임시저장 글로 돌아가기"
       },
       "scope": {
         "public": "공개",
@@ -1393,7 +1608,8 @@
       "sidebar": {
         "type": "종류",
         "project": "프로젝트",
-        "tags": "태그"
+        "tags": "태그",
+        "series": "시리즈"
       },
       "type-descriptions": {
         "SHORT": "오늘 배운 것을 짧게 기록해요",
@@ -1427,11 +1643,42 @@
         "loading": "태그를 검색하는 중...",
         "not-found": "태그를 찾을 수 없습니다",
         "project-tag": "프로젝트 태그입니다"
+      },
+      "cover": {
+        "add": "커버 추가",
+        "change": "변경",
+        "remove": "제거",
+        "alt": "게시물 커버 이미지",
+        "tabs": {
+          "gallery": "갤러리"
+        },
+        "algo": {
+          "aurora": "오로라",
+          "mesh": "메시",
+          "flow": "플로우"
+        },
+        "gallery": {
+          "reroll": "다시 섞기",
+          "use": "이 커버 사용"
+        },
+        "errors": {
+          "upload-failed": "커버 업로드에 실패했습니다"
+        }
+      },
+      "series": {
+        "placeholder": "시리즈 검색 또는 새로 만들기",
+        "create": "새 시리즈 만들기: ‘{name}’",
+        "post-count": "{count}편",
+        "loading": "시리즈를 검색하는 중...",
+        "empty": "시리즈를 찾을 수 없습니다",
+        "new-badge": "신규",
+        "clear": "시리즈 선택 해제"
       }
     }
   },
   "metadata": {
-    "description": "개인 기록과 팀 지식을 연결하고 검색할 수 있는 개발자 지식 플랫폼"
+    "description": "개인 기록과 팀 지식을 연결하고 검색할 수 있는 개발자 지식 플랫폼",
+    "tagDescription": "{name} 태그가 붙은 글을 모아 봅니다. sync에서 {name} 관련 지식과 경험을 찾아보세요."
   },
   "errors": {
     "connection-failed": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요."

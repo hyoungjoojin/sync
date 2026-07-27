@@ -6,16 +6,32 @@
  */
 import type { UpdateProjectPostRequestContent } from './UpdateProjectPostRequestContent';
 import type { UpdateProjectPostRequestProjectTagsItem } from './UpdateProjectPostRequestProjectTagsItem';
+import type { UpdateProjectPostRequestReferencedPostIdsItem } from './UpdateProjectPostRequestReferencedPostIdsItem';
 import type { UpdateProjectPostRequestStatus } from './UpdateProjectPostRequestStatus';
 import type { UpdateProjectPostRequestTagsItem } from './UpdateProjectPostRequestTagsItem';
 import type { UpdateProjectPostRequestType } from './UpdateProjectPostRequestType';
 
 export interface UpdateProjectPostRequest {
   /**
+   * 새 커버 이미지로 사용할 미디어 ID (null 이면 기존 커버 유지)
+   * @nullable
+   */
+  coverMediaId?: string | null;
+  /**
+   * true 이면 기존 커버 이미지를 제거한다
+   * @nullable
+   */
+  removeCover?: boolean | null;
+  /**
    * 프로젝트 태그 목록
    * @nullable
    */
   projectTags?: UpdateProjectPostRequestProjectTagsItem[] | null;
+  /**
+   * 이 글이 참조하는 게시글 ID 목록 (지정한 순서대로 노출, 최대 50개)
+   * @nullable
+   */
+  referencedPostIds?: UpdateProjectPostRequestReferencedPostIdsItem[] | null;
   /** Post Type */
   type: UpdateProjectPostRequestType;
   /**

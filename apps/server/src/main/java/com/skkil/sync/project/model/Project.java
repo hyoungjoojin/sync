@@ -6,6 +6,8 @@ import com.skkil.sync.media.model.Media;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -42,16 +44,22 @@ public class Project extends BaseEntity {
   @Column(name = "is_public", nullable = false)
   private boolean isPublic = true;
 
+  @Column(name = "join_policy", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private JoinPolicy joinPolicy = JoinPolicy.INVITE;
+
   @Column(name = "follower_count", nullable = false)
   private long followerCount = 0;
 
   protected Project() {}
 
   @Builder
-  public Project(String handle, String name, String description, boolean isPublic) {
+  public Project(
+      String handle, String name, String description, boolean isPublic, JoinPolicy joinPolicy) {
     this.handle = handle == null ? Slugify.slugify(name) : handle.trim();
     this.name = name;
     this.isPublic = isPublic;
+    this.joinPolicy = joinPolicy == null ? JoinPolicy.INVITE : joinPolicy;
 
     if (description != null) {
       this.description = description;
@@ -79,6 +87,12 @@ public class Project extends BaseEntity {
 
   public void updateHandle(String handle) {
     this.handle = handle.trim();
+  }
+
+  public void updateJoinPolicy(JoinPolicy joinPolicy) {
+    if (joinPolicy != null) {
+      this.joinPolicy = joinPolicy;
+    }
   }
 
   public void removeIcon() {

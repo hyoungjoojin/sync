@@ -4,8 +4,10 @@ import com.skkil.sync.common.util.pagination.dto.response.CursorPaginationRespon
 import com.skkil.sync.media.service.domain.MediaDomainService;
 import com.skkil.sync.project.dto.data.ProjectFollowerDto;
 import com.skkil.sync.project.dto.response.GetMyProjectInvitationsResponse;
+import com.skkil.sync.project.dto.response.GetMyProjectJoinRequestsResponse;
 import com.skkil.sync.project.dto.response.GetProjectFollowersResponse;
 import com.skkil.sync.project.dto.response.GetProjectInvitationsResponse;
+import com.skkil.sync.project.dto.response.GetProjectJoinRequestsResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectTeammatesResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
@@ -14,6 +16,7 @@ import com.skkil.sync.project.dto.summary.ProjectSummary;
 import com.skkil.sync.project.dto.summary.ProjectTeammateSummary;
 import com.skkil.sync.project.model.Project;
 import com.skkil.sync.project.model.ProjectInvitation;
+import com.skkil.sync.project.model.ProjectJoinRequest;
 import com.skkil.sync.project.model.Role;
 import com.skkil.sync.project.model.Teammate;
 import com.skkil.sync.project.repository.ProjectRepository;
@@ -62,16 +65,20 @@ public class ProjectAssembler {
       List<Teammate> teammates,
       boolean hasMoreTeammates,
       Role requesterRole,
+      boolean isOwner,
       boolean isFollowing,
-      boolean hasPendingInvitation) {
+      boolean hasPendingInvitation,
+      boolean hasPendingJoinRequest) {
     return GetProjectResponse.builder()
         .summary(toProjectSummary(project))
         .teammates(toProjectTeammates(teammates))
         .hasMoreTeammates(hasMoreTeammates)
         .isViewer(requesterRole != null)
         .role(requesterRole)
+        .isOwner(isOwner)
         .isFollowing(isFollowing)
         .hasPendingInvitation(hasPendingInvitation)
+        .hasPendingJoinRequest(hasPendingJoinRequest)
         .recentActivities(List.of())
         .build();
   }
@@ -137,6 +144,40 @@ public class ProjectAssembler {
     return new GetMyProjectInvitationsResponse(dtos);
   }
 
+  public GetProjectJoinRequestsResponse toGetProjectJoinRequestsResponse(
+      List<ProjectJoinRequest> joinRequests) {
+    Map<Long, UserSummary> requesterSummaries =
+        userAssembler.toUserSummaries(
+            joinRequests.stream().map(request -> request.getRequester().getId()).toList());
+
+    var dtos =
+        joinRequests.stream()
+            .map(
+                request ->
+                    new GetProjectJoinRequestsResponse.JoinRequest(
+                        request.getId(),
+                        requesterSummaries.get(request.getRequester().getId()),
+                        request.getCreatedAt()))
+            .toList();
+
+    return new GetProjectJoinRequestsResponse(dtos);
+  }
+
+  public GetMyProjectJoinRequestsResponse toGetMyProjectJoinRequestsResponse(
+      List<ProjectJoinRequest> joinRequests) {
+    var dtos =
+        joinRequests.stream()
+            .map(
+                request ->
+                    new GetMyProjectJoinRequestsResponse.JoinRequest(
+                        request.getId(),
+                        toProjectSummary(request.getProject()),
+                        request.getCreatedAt()))
+            .toList();
+
+    return new GetMyProjectJoinRequestsResponse(dtos);
+  }
+
   private ProjectSummary toProjectSummary(Project project) {
     String iconUrl =
         project.getIcon() != null
@@ -173,6 +214,7 @@ public class ProjectAssembler {
                 ProjectTeammateSummary.builder()
                     .user(userSummaries.get(t.getUser().getId()))
                     .role(t.getRole())
+                    .isOwner(t.isProjectOwner())
                     .build())
         .toList();
   }

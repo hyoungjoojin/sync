@@ -23,8 +23,10 @@ public class GetProjectResponseSnippets {
         .hasMoreTeammates(false)
         .isViewer(true)
         .role(Role.ADMIN)
+        .isOwner(true)
         .isFollowing(false)
         .hasPendingInvitation(false)
+        .hasPendingJoinRequest(false)
         .recentActivities(
             List.of(new GetProjectResponse.Activity("1", "2024-01-01T00:00:00Z", "활동 내용")))
         .build();
@@ -50,12 +52,16 @@ public class GetProjectResponseSnippets {
                 .optional()
                 .description("현재 사용자 역할")
                 .attributes(RestDocsUtils.getEnumAttributes(Role.class)),
+            fieldWithPath("isOwner").type(JsonFieldType.BOOLEAN).description("현재 사용자의 프로젝트 소유자 여부"),
             fieldWithPath("isFollowing")
                 .type(JsonFieldType.BOOLEAN)
                 .description("현재 사용자의 프로젝트 팔로우 여부"),
             fieldWithPath("hasPendingInvitation")
                 .type(JsonFieldType.BOOLEAN)
                 .description("현재 사용자의 대기 중인 초대 존재 여부"),
+            fieldWithPath("hasPendingJoinRequest")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 대기 중인 가입 요청 존재 여부"),
             fieldWithPath("recentActivities")
                 .type(JsonFieldType.ARRAY)
                 .description("최근 활동 목록")

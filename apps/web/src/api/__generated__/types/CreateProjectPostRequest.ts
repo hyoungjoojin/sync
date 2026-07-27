@@ -6,16 +6,27 @@
  */
 import type { CreateProjectPostRequestContent } from './CreateProjectPostRequestContent';
 import type { CreateProjectPostRequestProjectTagsItem } from './CreateProjectPostRequestProjectTagsItem';
+import type { CreateProjectPostRequestReferencedPostIdsItem } from './CreateProjectPostRequestReferencedPostIdsItem';
 import type { CreateProjectPostRequestStatus } from './CreateProjectPostRequestStatus';
 import type { CreateProjectPostRequestTagsItem } from './CreateProjectPostRequestTagsItem';
 import type { CreateProjectPostRequestType } from './CreateProjectPostRequestType';
 
 export interface CreateProjectPostRequest {
   /**
+   * 커버 이미지로 사용할 미디어 ID (없으면 커버 없음)
+   * @nullable
+   */
+  coverMediaId?: string | null;
+  /**
    * 프로젝트 태그 목록
    * @nullable
    */
   projectTags?: CreateProjectPostRequestProjectTagsItem[] | null;
+  /**
+   * 이 글이 참조하는 게시글 ID 목록 (지정한 순서대로 노출, 최대 50개)
+   * @nullable
+   */
+  referencedPostIds?: CreateProjectPostRequestReferencedPostIdsItem[] | null;
   /** Post Type */
   type: CreateProjectPostRequestType;
   /**

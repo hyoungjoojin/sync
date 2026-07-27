@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, FolderIcon } from '@phosphor-icons/react';
 import { CharacterCount, Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -15,7 +15,7 @@ import type {
 } from '@/api/__generated__/types';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, LinkButton } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
@@ -25,9 +25,16 @@ import { PostSummary } from '../viewer/types';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTemplates } from './components/EditorTemplates';
 import { PostTypeSelector } from './components/PostTypeSelector';
+import { SeriesSelect, SeriesSelection } from './components/SeriesSelect';
 import { TagInput, TagValue } from './components/TagInput';
+import { CoverPicker } from './cover/CoverPicker';
+import { type CoverState, initialCoverState } from './cover/coverState';
+import { renderCoverToFile } from './cover/generators';
+import { useCoverImageUpload } from './cover/useCoverImageUpload';
 import { CommandsExtension } from './extensions/commands';
+import { CodeBlockNode } from './extensions/nodes/code-block';
 import { ImageNode } from './extensions/nodes/image';
+import { TaskItemNode, TaskListNode } from './extensions/nodes/task-list';
 import { deserialize, serialize } from './utils/serializer';
 
 interface PostEditorProps {
@@ -40,6 +47,11 @@ interface PostEditorProps {
     handle: string;
     name: string;
   };
+  /** 편집 진입 시점에 게시글이 속한 시리즈. 시리즈 선택기의 초기값이 된다. */
+  initialSeries?: {
+    seriesId: string;
+    seriesName: string;
+  } | null;
   isSubmitting?: boolean;
   onSubmit: (data: {
     title: string;
@@ -47,6 +59,9 @@ interface PostEditorProps {
     status: PostStatus;
     tags: string[];
     projectTags: string[];
+    series: SeriesSelection | null;
+    coverMediaId?: string;
+    removeCover?: boolean;
     content: {
       json: string;
       text: string;
@@ -81,6 +96,7 @@ export default function PostEditor({
   summary,
   content,
   project,
+  initialSeries,
   isSubmitting = false,
   onSubmit,
 }: PostEditorProps) {
@@ -123,6 +139,21 @@ export default function PostEditor({
       .filter((tag) => tag.projectHandle)
       .map((tag) => ({ name: tag.name, isProjectTag: true })),
   ]);
+  const [series, setSeries] = useState<SeriesSelection | null>(() =>
+    initialSeries
+      ? {
+          kind: 'existing',
+          externalId: initialSeries.seriesId,
+          name: initialSeries.seriesName,
+        }
+      : null,
+  );
+  const hadInitialCover = Boolean(summary?.coverImageUrl);
+  const [cover, setCover] = useState<CoverState>(() =>
+    initialCoverState(summary?.coverImageUrl),
+  );
+  const { upload: uploadCover } = useCoverImageUpload();
+  const [isPreparingCover, setIsPreparingCover] = useState(false);
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
@@ -150,12 +181,22 @@ export default function PostEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false,
+        link: {
+          openOnClick: false,
+          autolink: true,
+          defaultProtocol: 'https',
+        },
+      }),
       Placeholder.configure({
         placeholder: getContentPlaceholder(t, type),
       }),
       CharacterCount,
       CommandsExtension,
+      CodeBlockNode,
+      TaskListNode,
+      TaskItemNode,
       ImageNode,
     ],
     content: initialContent,
@@ -173,6 +214,27 @@ export default function PostEditor({
     },
   });
 
+  /**
+   * 저장되지 않은 내용이 있는 상태에서 새로고침/탭 닫기/외부 이동 시
+   * 브라우저 기본 확인 창을 띄워 데이터 유실을 방지한다.
+   */
+  const hasUnsavedContent =
+    !isEditorEmpty || title.trim().length > 0 || tags.length > 0;
+
+  useEffect(() => {
+    if (!hasUnsavedContent) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedContent]);
+
   useEffect(() => {
     if (!editor) return;
     const ext = editor.extensionManager.extensions.find(
@@ -184,8 +246,34 @@ export default function PostEditor({
     }
   }, [type, editor, t]);
 
-  const handleSubmit = (status: PostStatus) => {
-    if (!editor) {
+  /**
+   * Resolve the cover fields for submission. A gallery-picked cover is only
+   * rendered and uploaded here — at save time — never when it was selected.
+   * Returns `null` if a required cover upload failed (caller should abort).
+   */
+  const resolveCoverSubmit = async (): Promise<{
+    coverMediaId?: string;
+    removeCover?: boolean;
+  } | null> => {
+    // Covers belong to blog (LONG) posts only; anything else drops its cover.
+    if (type !== PostType.LONG) {
+      return hadInitialCover ? { removeCover: true } : {};
+    }
+
+    if (cover.kind === 'generated') {
+      const file = await renderCoverToFile(cover.params);
+      const result = await uploadCover(file);
+      if (!result.ok) return null;
+      return { coverMediaId: result.mediaId };
+    }
+    if (cover.kind === 'none' && hadInitialCover) {
+      return { removeCover: true };
+    }
+    return {};
+  };
+
+  const handleSubmit = async (status: PostStatus) => {
+    if (!editor || isPreparingCover) {
       return;
     }
 
@@ -210,6 +298,21 @@ export default function PostEditor({
 
     setValidationMessage(null);
 
+    setIsPreparingCover(true);
+    let coverFields: { coverMediaId?: string; removeCover?: boolean } | null;
+    try {
+      coverFields = await resolveCoverSubmit();
+    } catch {
+      coverFields = null;
+    } finally {
+      setIsPreparingCover(false);
+    }
+
+    if (coverFields === null) {
+      toast.error(t('cover.errors.upload-failed'));
+      return;
+    }
+
     onSubmit({
       title,
       type,
@@ -218,11 +321,32 @@ export default function PostEditor({
       projectTags: tags
         .filter((tag) => tag.isProjectTag)
         .map((tag) => tag.name),
+      series,
+      ...coverFields,
       content: serialize(editor),
     });
   };
 
+  // 편집 페이지는 언제나 특정 게시글을 고치러 들어오므로, 뒤로가기는 브라우저
+  // 히스토리(router.back)가 아니라 확정된 목적지로 이동한다. 발행된 글이면 그
+  // 글의 보기 페이지로, 임시저장(DRAFT) 이면 공개 보기 페이지가 없으므로
+  // 임시저장 목록으로 돌아간다.
+  const isDraft = initialStatus === PostStatus.DRAFT;
+  const backHref = isDraft
+    ? project?.handle
+      ? ROUTES.PROJECT_DRAFTS(project.handle)
+      : ROUTES.DRAFTS()
+    : project?.handle && slug
+      ? ROUTES.PROJECT_POST(project.handle, slug)
+      : slug
+        ? ROUTES.POST(slug)
+        : ROUTES.HOME();
+  const backLabel = isDraft
+    ? t('actions.back-to-drafts')
+    : t('actions.back-to-post');
+
   const showTitle = type !== PostType.SHORT;
+  const coverSeed = title.trim() || slug || 'sync-cover';
   const titlePlaceholder =
     type === PostType.QUESTION
       ? t('placeholders.title-question')
@@ -248,6 +372,26 @@ export default function PostEditor({
         type === PostType.SHORT && 'mx-auto max-w-xl pt-10',
       )}
     >
+      {isEditing && (
+        <LinkButton
+          href={backHref}
+          variant="ghost"
+          size="sm"
+          className="-ml-2 self-start"
+        >
+          <ArrowLeftIcon />
+          {backLabel}
+        </LinkButton>
+      )}
+
+      {type === PostType.LONG && (
+        <CoverPicker
+          value={cover}
+          onChange={setCover}
+          defaultSeed={coverSeed}
+        />
+      )}
+
       {showTitle && (
         <textarea
           ref={titleRef}
@@ -324,6 +468,18 @@ export default function PostEditor({
         />
       </section>
 
+      <section className="flex flex-col gap-2">
+        <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('sidebar.series')}
+        </h3>
+        <SeriesSelect
+          value={series}
+          onChange={setSeries}
+          projectHandle={project?.handle}
+          accentRing={ACCENT_RING[type]}
+        />
+      </section>
+
       <div
         className={cn(
           'grid gap-2',
@@ -333,14 +489,14 @@ export default function PostEditor({
         {canSaveDraft && (
           <Button
             variant="outline"
-            disabled={isSubmitting || isEditorEmpty}
+            disabled={isSubmitting || isPreparingCover || isEditorEmpty}
             onClick={() => handleSubmit(PostStatus.DRAFT)}
           >
             {draftActionLabel}
           </Button>
         )}
         <Button
-          disabled={isSubmitting || isEditorEmpty}
+          disabled={isSubmitting || isPreparingCover || isEditorEmpty}
           onClick={() => handleSubmit(PostStatus.PUBLISHED)}
         >
           {publishActionLabel}

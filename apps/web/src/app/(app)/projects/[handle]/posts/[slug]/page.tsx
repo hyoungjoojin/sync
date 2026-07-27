@@ -9,14 +9,23 @@ import { COMMENT_PAGE_SIZE } from '@/components/feature/post/constants';
 import type { PostType } from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
 import PostComments from '@/components/feature/post/viewer/PostComments';
+import { PostSeriesCard } from '@/components/feature/post/viewer/PostSeriesCard';
+import { RelatedPosts } from '@/components/feature/post/viewer/RelatedPosts';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import SyncError, { ErrorCode } from '@/lib/error';
 import { getPostBySlugCached } from '@/lib/post-query';
 import { getQueryClient } from '@/lib/query';
-import { NON_INDEXABLE_METADATA, createPostMetadata } from '@/lib/seo';
+import {
+  NON_INDEXABLE_METADATA,
+  buildPostJsonLd,
+  createPostMetadata,
+  isPostIndexable,
+} from '@/lib/seo';
+import ROUTES from '@/util/routes';
 
 interface PostProps {
   params: Promise<{
+    handle: string;
     slug: string;
   }>;
 }
@@ -37,12 +46,13 @@ export async function generateMetadata({
 }
 
 export default async function Post({ params }: PostProps) {
-  const { slug } = await params;
+  const { handle, slug } = await params;
 
   const queryClient = getQueryClient();
   let commentsEnabled = false;
   let postType: PostType | undefined;
   let isPostAuthor = false;
+  let jsonLd: Record<string, unknown> | null = null;
 
   try {
     const response = await getPostBySlugCached(slug);
@@ -52,6 +62,10 @@ export default async function Post({ params }: PostProps) {
     commentsEnabled = post.summary.status === 'PUBLISHED';
     postType = post.summary.type as PostType;
     isPostAuthor = post.summary.isAuthor;
+
+    if (isPostIndexable(post.summary)) {
+      jsonLd = buildPostJsonLd(post.summary, ROUTES.PROJECT_POST(handle, slug));
+    }
   } catch (error) {
     if (error instanceof SyncError) {
       switch (error.code) {
@@ -84,18 +98,28 @@ export default async function Post({ params }: PostProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <TwoColumnLayout
         main={<PostCard slug={slug} />}
         side={
-          commentsEnabled && postType ? (
-            <PostComments
-              slug={slug}
-              postType={postType}
-              isPostAuthor={isPostAuthor}
-            />
-          ) : null
+          <div className="flex flex-col gap-6">
+            <PostSeriesCard slug={slug} />
+            {commentsEnabled && postType ? (
+              <PostComments
+                slug={slug}
+                postType={postType}
+                isPostAuthor={isPostAuthor}
+              />
+            ) : null}
+          </div>
         }
       />
+      <RelatedPosts slug={slug} />
     </HydrationBoundary>
   );
 }
