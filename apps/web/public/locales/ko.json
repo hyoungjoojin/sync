@@ -1161,6 +1161,9 @@
       },
       "terms": {
         "title": "이용약관"
+      },
+      "cookies": {
+        "title": "쿠키 정책"
       }
     },
     "not-found": {

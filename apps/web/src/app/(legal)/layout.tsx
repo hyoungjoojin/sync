@@ -66,6 +66,11 @@ export default async function LegalLayout({ children }: LegalLayoutProps) {
                   {t('footer.legal.privacy')}
                 </Link>
               </li>
+              <li>
+                <Link href={ROUTES.COOKIES()} className="hover:text-foreground">
+                  {t('footer.legal.cookies')}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
