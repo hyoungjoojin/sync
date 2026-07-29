@@ -4,12 +4,13 @@ import StarterKit from '@tiptap/starter-kit';
 
 import type { GetPostResponse } from '@/api/__generated__/types';
 
-import { ReadOnlyCodeBlockNode } from '../../editor/extensions/nodes/code-block';
+import { ReadOnlyCodeBlockNode } from '../../editor/extensions/nodes/code';
+import { ReadOnlyEmbedNode } from '../../editor/extensions/nodes/embed';
 import { ReadOnlyImageNode } from '../../editor/extensions/nodes/image';
 import {
   TaskItemNode,
   TaskListNode,
-} from '../../editor/extensions/nodes/task-list';
+} from '../../editor/extensions/nodes/tasks';
 import { deserialize } from '../../editor/utils/serializer';
 
 const EMPTY_DOC: JSONContent = { type: 'doc', content: [] };
@@ -40,6 +41,7 @@ export function useReadOnlyPostEditor(
       TaskListNode,
       TaskItemNode,
       ReadOnlyImageNode,
+      ReadOnlyEmbedNode,
     ],
     content: doc,
     editable: false,

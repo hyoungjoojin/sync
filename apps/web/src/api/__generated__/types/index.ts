@@ -45,6 +45,7 @@ export * from './GetAllTagsResponseTags';
 export * from './GetAllTagsResponseTagsContentItem';
 export * from './GetAllTagsResponseTagsPageInfo';
 export * from './GetBookmarkedPostsParams';
+export * from './GetChannelTalkIdentityResponse';
 export * from './GetCollectionPostsParams';
 export * from './GetCollectionPostsResponse';
 export * from './GetCollectionPostsResponsePosts';

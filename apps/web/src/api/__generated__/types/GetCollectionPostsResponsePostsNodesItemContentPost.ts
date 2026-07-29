@@ -23,27 +23,10 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    */
   preview?: string | null;
   /**
-   * 게시물 본문의 단어 수
-   * @nullable
-   */
-  wordCount?: number | null;
-  /**
-   * 요청자의 열람 수준 (FULL: 본문까지 열람, PREVIEW: 유료 게이트로 본문 잠김)
-   * @nullable
-   */
-  accessLevel?: GetCollectionPostsResponsePostsNodesItemContentPostAccessLevel;
-  /**
    * 게시물 커버 이미지 URL (없으면 없음)
    * @nullable
    */
   coverImageUrl?: string | null;
-  /**
-   * Whether the current user bookmarked this post
-   * @nullable
-   */
-  bookmarked?: boolean | null;
-  /** 작성자 정보 */
-  author?: GetCollectionPostsResponsePostsNodesItemContentPostAuthor;
   /** 소속 프로젝트 정보 */
   project?: GetCollectionPostsResponsePostsNodesItemContentPostProject;
   /**
@@ -66,13 +49,6 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    * @nullable
    */
   liked?: boolean | null;
-  /** 게시물에 달린 태그 목록 */
-  tags?: GetCollectionPostsResponsePostsNodesItemContentPostTagsItem[];
-  /**
-   * Number of Comments
-   * @nullable
-   */
-  commentCount?: number | null;
   /**
    * Whether the requesting user is the author of this post
    * @nullable
@@ -84,11 +60,6 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    */
   createdAt?: string | null;
   /**
-   * 게시글이 어떤 시리즈에 속해 있는지 여부
-   * @nullable
-   */
-  isSeriesPost?: boolean | null;
-  /**
    * 게시글 공개 범위
    * @nullable
    */
@@ -99,12 +70,20 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    */
   mediaCount?: number | null;
   /**
+   * 요청자가 이 게시글을 삭제할 수 있는지 여부 (작성자, 플랫폼 관리자(개인 게시글), 프로젝트 관리자(프로젝트 게시글))
+   * @nullable
+   */
+  canDelete?: boolean | null;
+  /**
+   * 요청자가 이 게시글에 댓글을 작성할 수 있는지 여부 (프로젝트 게시글은 팀원만 가능)
+   * @nullable
+   */
+  canComment?: boolean | null;
+  /**
    * Post ID
    * @nullable
    */
   id?: number | null;
-  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
-  previewMedia?: GetCollectionPostsResponsePostsNodesItemContentPostPreviewMediaItem[];
   /**
    * Post Slug
    * @nullable
@@ -120,6 +99,37 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    * @nullable
    */
   resolved?: boolean | null;
+  /**
+   * 게시물 본문의 단어 수
+   * @nullable
+   */
+  wordCount?: number | null;
+  /**
+   * 요청자의 열람 수준 (FULL: 본문까지 열람, PREVIEW: 유료 게이트로 본문 잠김)
+   * @nullable
+   */
+  accessLevel?: GetCollectionPostsResponsePostsNodesItemContentPostAccessLevel;
+  /**
+   * Whether the current user bookmarked this post
+   * @nullable
+   */
+  bookmarked?: boolean | null;
+  /** 작성자 정보 */
+  author?: GetCollectionPostsResponsePostsNodesItemContentPostAuthor;
+  /** 게시물에 달린 태그 목록 */
+  tags?: GetCollectionPostsResponsePostsNodesItemContentPostTagsItem[];
+  /**
+   * Number of Comments
+   * @nullable
+   */
+  commentCount?: number | null;
+  /**
+   * 게시글이 어떤 시리즈에 속해 있는지 여부
+   * @nullable
+   */
+  isSeriesPost?: boolean | null;
+  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
+  previewMedia?: GetCollectionPostsResponsePostsNodesItemContentPostPreviewMediaItem[];
   /**
    * Post Status
    * @nullable

@@ -57,6 +57,7 @@ function toSummary(
     bookmarked: post.bookmarked ?? false,
     commentCount: post.commentCount ?? 0,
     isAuthor: post.isAuthor ?? false,
+    canDelete: post.canDelete ?? false,
     createdAt: post.createdAt ?? '',
     resolved: post.resolved ?? false,
     tags: (post.tags ?? []).map((tag) => ({

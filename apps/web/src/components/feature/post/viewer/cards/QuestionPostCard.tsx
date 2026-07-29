@@ -26,7 +26,7 @@ export function QuestionPostCard({
       <CardContent className="space-y-6">
         <PostCardTitle title={summary.title} variant="detail" isQuestion />
         <PostBody editor={editor} lockedPreview={lockedPreview} />
-        <PostCardActions summary={summary} />
+        <PostCardActions summary={summary} variant="detail" />
         <PostTags tags={summary.tags} />
       </CardContent>
     </Card>

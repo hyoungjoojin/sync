@@ -126,45 +126,47 @@ export function PostActionsMenu({
             <StackSimpleIcon />
             {tCollection('add-to-collection.trigger')}
           </DropdownMenuItem>
-          {summary.isAuthor ? (
-            <>
-              <DropdownMenuItem
-                onSelect={() =>
-                  router.push(
-                    summary.project?.handle
-                      ? ROUTES.PROJECT_POST_EDIT(
-                          summary.project.handle,
-                          summary.slug,
-                        )
-                      : ROUTES.POST_EDIT(summary.slug),
-                  )
-                }
-              >
-                <PencilSimpleIcon />
-                {tEdit('trigger')}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => deleteDialog.open()}
-              >
-                <TrashIcon />
-                {tDelete('trigger')}
-              </DropdownMenuItem>
-            </>
-          ) : isPreview ? (
-            <DropdownMenuItem variant="destructive">
-              <SirenIcon />
-              {t('trigger')}
-            </DropdownMenuItem>
-          ) : (
+          {summary.isAuthor && (
             <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => report.open()}
+              onSelect={() =>
+                router.push(
+                  summary.project?.handle
+                    ? ROUTES.PROJECT_POST_EDIT(
+                        summary.project.handle,
+                        summary.slug,
+                      )
+                    : ROUTES.POST_EDIT(summary.slug),
+                )
+              }
             >
-              <SirenIcon />
-              {t('trigger')}
+              <PencilSimpleIcon />
+              {tEdit('trigger')}
             </DropdownMenuItem>
           )}
+          {summary.canDelete && (
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() => deleteDialog.open()}
+            >
+              <TrashIcon />
+              {tDelete('trigger')}
+            </DropdownMenuItem>
+          )}
+          {!summary.isAuthor &&
+            (isPreview ? (
+              <DropdownMenuItem variant="destructive">
+                <SirenIcon />
+                {t('trigger')}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => report.open()}
+              >
+                <SirenIcon />
+                {t('trigger')}
+              </DropdownMenuItem>
+            ))}
         </DropdownMenuContent>
       </DropdownMenu>
 

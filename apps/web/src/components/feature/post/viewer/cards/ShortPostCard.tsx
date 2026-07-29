@@ -26,7 +26,7 @@ export function ShortPostCard({
       <CardContent className="space-y-3">
         <PostCardTitle title={summary.title} variant="detail" />
         <PostBody editor={editor} lockedPreview={lockedPreview} />
-        <PostCardActions summary={summary} />
+        <PostCardActions summary={summary} variant="detail" />
         <PostTags tags={summary.tags} />
       </CardContent>
     </Card>

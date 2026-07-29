@@ -39,6 +39,7 @@ import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 import SidebarCloseButton from './SidebarCloseButton';
+import SupportButton from './SupportButton';
 
 const MAX_VISIBLE_PROJECTS = 5;
 
@@ -296,6 +297,10 @@ export default function PersonalSidebarContent() {
           </>
         )}
       </SidebarContent>
+
+      <div className="px-2">
+        <SupportButton />
+      </div>
 
       <SidebarFooter className="p-4">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-sidebar-foreground/60">

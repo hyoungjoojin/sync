@@ -36,7 +36,7 @@ export function LongPostCard({
         {/* 상세 화면이므로 본문을 자르지 않는다. 잘린 미리보기는 피드 카드
             (`LongPostPreviewCard`)의 역할이다. */}
         <PostBody editor={editor} lockedPreview={lockedPreview} />
-        <PostCardActions summary={summary} />
+        <PostCardActions summary={summary} variant="detail" />
         <PostTags tags={summary.tags} />
       </CardContent>
     </Card>

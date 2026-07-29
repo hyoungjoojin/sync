@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
+    "@channel.io/channel-web-sdk-loader": "^2.0.2",
     "@floating-ui/react": "^0.27.19",
     "@hookform/resolvers": "^5.2.2",
     "@phosphor-icons/react": "^2.1.10",

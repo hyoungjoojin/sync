@@ -1,5 +1,6 @@
 import { computePosition, flip, shift } from '@floating-ui/react';
 import {
+  BrowsersIcon,
   CodeIcon,
   ImageIcon,
   ListBulletsIcon,
@@ -44,7 +45,8 @@ interface CommandsItemProps {
     | 'todo'
     | 'quote'
     | 'code'
-    | 'image';
+    | 'image'
+    | 'embed';
   icon: React.ReactNode;
   command: (props: { editor: Editor; range: Range }) => void;
 }
@@ -131,6 +133,18 @@ const commands: CommandsItemProps[] = [
         .chain()
         .deleteRange(range)
         .insertContent([{ type: NodeType.Image }, { type: 'paragraph' }])
+        .joinForward()
+        .run();
+    },
+  },
+  {
+    name: 'embed',
+    icon: <BrowsersIcon />,
+    command: ({ editor, range }) => {
+      editor
+        .chain()
+        .deleteRange(range)
+        .insertContent([{ type: NodeType.Embed }, { type: 'paragraph' }])
         .joinForward()
         .run();
     },

@@ -1,12 +1,17 @@
 'use client';
 
-import { CheckCircleIcon, PaperPlaneRightIcon } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon,
+  HeartIcon,
+  PaperPlaneRightIcon,
+} from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { useGetPostCommentsInfinite } from '@/api/__generated__/comment/comment';
 import type { GetCommentsResponseCommentsNodesItemContent } from '@/api/__generated__/types';
 import { useCommentAcceptance } from '@/components/feature/post/hooks/useCommentAcceptance';
+import { useCommentLike } from '@/components/feature/post/hooks/useCommentLike';
 import { useCreateComment } from '@/components/feature/post/hooks/useCreateComment';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,9 +24,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
+import { cn } from '@/lib/utils';
 
 import { COMMENT_PAGE_SIZE } from '../constants';
 import { PostType } from '../types/post';
+import { COMMENT_COMPOSER_ID } from './utils/commentComposer';
 
 interface PostCommentsProps {
   slug: string;
@@ -30,6 +37,12 @@ interface PostCommentsProps {
   // 현재 보고 있는 사용자가 게시글 작성자인지 여부 — 질문 게시글에서만,
   // 그리고 작성자만 답변 채택/채택 취소를 할 수 있다.
   isPostAuthor: boolean;
+  // 프로젝트 게시글은 공개 프로젝트라도 팀원만 댓글을 쓸 수 있다. 서버가 내려준
+  // 이 값이 false 면 입력창 대신 안내 문구를 보여준다.
+  canComment: boolean;
+  // 프로젝트 게시글 여부. 비로그인 상태에서는 팀원인지 알 수 없으므로, 로그인
+  // 안내와 함께 팀원만 댓글을 쓸 수 있다는 사실을 미리 알려 준다.
+  requiresMembership: boolean;
 }
 
 function PostCommentItem({
@@ -49,6 +62,8 @@ function PostCommentItem({
   const author = comment.author;
   const { acceptComment, unacceptComment, isPending } =
     useCommentAcceptance(slug);
+  const { toggleLike } = useCommentLike(slug);
+  const { requireAuth } = useRequireAuth();
 
   return (
     <div className="flex items-start gap-3 py-4">
@@ -86,24 +101,48 @@ function PostCommentItem({
           )}
         </p>
 
-        {canManageAcceptance && !comment.isDeleted && (
-          <div>
+        {!comment.isDeleted && (
+          <div className="flex items-center gap-1">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[11px]"
-              disabled={isPending}
-              onClick={() =>
-                comment.isAccepted
-                  ? unacceptComment(String(comment.id))
-                  : acceptComment(String(comment.id))
-              }
+              className="text-muted-foreground h-6 px-2 text-[11px]"
+              aria-label={t('like-button')}
+              onClick={() => {
+                if (!requireAuth({ intent: 'like' })) {
+                  return;
+                }
+
+                toggleLike(comment.id, comment.liked);
+              }}
             >
-              <CheckCircleIcon
-                weight={comment.isAccepted ? 'fill' : undefined}
+              <HeartIcon
+                className={cn(
+                  comment.liked && 'fill-destructive text-destructive',
+                )}
+                weight={comment.liked ? 'fill' : 'regular'}
               />
-              {comment.isAccepted ? t('unaccept-button') : t('accept-button')}
+              {comment.likeCount}
             </Button>
+
+            {canManageAcceptance && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[11px]"
+                disabled={isPending}
+                onClick={() =>
+                  comment.isAccepted
+                    ? unacceptComment(String(comment.id))
+                    : acceptComment(String(comment.id))
+                }
+              >
+                <CheckCircleIcon
+                  weight={comment.isAccepted ? 'fill' : undefined}
+                />
+                {comment.isAccepted ? t('unaccept-button') : t('accept-button')}
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -116,6 +155,8 @@ export default function PostComments({
   postId,
   postType,
   isPostAuthor,
+  canComment,
+  requiresMembership,
 }: PostCommentsProps) {
   const t = useTranslations('pages.posts.comments');
   const { data: session, isPending: isSessionPending } = useSession();
@@ -178,7 +219,7 @@ export default function PostComments({
 
       <Separator />
 
-      {!isSessionPending && session?.user && (
+      {!isSessionPending && session?.user && canComment && (
         <>
           <div className="flex items-start gap-3 px-5 py-4">
             <Avatar size="sm">
@@ -191,6 +232,7 @@ export default function PostComments({
 
             <div className="flex flex-1 flex-col gap-2">
               <Textarea
+                id={COMMENT_COMPOSER_ID}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder={t('composer.placeholder')}
@@ -216,7 +258,13 @@ export default function PostComments({
 
       {!isSessionPending && !session?.user && (
         <>
-          <div className="px-5 py-4">
+          <div className="flex flex-col gap-2 px-5 py-4">
+            {requiresMembership && (
+              <p className="text-muted-foreground text-sm">
+                {t('composer.members-only')}
+              </p>
+            )}
+
             <Button
               variant="outline"
               className="w-full justify-center"
@@ -227,6 +275,16 @@ export default function PostComments({
               {t('composer.login')}
             </Button>
           </div>
+
+          <Separator />
+        </>
+      )}
+
+      {!isSessionPending && session?.user && !canComment && (
+        <>
+          <p className="text-muted-foreground px-5 py-4 text-sm">
+            {t('composer.members-only')}
+          </p>
 
           <Separator />
         </>

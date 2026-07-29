@@ -10,6 +10,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.1.0
         version: 1.4.1(@date-fns/tz@1.4.1)(@types/react@19.2.14)(date-fns@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@channel.io/channel-web-sdk-loader':
+        specifier: ^2.0.2
+        version: 2.0.2
       '@floating-ui/react':
         specifier: ^0.27.19
         version: 0.27.19(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -631,6 +634,12 @@ packages:
     resolution:
       {
         integrity: sha512-ehg3jIkYKulZh+8om/O25vkvSsXXwC+skXmyA87FFx6A/45eqOkZsBltMw/TVteb0mloiGT8oGRTcjRAz66zaA==,
+      }
+
+  '@channel.io/channel-web-sdk-loader@2.0.2':
+    resolution:
+      {
+        integrity: sha512-43xRJX+BUjb5vRw5A/LDkgE9syJYTPERf7xo49Fz5MMpA9UtzPWHWyzN2QU1/tTT2uu5tpxapT2BgMx6FfP2qg==,
       }
 
   '@chromatic-com/storybook@5.1.2':
@@ -10640,6 +10649,8 @@ snapshots:
   '@better-fetch/fetch@1.1.21': {}
 
   '@blazediff/core@1.9.1': {}
+
+  '@channel.io/channel-web-sdk-loader@2.0.2': {}
 
   '@chromatic-com/storybook@5.1.2(storybook@10.3.5(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))':
     dependencies:

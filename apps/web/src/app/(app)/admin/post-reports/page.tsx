@@ -21,12 +21,13 @@ import {
 import type { GetPostReportsResponseReportsContentItem } from '@/api/__generated__/types/GetPostReportsResponseReportsContentItem';
 import { ReportPostRequestReason } from '@/api/__generated__/types/ReportPostRequestReason';
 import { ReviewPostReportRequestResolution } from '@/api/__generated__/types/ReviewPostReportRequestResolution';
-import { ReadOnlyCodeBlockNode } from '@/components/feature/post/editor/extensions/nodes/code-block';
+import { ReadOnlyCodeBlockNode } from '@/components/feature/post/editor/extensions/nodes/code';
+import { ReadOnlyEmbedNode } from '@/components/feature/post/editor/extensions/nodes/embed';
 import { ImageNode } from '@/components/feature/post/editor/extensions/nodes/image';
 import {
   TaskItemNode,
   TaskListNode,
-} from '@/components/feature/post/editor/extensions/nodes/task-list';
+} from '@/components/feature/post/editor/extensions/nodes/tasks';
 import { deserialize } from '@/components/feature/post/editor/utils/serializer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -361,6 +362,7 @@ function PostContentPreview({ content }: { content: string }) {
       TaskListNode,
       TaskItemNode,
       ImageNode,
+      ReadOnlyEmbedNode,
     ],
     content: toEditorContent(content),
     editable: false,

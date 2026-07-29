@@ -445,6 +445,197 @@ export const useUnacceptComment = <
 > => {
   return useMutation(getUnacceptCommentMutationOptions(options), queryClient);
 };
+export type likeCommentResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type likeCommentResponseSuccess = likeCommentResponse204 & {
+  headers: Headers;
+};
+export type likeCommentResponse = likeCommentResponseSuccess;
+
+export const getLikeCommentUrl = (commentId: string) => {
+  return `/comments/${commentId}/likes`;
+};
+
+/**
+ * Like Comment
+ * @summary Like Comment
+ */
+export const likeComment = async (
+  commentId: string,
+  options?: RequestInit,
+): Promise<likeCommentResponse> => {
+  return api<likeCommentResponse>(getLikeCommentUrl(commentId), {
+    ...options,
+    method: 'PUT',
+  });
+};
+
+export const getLikeCommentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof likeComment>>,
+    TError,
+    { commentId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof likeComment>>,
+  TError,
+  { commentId: string },
+  TContext
+> => {
+  const mutationKey = ['likeComment'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof likeComment>>,
+    { commentId: string }
+  > = (props) => {
+    const { commentId } = props ?? {};
+
+    return likeComment(commentId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LikeCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof likeComment>>
+>;
+
+export type LikeCommentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Like Comment
+ */
+export const useLikeComment = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof likeComment>>,
+      TError,
+      { commentId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof likeComment>>,
+  TError,
+  { commentId: string },
+  TContext
+> => {
+  return useMutation(getLikeCommentMutationOptions(options), queryClient);
+};
+export type unlikeCommentResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type unlikeCommentResponseSuccess = unlikeCommentResponse204 & {
+  headers: Headers;
+};
+export type unlikeCommentResponse = unlikeCommentResponseSuccess;
+
+export const getUnlikeCommentUrl = (commentId: string) => {
+  return `/comments/${commentId}/likes`;
+};
+
+/**
+ * Unlike Comment
+ * @summary Unlike Comment
+ */
+export const unlikeComment = async (
+  commentId: string,
+  options?: RequestInit,
+): Promise<unlikeCommentResponse> => {
+  return api<unlikeCommentResponse>(getUnlikeCommentUrl(commentId), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getUnlikeCommentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unlikeComment>>,
+    TError,
+    { commentId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unlikeComment>>,
+  TError,
+  { commentId: string },
+  TContext
+> => {
+  const mutationKey = ['unlikeComment'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unlikeComment>>,
+    { commentId: string }
+  > = (props) => {
+    const { commentId } = props ?? {};
+
+    return unlikeComment(commentId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnlikeCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unlikeComment>>
+>;
+
+export type UnlikeCommentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unlike Comment
+ */
+export const useUnlikeComment = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof unlikeComment>>,
+      TError,
+      { commentId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof unlikeComment>>,
+  TError,
+  { commentId: string },
+  TContext
+> => {
+  return useMutation(getUnlikeCommentMutationOptions(options), queryClient);
+};
 export type getPostCommentsResponse200 = {
   data: GetCommentsResponse;
   status: 200;

@@ -64,7 +64,19 @@ export default function CreateProjectPage() {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const handle = form.watch('handle');
+  const isPublic = form.watch('isPublic');
   const debouncedHandle = useDebounce(handle, 500);
+
+  const changeVisibility = (nextIsPublic: boolean) => {
+    form.setValue('isPublic', nextIsPublic);
+
+    if (
+      !nextIsPublic &&
+      form.getValues('joinPolicy') === CreateProjectRequestJoinPolicy.Open
+    ) {
+      form.setValue('joinPolicy', CreateProjectRequestJoinPolicy.Request);
+    }
+  };
 
   const HANDLE_REGEX = /^[a-zA-Z0-9_]+$/;
   const isHandleQueryable =
@@ -181,7 +193,7 @@ export default function CreateProjectPage() {
                   <FieldLabel>{t('form.visibility.label')}</FieldLabel>
                   <RadioGroup
                     value={field.value ? 'public' : 'private'}
-                    onValueChange={(v) => field.onChange(v === 'public')}
+                    onValueChange={(v) => changeVisibility(v === 'public')}
                     className="mt-1"
                   >
                     <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary">
@@ -225,22 +237,28 @@ export default function CreateProjectPage() {
                       CreateProjectRequestJoinPolicy.Open,
                       CreateProjectRequestJoinPolicy.Request,
                       CreateProjectRequestJoinPolicy.Invite,
-                    ].map((policy) => (
-                      <label
-                        key={policy}
-                        className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary"
-                      >
-                        <RadioGroupItem value={policy} className="mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {t(`form.join_policy.${policy}.label`)}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {t(`form.join_policy.${policy}.description`)}
-                          </p>
-                        </div>
-                      </label>
-                    ))}
+                    ]
+                      .filter(
+                        (policy) =>
+                          isPublic ||
+                          policy !== CreateProjectRequestJoinPolicy.Open,
+                      )
+                      .map((policy) => (
+                        <label
+                          key={policy}
+                          className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary"
+                        >
+                          <RadioGroupItem value={policy} className="mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium">
+                              {t(`form.join_policy.${policy}.label`)}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              {t(`form.join_policy.${policy}.description`)}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
                   </RadioGroup>
                 </Field>
               )}

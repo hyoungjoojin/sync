@@ -53,6 +53,8 @@ export default async function Post({ params }: PostProps) {
   let postId: number | undefined;
   let postType: PostType | undefined;
   let isPostAuthor = false;
+  let canComment = false;
+  let requiresMembership = false;
   let jsonLd: Record<string, unknown> | null = null;
 
   try {
@@ -64,6 +66,8 @@ export default async function Post({ params }: PostProps) {
     postId = post.summary.id;
     postType = post.summary.type as PostType;
     isPostAuthor = post.summary.isAuthor;
+    canComment = post.summary.canComment;
+    requiresMembership = post.summary.scope === 'WORKSPACE';
 
     if (isPostIndexable(post.summary)) {
       jsonLd = buildPostJsonLd(post.summary, ROUTES.PROJECT_POST(handle, slug));
@@ -117,6 +121,8 @@ export default async function Post({ params }: PostProps) {
                 postId={postId}
                 postType={postType}
                 isPostAuthor={isPostAuthor}
+                canComment={canComment}
+                requiresMembership={requiresMembership}
               />
             ) : null}
           </div>

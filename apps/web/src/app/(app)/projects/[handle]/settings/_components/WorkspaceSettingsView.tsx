@@ -562,11 +562,17 @@ function ProjectJoinPolicyField({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {Object.values(UpdateProjectRequestJoinPolicy).map((policy) => (
-            <SelectItem key={policy} value={policy}>
-              {t(`options.${policy}.label`)}
-            </SelectItem>
-          ))}
+          {Object.values(UpdateProjectRequestJoinPolicy)
+            .filter(
+              (policy) =>
+                project.summary.isPublic ||
+                policy !== UpdateProjectRequestJoinPolicy.Open,
+            )
+            .map((policy) => (
+              <SelectItem key={policy} value={policy}>
+                {t(`options.${policy}.label`)}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <p className="text-xs text-muted-foreground">

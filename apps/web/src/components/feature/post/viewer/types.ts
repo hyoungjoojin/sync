@@ -43,6 +43,8 @@ export interface PostSummary {
   bookmarked: boolean;
   commentCount: number;
   isAuthor: boolean;
+  /** 요청자가 이 게시물을 삭제할 수 있는지 여부 (작성자, 플랫폼 관리자, 프로젝트 관리자) */
+  canDelete: boolean;
   createdAt: string;
   resolved: boolean;
   tags: PostTagSummary[];

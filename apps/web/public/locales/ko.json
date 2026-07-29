@@ -182,12 +182,14 @@
         "composer": {
           "placeholder": "댓글을 입력하세요",
           "submit": "댓글 작성",
-          "login": "로그인하고 댓글 작성하기"
+          "login": "로그인하고 댓글 작성하기",
+          "members-only": "이 프로젝트의 팀원만 댓글을 작성할 수 있습니다."
         },
         "author-badge": "작성자",
         "accepted-badge": "채택된 댓글",
         "accept-button": "채택하기",
-        "unaccept-button": "채택 취소"
+        "unaccept-button": "채택 취소",
+        "like-button": "댓글 좋아요"
       },
       "not-found": {
         "title": "포스트를 찾을 수 없습니다",
@@ -1522,6 +1524,7 @@
         "projects": "프로젝트",
         "my-contributions": "내 기여",
         "see-more": "더보기",
+        "support": "문의하기",
         "nav": {
           "home": "홈",
           "trending-posts": "인기 게시물",
@@ -1623,6 +1626,10 @@
           "title": "이미지",
           "description": ""
         },
+        "embed": {
+          "title": "임베드",
+          "description": ""
+        },
         "ignore": {
           "title": "/ 를 입력하기",
           "key": "ESC"
@@ -1648,10 +1655,44 @@
         },
         "errors": {
           "upload-failed": "이미지 업로드에 실패했습니다",
-          "s3-upload-failed": "파일 업로드에 실패했습니다"
+          "s3-upload-failed": "파일 업로드에 실패했습니다",
+          "max-size": "이미지 크기는 5MB 이하여야 합니다"
         },
         "actions": {
           "retry": "다시 시도"
+        }
+      },
+      "embed": {
+        "label": "임베드된 콘텐츠",
+        "placeholders": {
+          "description": "YouTube, Figma, CodeSandbox 같은 서비스의 링크를 붙여넣으면 본문에 그대로 삽입돼요",
+          "url": "https://"
+        },
+        "actions": {
+          "submit": "임베드",
+          "open": "원본 링크 열기",
+          "replace": "링크 변경",
+          "remove": "삭제",
+          "select": "임베드 선택"
+        },
+        "errors": {
+          "invalid-url": "올바른 링크가 아니에요. 주소를 다시 확인해 주세요"
+        },
+        "providers": {
+          "youtube": "YouTube",
+          "vimeo": "Vimeo",
+          "loom": "Loom",
+          "figma": "Figma",
+          "codesandbox": "CodeSandbox",
+          "stackblitz": "StackBlitz",
+          "codepen": "CodePen",
+          "replit": "Replit",
+          "gist": "GitHub Gist",
+          "google-docs": "Google Docs",
+          "google-maps": "Google Maps",
+          "spotify": "Spotify",
+          "x": "X",
+          "generic": "웹페이지"
         }
       },
       "placeholders": {
@@ -1680,8 +1721,7 @@
         "workspace-loading": "불러오는 중"
       },
       "validation": {
-        "title-required": "게시하려면 제목을 입력해주세요.",
-        "tags-required": "게시하려면 태그를 하나 이상 추가해주세요."
+        "title-required": "게시하려면 제목을 입력해주세요."
       },
       "messages": {
         "create-success": "게시글이 작성되었습니다.",

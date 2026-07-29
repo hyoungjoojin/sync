@@ -8,13 +8,18 @@ import { Button } from '@/components/ui/button';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { cn } from '@/lib/utils';
 
-import type { PostSummary } from '../types';
+import type { PostCardVariant, PostSummary } from '../types';
+import { focusCommentComposer } from '../utils/commentComposer';
 
 interface PostCardActionsProps {
   summary: PostSummary;
+  variant?: PostCardVariant;
 }
 
-export function PostCardActions({ summary }: PostCardActionsProps) {
+export function PostCardActions({
+  summary,
+  variant = 'preview',
+}: PostCardActionsProps) {
   const { id: postId, liked, likeCount, commentCount } = summary;
   const { requireAuth } = useRequireAuth();
 
@@ -55,6 +60,14 @@ export function PostCardActions({ summary }: PostCardActionsProps) {
         onClick={(event) => {
           if (!requireAuth({ intent: 'comment' })) {
             event.stopPropagation();
+            return;
+          }
+
+          // 피드 카드에서는 이벤트를 그대로 흘려보내 카드 클릭(게시물 이동)에
+          // 맡기고, 상세 화면에서는 같은 페이지의 댓글 입력창으로 보낸다.
+          if (variant === 'detail') {
+            event.stopPropagation();
+            focusCommentComposer();
           }
         }}
       >

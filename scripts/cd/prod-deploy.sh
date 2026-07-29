@@ -30,6 +30,7 @@ AWS_REGION="${AWS_REGION:-ap-northeast-2}"
 PROJECT_NAME="${PROJECT_NAME:-sync}"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 APP_DOMAIN="${APP_DOMAIN:-sync.skkil.org}"
+CHANNEL_TALK_PLUGIN_KEY="${CHANNEL_TALK_PLUGIN_KEY:-}"
 
 DO_BUILD=false
 IMAGE_TAG=""
@@ -69,6 +70,7 @@ if [[ "$DO_BUILD" == true ]]; then
       --build-context docs="$PROJECT_ROOT_DIR/docs" \
       --build-arg NEXT_PUBLIC_BACKEND_URL="https://${APP_DOMAIN}/api" \
       --build-arg NEXT_PUBLIC_SITE_URL="https://${APP_DOMAIN}" \
+      --build-arg NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY="${CHANNEL_TALK_PLUGIN_KEY}" \
       -t "$WEB_IMAGE" .
 
   info "Building the nginx image..."

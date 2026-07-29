@@ -33,9 +33,11 @@ import { type CoverState, initialCoverState } from './cover/coverState';
 import { renderCoverToFile } from './cover/generators';
 import { useCoverImageUpload } from './cover/useCoverImageUpload';
 import { CommandsExtension } from './extensions/commands';
-import { CodeBlockNode } from './extensions/nodes/code-block';
+import { CodeBlockNode } from './extensions/nodes/code';
+import { EmbedNode } from './extensions/nodes/embed';
 import { ImageNode } from './extensions/nodes/image';
-import { TaskItemNode, TaskListNode } from './extensions/nodes/task-list';
+import { TaskItemNode, TaskListNode } from './extensions/nodes/tasks';
+import { SelectAllExtension } from './extensions/select-all';
 import { deserialize, serialize } from './utils/serializer';
 
 interface PostEditorProps {
@@ -195,10 +197,12 @@ export default function PostEditor({
       }),
       CharacterCount,
       CommandsExtension,
+      SelectAllExtension,
       CodeBlockNode,
       TaskListNode,
       TaskItemNode,
       ImageNode,
+      EmbedNode,
     ],
     content: initialContent,
     immediatelyRender: false,
@@ -292,11 +296,6 @@ export default function PostEditor({
       title.trim().length === 0
     ) {
       setValidationMessage(t('validation.title-required'));
-      return;
-    }
-
-    if (status === PostStatus.PUBLISHED && tags.length === 0) {
-      setValidationMessage(t('validation.tags-required'));
       return;
     }
 

@@ -15,6 +15,11 @@ mail_password = "changeme"
 
 slack_webhook_url = ""
 
+# Channel Talk user data encryption key (채널 설정 > 보안 및 개발 > 유저 데이터
+# 암호화). Signs the SDK member hash. Empty means the messenger only ever
+# boots anonymously — conversations will not attach to user accounts.
+channel_talk_secret_key = ""
+
 better_auth_secret = "changeme"
 
 # Platform ADMIN account, seeded by AdminSeeder on server boot. Leave both empty

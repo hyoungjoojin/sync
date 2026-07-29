@@ -43,6 +43,7 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     MAIL_USERNAME                                   = var.mail_username
     MAIL_PASSWORD                                   = var.mail_password
     SLACK_WEBHOOK_URL                               = var.slack_webhook_url
+    CHANNEL_TALK_SECRET_KEY                         = var.channel_talk_secret_key
     ADMIN_EMAIL                                     = var.admin_email
     ADMIN_PASSWORD                                  = var.admin_password
   })

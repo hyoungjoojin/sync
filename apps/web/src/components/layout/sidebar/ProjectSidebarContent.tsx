@@ -50,6 +50,7 @@ import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
 
 import SidebarCloseButton from './SidebarCloseButton';
+import SupportButton from './SupportButton';
 
 interface ProjectSidebarContentProps {
   handle: string;
@@ -93,6 +94,10 @@ export default function ProjectSidebarContent({
           </>
         )}
       </SidebarContent>
+
+      <div className="px-2">
+        <SupportButton />
+      </div>
     </>
   );
 }

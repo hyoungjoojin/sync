@@ -56,6 +56,7 @@ docker build \
     --build-context docs="$PROJECT_ROOT_DIR/docs" \
     --build-arg NEXT_PUBLIC_BACKEND_URL=http://localhost:8080 \
     --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+    --build-arg NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY="${CHANNEL_TALK_PLUGIN_KEY:-}" \
     -t sync-web:local .
 
 info "Uploading web image to minikube..."
