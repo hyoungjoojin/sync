@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 
@@ -50,28 +51,41 @@ export function TwoColumnLayout({
   );
 }
 
+export const BRAND_ART = {
+  login: '/assets/auth/login.webp',
+  register: '/assets/auth/register.webp',
+  onboarding: '/assets/auth/onboarding.webp',
+} as const;
+
+const BRAND_ART_ALT = '';
+const BRAND_ART_SIZES = '50vw';
+
 interface TwoColumnFullPageLayoutProps {
   brandTitle: string;
   brandDescription: string;
+  artSrc?: string;
   children?: React.ReactNode;
 }
 
 export function TwoColumnFullPageLayout({
   brandTitle,
   brandDescription,
+  artSrc = BRAND_ART.login,
   children,
 }: TwoColumnFullPageLayoutProps) {
   return (
     <div className="w-full min-h-screen flex flex-col lg:flex-row">
-      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-10 pb-30 overflow-hidden bg-gradient-to-br from-primary to-primary/70 text-white">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle, currentColor 1.5px, transparent 1.5px)',
-            backgroundSize: '28px 28px',
-          }}
+      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-10 pb-30 overflow-hidden bg-[#073b31] text-white">
+        <Image
+          src={artSrc}
+          alt={BRAND_ART_ALT}
+          fill
+          priority
+          sizes={BRAND_ART_SIZES}
+          className="object-cover"
         />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#04231d]/70 via-[#04231d]/20 to-transparent" />
 
         <Link href={ROUTES.ABOUT()} className="relative z-10 [&_svg]:invert">
           <Logo />
