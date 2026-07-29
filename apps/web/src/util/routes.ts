@@ -76,7 +76,6 @@ const ROUTES = {
     if (projectHandle) params.set('projectHandle', projectHandle);
     return `/search?${params.toString()}`;
   },
-  MESSAGES: (to?: string) => (to ? `/messages?to=${to}` : '/messages'),
   ADMIN: () => '/admin',
   ADMIN_POST_REPORTS: () => '/admin/post-reports',
 };

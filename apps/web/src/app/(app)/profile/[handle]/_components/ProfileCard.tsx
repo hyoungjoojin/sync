@@ -102,12 +102,7 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
                   {profile.data.isAuthenticatedUser ? (
                     <EditProfileDialog />
                   ) : (
-                    <>
-                      <FollowButton handle={handle} />
-                      <Link href={ROUTES.MESSAGES(handle)}>
-                        <Button variant="outline">{t('header.message')}</Button>
-                      </Link>
-                    </>
+                    <FollowButton handle={handle} />
                   )}
                 </div>
               )}
