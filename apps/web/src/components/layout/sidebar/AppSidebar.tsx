@@ -1,7 +1,5 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
 import { Copyright } from '@/components/ui/copyright';
 import {
@@ -15,14 +13,13 @@ import {
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useProjectContextHandle } from '@/hooks/use-project-context';
 
 import PersonalSidebarContent from './PersonalSidebarContent';
 import ProjectSidebarContent from './ProjectSidebarContent';
 
 export default function AppSidebar() {
-  const pathname = usePathname();
-  const match = pathname.match(/^\/projects\/(?!new(?:\/|$))([^/]+)/);
-  const handle = match?.[1];
+  const handle = useProjectContextHandle();
 
   const { isPending, isError } = useGetProjectByHandle(handle ?? '', {
     query: { enabled: !!handle },

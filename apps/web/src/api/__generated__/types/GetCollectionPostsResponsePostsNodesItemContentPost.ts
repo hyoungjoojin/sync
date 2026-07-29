@@ -103,7 +103,7 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    * @nullable
    */
   id?: number | null;
-  /** 미리보기용 첨부 미디어 목록 (최대 2개) */
+  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
   previewMedia?: GetCollectionPostsResponsePostsNodesItemContentPostPreviewMediaItem[];
   /**
    * Post Slug

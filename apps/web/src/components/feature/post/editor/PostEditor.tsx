@@ -19,6 +19,7 @@ import { Button, LinkButton } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
+import { QUESTION_TITLE_PREFIX } from '../constants';
 import { PostScope, PostStatus, PostType } from '../types/post';
 import { PostDeleteButton } from '../viewer/components/PostDeleteButton';
 import { PostSummary } from '../viewer/types';
@@ -260,8 +261,11 @@ export default function PostEditor({
       return hadInitialCover ? { removeCover: true } : {};
     }
 
-    if (cover.kind === 'generated') {
-      const file = await renderCoverToFile(cover.params);
+    if (cover.kind === 'generated' || cover.kind === 'uploaded') {
+      const file =
+        cover.kind === 'generated'
+          ? await renderCoverToFile(cover.params)
+          : cover.file;
       const result = await uploadCover(file);
       if (!result.ok) return null;
       return { coverMediaId: result.mediaId };
@@ -393,20 +397,33 @@ export default function PostEditor({
       )}
 
       {showTitle && (
-        <textarea
-          ref={titleRef}
-          rows={1}
-          className="w-full shrink-0 resize-none overflow-hidden bg-transparent text-4xl font-bold outline-none placeholder:text-muted-foreground/50 leading-tight break-words"
-          placeholder={titlePlaceholder}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              editor?.commands.focus();
-            }
-          }}
-        />
+        <div className="flex w-full shrink-0 items-start gap-2">
+          {/* 질문은 카드에서도 같은 표식을 달고 나가므로, 쓰는 동안에도 같은
+              모습으로 보여준다. 표식만 굵고 제목은 본문 굵기다. */}
+          {type === PostType.QUESTION && (
+            <span className="shrink-0 text-4xl font-bold leading-tight">
+              {QUESTION_TITLE_PREFIX}
+            </span>
+          )}
+
+          <textarea
+            ref={titleRef}
+            rows={1}
+            className={cn(
+              'min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-4xl outline-none placeholder:text-muted-foreground/50 leading-tight break-words',
+              type === PostType.QUESTION ? 'font-normal' : 'font-bold',
+            )}
+            placeholder={titlePlaceholder}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                editor?.commands.focus();
+              }
+            }}
+          />
+        </div>
       )}
 
       <div className={cn(type === PostType.SHORT && 'text-lg')}>

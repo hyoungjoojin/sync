@@ -25,6 +25,7 @@ import { PostType } from '../types/post';
 
 interface PostCommentsProps {
   slug: string;
+  postId: number;
   postType: PostType;
   // 현재 보고 있는 사용자가 게시글 작성자인지 여부 — 질문 게시글에서만,
   // 그리고 작성자만 답변 채택/채택 취소를 할 수 있다.
@@ -112,6 +113,7 @@ function PostCommentItem({
 
 export default function PostComments({
   slug,
+  postId,
   postType,
   isPostAuthor,
 }: PostCommentsProps) {
@@ -139,7 +141,8 @@ export default function PostComments({
     );
   const [draft, setDraft] = useState('');
 
-  const { mutate: createComment, isPending: isSubmitting } = useCreateComment();
+  const { mutate: createComment, isPending: isSubmitting } =
+    useCreateComment(postId);
 
   const comments = useMemo(() => {
     return (

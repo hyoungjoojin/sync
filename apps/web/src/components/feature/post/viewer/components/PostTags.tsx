@@ -1,17 +1,16 @@
 import Link from 'next/link';
 
-import { TagBadge } from '@/components/feature/tag/TagBadge';
 import ROUTES from '@/util/routes';
 
 import type { PostTagSummary } from '../types';
 
-export function PostTagChips({ tags }: { tags: PostTagSummary[] }) {
+export function PostTags({ tags }: { tags: PostTagSummary[] }) {
   if (tags.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
       {tags.map((tag) => (
         <Link
           key={tag.id}
@@ -21,12 +20,9 @@ export function PostTagChips({ tags }: { tags: PostTagSummary[] }) {
               : ROUTES.TAG(String(tag.id))
           }
           onClick={(event) => event.stopPropagation()}
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
-          <TagBadge
-            name={tag.name}
-            isProjectTag={!!tag.projectHandle}
-            variant="secondary"
-          />
+          {`#${tag.name}`}
         </Link>
       ))}
     </div>

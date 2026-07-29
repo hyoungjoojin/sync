@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { useSearchPosts } from '@/api/__generated__/post/post';
-import { PostTagChips } from '@/components/feature/post/viewer/components/PostTagChips';
+import { PostTags } from '@/components/feature/post/viewer/components/PostTags';
 import { Badge } from '@/components/ui/badge';
 import {
   Empty,
@@ -88,7 +88,7 @@ export default function SearchPostResults({
 
             {post.tags.length > 0 && (
               <div className="mt-2">
-                <PostTagChips tags={post.tags} />
+                <PostTags tags={post.tags} />
               </div>
             )}
           </article>

@@ -7,6 +7,123 @@
 All code, comments, commit messages, PR descriptions, and reviews are written in
 **Korean** (한국어). See `.github/copilot-instructions.md`.
 
+Repository documentation (`DESIGN.md`, `AGENTS.md`, `docs/*.md`) is written in
+**English**.
+
+---
+
+## Product Model
+
+Read this before designing anything. `DESIGN.md` is the full statement; this is
+the part that constrains code.
+
+SYNC is a knowledge-sharing platform, defined by two axes.
+
+**Developers and technical teams are the first audience, not the boundary.**
+Nothing in the two axes is specific to writing software. The rule this implies —
+**neutral claims, specific examples** — is stated in full in `DESIGN.md`
+§_Audience_, and it binds user-visible strings: claims (headings, feature copy,
+empty states, FAQ) never narrow the product to developers, while examples (demo
+content, placeholders) stay unmistakably technical. Do not add `개발자`-scoped
+wording to a claim string without checking that section first.
+
+### Post shapes — `PostType`
+
+| Value | Analogue | Notes |
+| --- | --- | --- |
+| `SHORT` | Twitter / channel post | No title. Title is optional only for this type — `ValidPublishablePostValidator` enforces that. |
+| `LONG` | Forum thread / blog post | Title required to publish. |
+| `QUESTION` | Stack Overflow | Title required to publish. Has a resolution state. |
+
+**Questions resolve through comments — there is no separate answer entity, and
+one is not planned.** A `Comment` on a question _is_ an answer;
+`Comment.isAccepted` marks the accepted one and `Post.resolved` reflects it. Any
+Q&A feature request should be satisfied by strengthening comments, not by adding
+a parallel object.
+
+### Spaces — `Project`
+
+Personal posts belong to no project (`PostScope.PUBLIC`); everything else lives
+in a project (`PostScope.WORKSPACE`). **`PostScope` is derived, not stored** —
+`Post.getScope()` returns `PostScope.fromProject(project)`. There is no `scope`
+column and no CHECK constraint tying the two together, so the illegal state is
+unrepresentable by construction. Don't reintroduce a stored scope.
+
+A project has exactly one of three shapes:
+
+| Space | Visibility | Join | Who can post | Analogue |
+| --- | --- | --- | --- | --- |
+| **Community** | Public | Open — anyone joins | Any member | Subreddit |
+| **Showcase** | Public | By request — owner approves | Approved members | Public GitHub repo |
+| **Team** | Private | Invite only; invisible outside | Members | Private Slack channel |
+
+**All three modes are implemented.** Two axes on `Project`:
+
+- `isPublic` — visibility.
+- `joinPolicy` — `JoinPolicy{OPEN, REQUEST, INVITE}`, default `INVITE`.
+
+`ProjectJoinService.joinProject` (gated on `PROJECT:READ`, so a private project
+is unreachable to outsiders) switches on the policy: `OPEN` creates a `Teammate`
+immediately, `REQUEST` creates a `ProjectJoinRequest` for an admin to approve or
+decline, `INVITE` throws `ProjectJoinNotAllowedException`. Endpoints live on
+`ProjectJoinController`; the manager-initiated paths (`ProjectInvitationService`,
+`TeammateService.addTeammate`) still exist alongside it.
+
+**Two different things share the word "policy" — keep them apart:** *role policy*
+is what a member may do once they are one (`Teammate.Role{ADMIN, MEMBER}` +
+`isOwner`, resolved by `ProjectPermissionEvaluator`); *join policy* is how a
+non-member becomes one. Both are now built.
+
+⚠️ **There is no CHECK constraint forbidding `isPublic = false` + `OPEN`.** That
+combination is nonsense (you cannot join what you cannot see) and is currently
+prevented only at runtime by the `PROJECT:READ` gate on `joinProject`. Don't rely
+on the data being clean.
+
+**Posting into a project requires membership** (`PROJECT:CREATE` → teammate), for
+every mode. Community achieves "anyone can post" through instant join rather than
+through a separate permission level. Whether a **non-member may comment** on a
+public project's post is still undecided — see the comment defect below.
+
+**Read access and write access are separate concerns.** Showcase is world-
+readable but contributor-gated; Community is world-readable and world-writable.
+The current permission model does not express this distinction — it has
+read/create/edit/delete per object, with no separate "may comment" or "may post"
+level. Treat that as a known gap, not as a design to copy.
+
+### Post organisation — three separate concepts, don't conflate them
+
+| Concept | Table | Shape | Ownership |
+| --- | --- | --- | --- |
+| **Collection** | `collections` / `collection_posts` | A curated set of *any* posts, playlist-style | `CollectionScope{PERSONAL, WORKSPACE}` via `project_id`; `is_public` toggle; `external_id` for URLs |
+| **Series** | `post_series` / `post_series_posts` | An *ordered* sequence, one post in at most one series (`UNIQUE(post_id)`), `position` is `DEFERRABLE INITIALLY DEFERRED` so reorders can renumber in one transaction | Mirrors collections: `project_id` + `external_id`; `posts.is_series_post` denormalises membership |
+| **Reference** | `post_references` | A directed citation between posts, both directions readable (`/posts/{slug}/references`, `/posts/{slug}/referenced-by`) | `CHECK (source <> referenced)`, `sort_order`, max `MAX_REFERENCES_PER_POST` (50) |
+
+Related posts (`/posts/{postId}/related`) is a **fourth, distinct** thing —
+nearest-neighbour over `post_embeddings`, not user-curated. It needs AI enabled;
+see _Runtime flags_ below.
+
+Every one of these is a post-listing surface, so per the permission rules below
+they must resolve visibility through the shared `PostQueryRepository.Conditions`
+helpers rather than an ad hoc condition.
+
+### Social is secondary
+
+Follows, likes, bookmarks, and recommendations exist as **discovery plumbing**.
+They are intentionally not the product. Don't grow this surface without a
+discovery justification, and don't add engagement mechanics.
+
+### Explicitly out of scope
+
+Do not implement these, and do not add schema for them, without an explicit
+decision to reverse this:
+
+- Reputation, karma, or trust levels
+- Voting on posts, answers, or comments
+- Creator monetization (paid posts, subscriptions, credits, payouts)
+- Advertising
+- Careers surfaces (companies, job postings, applications, contests, schools,
+  reviews) — a dead product direction, see _Dead code_ below
+
 ---
 
 ## Repository Layout
@@ -17,9 +134,35 @@ apps/server/     Spring Boot 4 + Java 25 backend (Gradle)
 docs/api/        docs/api/openapi3.yaml is a generated OpenAPI spec — do NOT
                  edit it by hand. Other files under docs/api/ (e.g. API docs
                  preview tooling) are hand-maintained.
+docs/            feature-audit.md — current state vs. intended product, with the
+                 known-defect list. Read it before large changes.
 infra/           Infrastructure configuration files and Docker Compose files
 scripts/         CI and setup scripts
 ```
+
+---
+
+## Dead code — do not extend, do not port from
+
+Two large regions are excluded from the build and belong to an abandoned
+careers/community product direction. They are scheduled for deletion.
+
+- `apps/web/src/app/_legacy/` — ~7.5k LOC, excluded from TypeScript **and**
+  ESLint (`eslint.config.mjs` global ignore, `tsconfig` exclude). Unreachable.
+- `apps/server/.../{provider,recruitment,review,experience,message,notification}/`
+  — ~4.8k LOC, excluded from compilation in `build.gradle` `sourceSets`. **None
+  of these have database tables.** `notification` is a bare skeleton, not a
+  working system.
+
+Consequences to be aware of while working:
+
+- `ErrorCode` still enumerates codes for these domains
+  (`PROVIDER_NOT_FOUND`, `JOB_APPLICATION_NOT_FOUND`, `MESSAGE_TO_SELF`, …).
+- `SecurityConfig` still routes `/companies/**`, `/contests/**`, `/jobs/**`,
+  `/experiences/**`, `/team-building/**` — paths with no live controller.
+- `apps/web/src/types/{experience,message,provider,review}.ts` are orphaned.
+- **Notifications do not exist in the running product.** The bell in the top nav
+  (`NotificationsButton.tsx`) renders a static placeholder.
 
 ---
 
@@ -50,15 +193,22 @@ pnpm format       # Prettier (write)
 
 ### Notable quirks
 
-- `src/app/_legacy/` is excluded from TypeScript and ESLint — do not port code
-  from there without awareness of this.
+- `src/app/_legacy/` is dead code excluded from TypeScript and ESLint — never
+  port from it or extend it. See _Dead code_ above.
 - Infinite-query support for specific Orval operations is manually configured in
   `orval.config.ts` (workaround for orval#3101).
 - URL rewrite: `/@:handle/:path*` → `/profile/:handle/:path*` (vanity profile
   URLs, in `next.config.ts`).
-- i18n via `next-intl`; Korean strings only at `public/locales/ko.json`.
-- Auth: Better Auth (client at `src/lib/auth/`, API route at
-  `src/app/api/auth/[...all]`).
+- i18n via `next-intl`; Korean strings only at `public/locales/ko.json`. There is
+  no `en.json` and no locale switcher.
+- There is **no `middleware.ts`** — route protection is per-page
+  (`lib/auth/guards.ts` server-side, `hooks/use-auth-guard.ts` client-side), and
+  there are no custom security headers from Next (nginx sets them in prod).
+- Auth is **dual-stack**: Spring owns the real session (`/auth/*`, JDBC-backed);
+  Better Auth runs in the Next process as a *mirror* of it, synced by the custom
+  `spring-session` plugin hook. Client at `src/lib/auth/`, API route at
+  `src/app/api/better-auth/[...all]` — the `/api/auth` namespace belongs to
+  Spring, so Better Auth is deliberately mounted elsewhere.
 
 ### Env setup
 
@@ -112,8 +262,12 @@ diffs exist after build, so always run build before committing.
 
 - Error-Prone + NullAway enabled; `WildcardImport`, `MissingBraces`, `NullAway`
   are set to `ERROR`
-- NullAway annotated package: `com.skkil.sync`
 - NullAway disabled in test compilation
+- ⚠️ **NullAway is currently a no-op.** `build.gradle` sets
+  `option('NullAway:AnnotatedPackages', 'com.starter')`, but this codebase is
+  `com.skkil.sync` — so nothing is analysed despite the `ERROR` severity. Fixing
+  the package name will surface a backlog of real findings; expect that, and do
+  not assume existing code is nullness-clean.
 
 ### Tag & Post Permission Model
 
@@ -162,6 +316,39 @@ Permission evaluators (`TagPermissionEvaluator`, `PostPermissionEvaluator`,
   `PostPermissionEvaluator.canRead` all encode the same rule; when adding a
   new post-listing query, reuse or mirror these instead of writing an ad hoc
   condition.
+
+**Known holes in this model** — do not treat the current code as the target:
+
+- 🐞 **Comments are unreachable on every project post.** `CommentService` resolves
+  posts via `PostDomainService.getPublicPublishedPostBySlug`, which filters
+  `ProjectIsNull`. Project posts have a project, so
+  `GET`/`POST /posts/{slug}/comments` 404 for them — while the project post page
+  renders the comment panel anyway. Comments are the answer mechanism for
+  questions, so this breaks Q&A inside every space. Fixing it also requires
+  deciding whether a non-member may comment on a public project's post.
+- Platform `ADMIN` has **no override** in `PostPermissionEvaluator` — an admin
+  cannot hide or remove a post except through the report-review flow, so there is
+  no proactive takedown path.
+- `PostAccessPolicy.resolveAccessLevels` is a seam that **always returns
+  `PostAccessLevel.FULL`**. `PREVIEW` is wired through the DTOs and the web
+  viewer (`PostBody.lockedPreview`) but nothing ever produces it. Monetization is
+  out of scope, so do not build on this seam without an explicit decision.
+
+---
+
+## Runtime flags — what is off in production
+
+`infra/ops/deploy.sh` writes the production env file and hard-sets these. Code
+guarded by them **does not run in production**, however well it works locally:
+
+| Flag | Prod value | Consequence |
+| --- | --- | --- |
+| `AI_PROVIDER` / `AI_FEATURES_ENABLED` | `none` / `false` | No embeddings, no summaries. Hybrid search silently degrades to `pg_trgm` only, and **related posts returns nothing**. |
+| `WEBSOCKET_ENABLED` | `false` | No STOMP. nginx also lacks `Upgrade`/`Connection` headers, so `/ws` cannot work even if flipped. |
+| `ENABLE_TELEMETRY` | `false` | No traces, metrics or log export. |
+
+Anything depending on embeddings needs a backfill when AI is re-enabled — every
+post written while it was off has no vector.
 
 ---
 

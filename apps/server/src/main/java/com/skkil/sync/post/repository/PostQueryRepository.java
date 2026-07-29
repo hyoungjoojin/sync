@@ -364,7 +364,7 @@ public class PostQueryRepository {
         POSTS.CREATED_AT.as("createdAt"),
         POSTS.UPDATED_AT.as("updatedAt"),
         POSTS.LIKE_COUNT.as("likeCount"),
-        DSL.value(0L).as("commentCount"),
+        POSTS.COMMENT_COUNT.as("commentCount"),
         liked.as("liked"),
         bookmarked.as("bookmarked"),
         POSTS.RESOLVED.as("resolved"),

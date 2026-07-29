@@ -101,8 +101,8 @@ export default function SettingsModal() {
         }
       }}
     >
-      <DialogContent className="w-11/12 sm:max-w-3xl md:max-w-4xl lg:max-w-5xl h-[90vh] max-h-[90vh] p-0 overflow-hidden">
-        <div className="flex h-full relative">
+      <DialogContent className="flex w-11/12 sm:max-w-3xl md:max-w-4xl lg:max-w-5xl h-[90vh] max-h-[90vh] p-0 overflow-hidden">
+        <div className="flex flex-1 min-h-0 relative">
           {/* Backdrop overlay for mobile */}
           {isMobile && isSidebarOpen && (
             <div
@@ -164,7 +164,7 @@ export default function SettingsModal() {
             </div>
           </aside>
 
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
             <DialogHeader className="border-border border-b p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -194,7 +194,7 @@ export default function SettingsModal() {
               </div>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6">
               {categories.map((category) =>
                 category.id === selectedCategory ? (
                   <category.component key={category.id} ref={contentRef} />

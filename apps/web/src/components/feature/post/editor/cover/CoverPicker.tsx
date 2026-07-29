@@ -10,9 +10,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 import { CoverGallery } from './CoverGallery';
+import { CoverUpload } from './CoverUpload';
 import { type CoverState, coverPreviewUrl } from './coverState';
+
+const COVER_TABS = ['gallery', 'upload'] as const;
+type CoverTab = (typeof COVER_TABS)[number];
 
 interface CoverPickerProps {
   value: CoverState;
@@ -28,6 +33,9 @@ export function CoverPicker({
 }: CoverPickerProps) {
   const t = useTranslations('components.editor.cover');
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<CoverTab>(
+    value.kind === 'uploaded' ? 'upload' : 'gallery',
+  );
   const previewUrl = coverPreviewUrl(value);
   const selectedParams = value.kind === 'generated' ? value.params : undefined;
 
@@ -39,6 +47,14 @@ export function CoverPicker({
     onChange({
       kind: 'generated',
       params: result.params,
+      previewUrl: result.previewUrl,
+    });
+    setOpen(false);
+  };
+  const handleUpload = (result: { file: File; previewUrl: string }) => {
+    onChange({
+      kind: 'uploaded',
+      file: result.file,
       previewUrl: result.previewUrl,
     });
     setOpen(false);
@@ -92,13 +108,23 @@ export function CoverPicker({
       >
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
           <div className="flex gap-1" role="tablist">
-            <span
-              role="tab"
-              aria-selected
-              className="rounded-md border border-input bg-background px-2.5 py-1 text-sm font-medium"
-            >
-              {t('tabs.gallery')}
-            </span>
+            {COVER_TABS.map((coverTab) => (
+              <button
+                key={coverTab}
+                type="button"
+                role="tab"
+                aria-selected={tab === coverTab}
+                onClick={() => setTab(coverTab)}
+                className={cn(
+                  'rounded-md border px-2.5 py-1 text-sm font-medium transition-colors',
+                  tab === coverTab
+                    ? 'border-input bg-background'
+                    : 'border-transparent text-muted-foreground hover:bg-muted/50',
+                )}
+              >
+                {t(`tabs.${coverTab}`)}
+              </button>
+            ))}
           </div>
           {previewUrl && (
             <button
@@ -112,11 +138,15 @@ export function CoverPicker({
         </div>
 
         <div className="max-h-80 overflow-y-auto p-3">
-          <CoverGallery
-            defaultSeed={defaultSeed}
-            selectedParams={selectedParams}
-            onSelect={handleSelect}
-          />
+          {tab === 'gallery' ? (
+            <CoverGallery
+              defaultSeed={defaultSeed}
+              selectedParams={selectedParams}
+              onSelect={handleSelect}
+            />
+          ) : (
+            <CoverUpload onSelect={handleUpload} />
+          )}
         </div>
       </PopoverContent>
     </Popover>

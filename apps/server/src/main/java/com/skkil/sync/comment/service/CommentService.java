@@ -71,6 +71,8 @@ public class CommentService {
         Comment.builder().author(author).post(post).content(request.content()).build();
 
     comment = commentRepository.save(comment);
+    commentRepository.incrementCommentCount(post.getId());
+
     return new CreateCommentResponse(comment.getId());
   }
 
@@ -88,11 +90,12 @@ public class CommentService {
   @Transactional
   @PreAuthorize("hasPermission(#commentId, 'COMMENT', 'DELETE')")
   public void deleteComment(Long commentId) {
-    commentRepository
-        .findById(commentId)
-        .orElseThrow(() -> new CommentNotFoundException(commentId))
-        .delete();
-    ;
+    Comment comment =
+        commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new CommentNotFoundException(commentId));
+
+    commentRepository.softDeleteAndDecrementIfPresent(comment.getId());
   }
 
   @Transactional

@@ -175,7 +175,7 @@ public class PostSummarySnippets {
     fields.add(
         fieldWithPath(prefix + "previewMedia")
             .type(JsonFieldType.ARRAY)
-            .description("미리보기용 첨부 미디어 목록 (최대 2개)"));
+            .description("미리보기용 첨부 미디어 목록 (최대 3개)"));
     fields.add(
         fieldWithPath(prefix + "previewMedia[].id")
             .type(JsonFieldType.NUMBER)

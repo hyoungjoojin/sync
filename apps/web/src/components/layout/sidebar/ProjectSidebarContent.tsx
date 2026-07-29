@@ -44,6 +44,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
+import { useMounted } from '@/hooks/use-mounted';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
@@ -281,10 +282,13 @@ function Browse({ handle }: SectionProps) {
 function MyContributions({ handle }: SectionProps) {
   const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
+  // SSR은 항상 로그아웃 상태로 그리는데 `useSession`은 클라이언트 캐시에서
+  // 하이드레이션 전에 값을 채울 수 있다. `mounted`로 함께 막아야 첫 클라이언트
+  // 렌더가 서버 HTML과 같아진다.
+  const mounted = useMounted();
   const { data: session } = useSession();
 
-  const myHandle = session?.user.handle;
-  if (!myHandle) {
+  if (!mounted || !session?.user.handle) {
     return null;
   }
 

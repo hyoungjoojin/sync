@@ -11,6 +11,7 @@ export interface PostAuthorSummary {
 export interface PostProjectSummary {
   handle?: string | null;
   name?: string | null;
+  iconUrl?: string | null;
 }
 
 export interface PostTagSummary {
@@ -49,7 +50,7 @@ export interface PostSummary {
   preview: string;
   /** 게시물 본문의 단어 수 */
   wordCount: number;
-  /** 미리보기용 첨부 미디어 목록 (최대 2개) */
+  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
   previewMedia: PostPreviewMedia[];
   /** 게시물에 첨부된 전체 미디어 수 */
   mediaCount: number;

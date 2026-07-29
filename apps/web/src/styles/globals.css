@@ -9,7 +9,7 @@
 
 @import 'react-calendar-heatmap/dist/styles.css';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *):not(:is(.light, .light *)));
 
 @theme inline {
   --color-background: var(--background);
@@ -75,10 +75,13 @@
 
   --color-type-short: var(--type-short);
   --color-type-short-tint: var(--type-short-tint);
+  --color-type-short-text: var(--type-short-text);
   --color-type-question: var(--type-question);
   --color-type-question-tint: var(--type-question-tint);
+  --color-type-question-text: var(--type-question-text);
   --color-type-long: var(--type-long);
   --color-type-long-tint: var(--type-long-tint);
+  --color-type-long-text: var(--type-long-text);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -91,7 +94,8 @@
   --shadow-popover: var(--shadow-popover);
 }
 
-:root {
+:root,
+.light {
   /* ── Brand · Evergreen ─────────────────────────────── */
   --evergreen-50: #e9f7f1;
   --evergreen-100: #c6ecdd;
@@ -143,10 +147,13 @@
   /* ── Categorical — post types ──────────────────────── */
   --type-short: #8a9099;
   --type-short-tint: #eef0f2;
+  --type-short-text: #565d66;
   --type-question: #4c8fd6;
   --type-question-tint: #e7f0fa;
+  --type-question-text: #2c6494;
   --type-long: #8b72e0;
   --type-long-tint: #efebfb;
+  --type-long-text: #5b43ad;
 
   /* ── Shape · spacing · elevation · type ────────────── */
   --radius-sm: 6px;
@@ -234,8 +241,11 @@
 
   /* ── Categorical (dark) ────────────────────────────── */
   --type-short-tint: #1d2024;
+  --type-short-text: #a7aeb7;
   --type-question-tint: #122234;
+  --type-question-text: #7fb4e8;
   --type-long-tint: #1f1a33;
+  --type-long-text: #b3a1f0;
 
   /* ── Shadows (dark) ─────────────────────────────────── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);

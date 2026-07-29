@@ -1,6 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-function getQueryPath(queryKey: readonly unknown[]) {
+export const BOOKMARKED_POSTS_PATH = '/bookmarks/posts';
+export const LIKED_POSTS_PATH = '/posts/likes';
+
+export function getQueryPath(queryKey: readonly unknown[]) {
   const path = queryKey[0] === 'infinite' ? queryKey[1] : queryKey[0];
 
   return typeof path === 'string' ? path : '';
@@ -19,7 +22,9 @@ export function isPostRelatedQueryKey(queryKey: readonly unknown[]) {
     path === '/search/posts' ||
     /^\/users\/[^/]+\/posts$/.test(path) ||
     /^\/projects\/[^/]+\/posts$/.test(path) ||
-    /^\/profiles\/[^/]+\/posts\/activities$/.test(path)
+    /^\/profiles\/[^/]+\/posts\/activities$/.test(path) ||
+    /^\/tags\/[^/]+\/posts$/.test(path) ||
+    /^\/collections\/[^/]+\/posts$/.test(path)
   );
 }
 

@@ -58,7 +58,7 @@ export type GetPostsResponsePostsItem = {
   mediaCount: number;
   /** Post ID */
   id: number;
-  /** 미리보기용 첨부 미디어 목록 (최대 2개) */
+  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
   previewMedia: GetPostsResponsePostsItemPreviewMediaItem[];
   /** Post Slug */
   slug: string;

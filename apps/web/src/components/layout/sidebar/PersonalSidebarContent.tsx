@@ -114,19 +114,21 @@ export default function PersonalSidebarContent() {
   const { requireAuth } = useRequireAuth();
 
   // `useSession` can resolve synchronously from its client-side cache before
-  // hydration, while SSR always renders a logged-out state. Gating on
-  // `mounted` keeps the first client render identical to the server-rendered
-  // HTML so the project list doesn't shift Radix's useId-based ids and cause
-  // a hydration mismatch.
+  // hydration, while SSR always renders a logged-out state. Gating the whole
+  // logged-in subtree on `mounted` keeps the first client render identical to
+  // the server-rendered HTML, so neither the extra nodes nor Radix's
+  // useId-based ids diverge and cause a hydration mismatch.
   const mounted = useMounted();
 
   const { data: session } = useSession();
+  const showProjects = mounted && isAuthenticated(session);
+
   const { data } = useSearchMyProjects(
     { query },
-    { query: { enabled: mounted && !!session } },
+    { query: { enabled: showProjects } },
   );
 
-  const projects = mounted ? (data?.data.projects ?? []) : [];
+  const projects = data?.data.projects ?? [];
 
   return (
     <>
@@ -238,7 +240,7 @@ export default function PersonalSidebarContent() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAuthenticated(session) && (
+        {showProjects && (
           <>
             <SidebarSeparator />
             <SidebarGroup>

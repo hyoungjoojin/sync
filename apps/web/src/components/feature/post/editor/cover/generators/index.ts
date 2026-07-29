@@ -13,6 +13,7 @@ export {
   COVER_WIDTH,
   DEFAULT_COVER_PARAMS,
 } from './types';
+export { getMeshCoverDataUrl } from './meshCoverCache';
 export { buildBg, buildPalette, deriveSeed, oklch, rgbCss } from './palette';
 export { COVER_PARAM_BOUNDS, randomCoverParams } from './randomize';
 export { mulberry32, strHash } from './rng';

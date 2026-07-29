@@ -147,6 +147,7 @@ CREATE TABLE posts (
     content TEXT,
     summary TEXT,
     like_count BIGINT NOT NULL DEFAULT 0,
+    comment_count BIGINT NOT NULL DEFAULT 0,
     resolved BOOLEAN NOT NULL DEFAULT FALSE,
     is_series_post BOOLEAN NOT NULL DEFAULT FALSE,
     visibility VARCHAR(20) NOT NULL DEFAULT 'VISIBLE',

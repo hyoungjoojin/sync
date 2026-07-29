@@ -51,6 +51,7 @@ export default async function Post({ params }: PostProps) {
 
   const queryClient = getQueryClient();
   let commentsEnabled = false;
+  let postId: number | undefined;
   let postType: PostType | undefined;
   let isPostAuthor = false;
   let jsonLd: Record<string, unknown> | null = null;
@@ -62,6 +63,7 @@ export default async function Post({ params }: PostProps) {
     queryClient.setQueryData(getGetPostBySlugQueryKey(slug), response);
 
     commentsEnabled = post.summary.status === 'PUBLISHED';
+    postId = post.summary.id;
     postType = post.summary.type as PostType;
     isPostAuthor = post.summary.isAuthor;
 
@@ -115,9 +117,10 @@ export default async function Post({ params }: PostProps) {
         side={
           <div className="flex flex-col gap-6">
             <PostSeriesCard slug={slug} />
-            {commentsEnabled && postType ? (
+            {commentsEnabled && postType && postId !== undefined ? (
               <PostComments
                 slug={slug}
+                postId={postId}
                 postType={postType}
                 isPostAuthor={isPostAuthor}
               />

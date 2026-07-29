@@ -70,7 +70,9 @@ const eslintConfig = defineConfig([
           'target',
           'src', // image/asset paths, not translatable copy
           'variant',
+          'surface', // 게시물 카드 겉모습 ('card' | 'flat')
           'size',
+          'tone',
           'data-testid',
           'data-slot',
           'name',

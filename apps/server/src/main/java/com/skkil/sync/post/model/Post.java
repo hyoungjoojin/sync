@@ -64,6 +64,9 @@ public class Post extends BaseEntity {
   @Column(name = "like_count", nullable = false)
   private int likeCount = 0;
 
+  @Column(name = "comment_count", nullable = false)
+  private int commentCount = 0;
+
   @Column(name = "resolved", nullable = false)
   private boolean resolved = false;
 
