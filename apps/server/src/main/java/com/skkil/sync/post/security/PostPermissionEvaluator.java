@@ -106,6 +106,10 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
     }
 
     if (post.getProject() == null) {
+      if (user.isAdmin()) {
+        return true;
+      }
+
       log.debug("User {} is not the author of post {}, cannot delete", user.userId(), post.getId());
       return false;
     }

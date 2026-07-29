@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,9 +39,13 @@ public class BucketConfig {
   private static final Duration AUTH_RATE_LIMIT_REFILL_PERIOD = Duration.ofMinutes(5);
 
   private final DataSource dataSource;
+  private final int trustedProxyCount;
 
-  public BucketConfig(DataSource dataSource) {
+  public BucketConfig(
+      DataSource dataSource,
+      @Value("${app.rate-limit.trusted-proxy-count}") int trustedProxyCount) {
     this.dataSource = dataSource;
+    this.trustedProxyCount = trustedProxyCount;
   }
 
   @Bean
@@ -56,7 +61,8 @@ public class BucketConfig {
   @Bean
   FilterRegistrationBean<RateLimitFilter> authRateLimitFilter() {
     FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>();
-    registration.setFilter(new RateLimitFilter(rateLimitProxyManager()));
+    registration.setFilter(
+        new RateLimitFilter(rateLimitProxyManager(), new ClientIpResolver(trustedProxyCount)));
     registration.addUrlPatterns(
         "/auth/login",
         "/auth/register",
@@ -82,17 +88,19 @@ public class BucketConfig {
   private static class RateLimitFilter extends OncePerRequestFilter {
 
     private final ProxyManager<String> proxyManager;
+    private final ClientIpResolver clientIpResolver;
     private final JsonMapper jsonMapper = new JsonMapper();
 
-    RateLimitFilter(ProxyManager<String> proxyManager) {
+    RateLimitFilter(ProxyManager<String> proxyManager, ClientIpResolver clientIpResolver) {
       this.proxyManager = proxyManager;
+      this.clientIpResolver = clientIpResolver;
     }
 
     @Override
     protected void doFilterInternal(
         HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {
-      String key = request.getRequestURI() + ":" + request.getRemoteAddr();
+      String key = request.getRequestURI() + ":" + clientIpResolver.resolve(request);
       Bucket bucket = proxyManager.getProxy(key, this::bucketConfiguration);
 
       ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);

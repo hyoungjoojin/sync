@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostBookmarkService {
 
   private final PostBookmarkRepository postBookmarkRepository;
-  private final PostDomainService postDomainService;
   private final PostQueryRepository postQueryRepository;
   private final PostAssembler postAssembler;
   private final BookmarkedPostCursorPaginationProvider paginationProvider;
@@ -24,13 +23,11 @@ public class PostBookmarkService {
 
   public PostBookmarkService(
       PostBookmarkRepository postBookmarkRepository,
-      PostDomainService postDomainService,
       PostQueryRepository postQueryRepository,
       PostAssembler postAssembler,
       BookmarkedPostCursorPaginationProvider paginationProvider,
       PaginationService paginationService) {
     this.postBookmarkRepository = postBookmarkRepository;
-    this.postDomainService = postDomainService;
     this.postQueryRepository = postQueryRepository;
     this.postAssembler = postAssembler;
     this.paginationProvider = paginationProvider;
@@ -38,8 +35,8 @@ public class PostBookmarkService {
   }
 
   @Transactional
+  @PreAuthorize("hasPermission(#postId, 'POST', 'READ')")
   public void bookmarkPost(Long userId, Long postId) {
-    postDomainService.getPublicPublishedPost(postId);
     postBookmarkRepository.insertIfAbsent(userId, postId);
   }
 

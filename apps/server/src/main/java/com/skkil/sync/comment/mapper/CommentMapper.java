@@ -17,6 +17,8 @@ public interface CommentMapper {
         .content(comment.content())
         .isDeleted(Boolean.TRUE.equals(comment.deleted()))
         .isAccepted(Boolean.TRUE.equals(comment.accepted()))
+        .likeCount(comment.likeCount())
+        .liked(Boolean.TRUE.equals(comment.liked()))
         .createdAt(comment.createdAt())
         .updatedAt(comment.updatedAt())
         .build();

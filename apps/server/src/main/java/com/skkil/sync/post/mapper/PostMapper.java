@@ -27,6 +27,8 @@ public interface PostMapper {
       UserSummary author,
       @Nullable ProjectSummary project,
       boolean isAuthor,
+      boolean canDelete,
+      boolean canComment,
       List<TagSummary> tags,
       List<GetPostResponse.Media> previewMedia,
       @Nullable String coverImageUrl);

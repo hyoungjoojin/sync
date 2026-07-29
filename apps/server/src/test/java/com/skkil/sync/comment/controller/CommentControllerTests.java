@@ -3,6 +3,8 @@ package com.skkil.sync.comment.controller;
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -69,7 +71,7 @@ class CommentControllerTests {
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
     GetCommentsResponse response = GetCommentsResponseSnippets.getGetCommentsResponse();
 
-    when(commentService.getPostComments(eq(slug), eq(pagination))).thenReturn(response);
+    when(commentService.getPostComments(isNull(), eq(slug), eq(pagination))).thenReturn(response);
 
     mockMvc
         .perform(
@@ -168,6 +170,52 @@ class CommentControllerTests {
                     .tag("comment")
                     .summary("Delete Comment")
                     .description("Delete Comment"),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("commentId").description("Comment ID"))));
+  }
+
+  @Test
+  @DisplayName("[likeComment] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void likeComment() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    doNothing().when(commentService).likeComment(eq(user.userId()), eq(1L));
+
+    mockMvc
+        .perform(put("/comments/{commentId}/likes", 1L))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "LikeComment",
+                ResourceSnippetParameters.builder()
+                    .tag("comment")
+                    .summary("Like Comment")
+                    .description("Like Comment"),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("commentId").description("Comment ID"))));
+  }
+
+  @Test
+  @DisplayName("[unlikeComment] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void unlikeComment() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    doNothing().when(commentService).unlikeComment(eq(user.userId()), eq(1L));
+
+    mockMvc
+        .perform(delete("/comments/{commentId}/likes", 1L))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "UnlikeComment",
+                ResourceSnippetParameters.builder()
+                    .tag("comment")
+                    .summary("Unlike Comment")
+                    .description("Unlike Comment"),
                 null,
                 null,
                 Function.identity(),

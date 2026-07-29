@@ -24,6 +24,8 @@ public class GetCommentsResponseSnippets {
             .content("Comment content")
             .isDeleted(false)
             .isAccepted(false)
+            .likeCount(0L)
+            .liked(false)
             .createdAt(OffsetDateTime.parse("2026-01-01T00:00:00Z"))
             .updatedAt(OffsetDateTime.parse("2026-01-01T00:00:00Z"))
             .build();
@@ -54,6 +56,10 @@ public class GetCommentsResponseSnippets {
                 .optional(),
             fieldWithPath(".isDeleted").type(JsonFieldType.BOOLEAN).description("Is deleted"),
             fieldWithPath(".isAccepted").type(JsonFieldType.BOOLEAN).description("Is accepted"),
+            fieldWithPath(".likeCount").type(JsonFieldType.NUMBER).description("Like count"),
+            fieldWithPath(".liked")
+                .type(JsonFieldType.BOOLEAN)
+                .description("Whether the requester liked this comment"),
             fieldWithPath(".createdAt")
                 .type(JsonFieldType.STRING)
                 .description("Creation timestamp"),

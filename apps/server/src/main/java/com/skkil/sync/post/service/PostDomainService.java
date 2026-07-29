@@ -5,8 +5,6 @@ import com.skkil.sync.post.dto.summary.PostSummary;
 import com.skkil.sync.post.exception.PostNotFoundException;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.model.Post;
-import com.skkil.sync.post.model.PostStatus;
-import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.post.repository.PostQueryRepository;
 import com.skkil.sync.post.repository.PostRepository;
 import java.util.List;
@@ -42,19 +40,15 @@ public class PostDomainService {
     return postRepository.findBySlug(slug).orElseThrow(() -> new PostNotFoundException(slug));
   }
 
+  /**
+   * 요청자가 열람할 수 있는 게시글만 돌려준다. 개인 게시글인지 프로젝트 게시글인지에 따른 노출 규칙은
+   * PostQueryRepository.Conditions.readableCondition 이 단독으로 정의하며, 열람할 수 없는 게시글은 존재 자체를 숨기기 위해 404 로
+   * 처리한다.
+   */
   @Transactional(readOnly = true)
-  public Post getPublicPublishedPost(Long postId) {
-    return postRepository
-        .findByIdAndVisibilityAndStatusAndProjectIsNull(
-            postId, PostVisibility.VISIBLE, PostStatus.PUBLISHED)
-        .orElseThrow(() -> new PostNotFoundException(postId));
-  }
-
-  @Transactional(readOnly = true)
-  public Post getPublicPublishedPostBySlug(String slug) {
-    return postRepository
-        .findBySlugAndVisibilityAndStatusAndProjectIsNull(
-            slug, PostVisibility.VISIBLE, PostStatus.PUBLISHED)
+  public PostDto getReadablePostBySlug(@Nullable Long requesterId, String slug) {
+    return postQueryRepository
+        .getPostBySlug(requesterId, slug)
         .orElseThrow(() -> new PostNotFoundException(slug));
   }
 

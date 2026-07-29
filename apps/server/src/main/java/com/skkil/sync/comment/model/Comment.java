@@ -35,6 +35,9 @@ public class Comment extends BaseEntity {
   @Column(name = "is_accepted", nullable = false)
   private boolean accepted;
 
+  @Column(name = "like_count", nullable = false)
+  private int likeCount = 0;
+
   protected Comment() {}
 
   @Builder

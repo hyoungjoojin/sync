@@ -8,5 +8,7 @@ public record CommentDto(
     String content,
     Boolean deleted,
     Boolean accepted,
+    Long likeCount,
+    Boolean liked,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}

@@ -12,5 +12,7 @@ public record CommentSummary(
     String content,
     boolean isDeleted,
     boolean isAccepted,
+    Long likeCount,
+    boolean liked,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}

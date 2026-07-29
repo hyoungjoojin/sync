@@ -16,6 +16,8 @@ import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
 import com.skkil.sync.post.security.PostAccessLevel;
 import com.skkil.sync.post.security.PostAccessPolicy;
+import com.skkil.sync.post.security.PostCommentPolicy;
+import com.skkil.sync.post.security.PostModerationPolicy;
 import com.skkil.sync.post.service.PostContentMediaService;
 import com.skkil.sync.post.service.TagService;
 import com.skkil.sync.user.dto.summary.UserSummary;
@@ -49,6 +51,8 @@ class PostAssemblerTests {
   @Mock private PostContentMediaService postContentMediaService;
   @Mock private MediaDomainService mediaDomainService;
   @Mock private PostAccessPolicy postAccessPolicy;
+  @Mock private PostModerationPolicy postModerationPolicy;
+  @Mock private PostCommentPolicy postCommentPolicy;
 
   private PostAssembler postAssembler;
 
@@ -61,22 +65,36 @@ class PostAssemblerTests {
             tagService,
             postContentMediaService,
             mediaDomainService,
-            postAccessPolicy);
+            postAccessPolicy,
+            postModerationPolicy,
+            postCommentPolicy);
 
     when(userAssembler.toUserSummaries(List.of(AUTHOR_ID)))
         .thenReturn(Map.of(AUTHOR_ID, UserSummary.builder().handle("author").name("작성자").build()));
     when(tagService.getTagsForPosts(REQUESTER_ID, List.of(POST_ID))).thenReturn(Map.of());
+    when(postModerationPolicy.resolveDeletable(any(), any())).thenReturn(Map.of(POST_ID, false));
+    when(postCommentPolicy.resolveCommentable(any(), any())).thenReturn(Map.of(POST_ID, true));
 
     // 목(mock) 매퍼가 전달받은 accessLevel/previewMedia 를 그대로 담은 요약을 돌려주도록 하여,
     // 어셈블러가 계산한 값이 응답까지 그대로 흘러가는지 확인할 수 있게 한다.
-    when(postMapper.toPostSummary(any(), any(), any(), any(), anyBoolean(), any(), any(), any()))
+    when(postMapper.toPostSummary(
+            any(),
+            any(),
+            any(),
+            any(),
+            anyBoolean(),
+            anyBoolean(),
+            anyBoolean(),
+            any(),
+            any(),
+            any()))
         .thenAnswer(
             invocation ->
                 PostSummary.builder()
                     .id(invocation.<PostDto>getArgument(0).id())
                     .accessLevel(invocation.getArgument(1))
                     .author(invocation.getArgument(2))
-                    .previewMedia(invocation.getArgument(6))
+                    .previewMedia(invocation.getArgument(8))
                     .build());
   }
 

@@ -32,8 +32,10 @@ public class CommentController {
   @GetMapping("/posts/{slug}/comments")
   @ResponseStatus(HttpStatus.OK)
   public GetCommentsResponse getPostComments(
-      @PathVariable String slug, @Validated CursorPaginationRequest pagination) {
-    return commentService.getPostComments(slug, pagination);
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable String slug,
+      @Validated CursorPaginationRequest pagination) {
+    return commentService.getPostComments(user == null ? null : user.userId(), slug, pagination);
   }
 
   @PostMapping("/posts/{slug}/comments")
@@ -56,6 +58,20 @@ public class CommentController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteComment(@PathVariable Long commentId) {
     commentService.deleteComment(commentId);
+  }
+
+  @PutMapping("/comments/{commentId}/likes")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void likeComment(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long commentId) {
+    commentService.likeComment(user.userId(), commentId);
+  }
+
+  @DeleteMapping("/comments/{commentId}/likes")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void unlikeComment(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long commentId) {
+    commentService.unlikeComment(user.userId(), commentId);
   }
 
   @PutMapping("/comments/{commentId}/accept")

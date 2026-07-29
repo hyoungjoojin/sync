@@ -3,6 +3,7 @@ package com.skkil.sync.project.model;
 import com.skkil.sync.common.domain.BaseEntity;
 import com.skkil.sync.common.util.text.Slugify;
 import com.skkil.sync.media.model.Media;
+import com.skkil.sync.project.exception.ProjectJoinPolicyNotAllowedException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,13 +57,22 @@ public class Project extends BaseEntity {
   @Builder
   public Project(
       String handle, String name, String description, boolean isPublic, JoinPolicy joinPolicy) {
+    JoinPolicy resolvedJoinPolicy = joinPolicy == null ? JoinPolicy.INVITE : joinPolicy;
+    validateJoinPolicy(isPublic, resolvedJoinPolicy);
+
     this.handle = handle == null ? Slugify.slugify(name) : handle.trim();
     this.name = name;
     this.isPublic = isPublic;
-    this.joinPolicy = joinPolicy == null ? JoinPolicy.INVITE : joinPolicy;
+    this.joinPolicy = resolvedJoinPolicy;
 
     if (description != null) {
       this.description = description;
+    }
+  }
+
+  private static void validateJoinPolicy(boolean isPublic, JoinPolicy joinPolicy) {
+    if (!isPublic && joinPolicy == JoinPolicy.OPEN) {
+      throw new ProjectJoinPolicyNotAllowedException();
     }
   }
 
@@ -91,6 +101,7 @@ public class Project extends BaseEntity {
 
   public void updateJoinPolicy(JoinPolicy joinPolicy) {
     if (joinPolicy != null) {
+      validateJoinPolicy(this.isPublic, joinPolicy);
       this.joinPolicy = joinPolicy;
     }
   }

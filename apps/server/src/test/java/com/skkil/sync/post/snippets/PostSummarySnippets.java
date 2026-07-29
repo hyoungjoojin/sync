@@ -38,6 +38,8 @@ public class PostSummarySnippets {
         .resolved(false)
         .isSeriesPost(false)
         .isAuthor(false)
+        .canDelete(false)
+        .canComment(true)
         .createdAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .updatedAt(DateTimeTestUtils.defaultTestOffsetDateTime())
         .likeCount(1L)
@@ -118,6 +120,14 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "isAuthor")
             .type(JsonFieldType.BOOLEAN)
             .description("Whether the requesting user is the author of this post"));
+    fields.add(
+        fieldWithPath(prefix + "canDelete")
+            .type(JsonFieldType.BOOLEAN)
+            .description("요청자가 이 게시글을 삭제할 수 있는지 여부 (작성자, 플랫폼 관리자(개인 게시글), 프로젝트 관리자(프로젝트 게시글))"));
+    fields.add(
+        fieldWithPath(prefix + "canComment")
+            .type(JsonFieldType.BOOLEAN)
+            .description("요청자가 이 게시글에 댓글을 작성할 수 있는지 여부 (프로젝트 게시글은 팀원만 가능)"));
     fields.add(
         fieldWithPath(prefix + "createdAt")
             .type(JsonFieldType.STRING)

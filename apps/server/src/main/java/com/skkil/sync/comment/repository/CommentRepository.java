@@ -32,4 +32,21 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
           """,
       nativeQuery = true)
   void softDeleteAndDecrementIfPresent(Long commentId);
+
+  @Modifying(flushAutomatically = true)
+  @Query(
+      value =
+          """
+          UPDATE posts p
+          SET resolved = accepted.exists_accepted
+          FROM (
+            SELECT EXISTS (
+              SELECT 1 FROM comments
+              WHERE post_id = :postId AND is_accepted = TRUE AND deleted_at IS NULL
+            ) AS exists_accepted
+          ) accepted
+          WHERE p.id = :postId AND p.resolved <> accepted.exists_accepted
+          """,
+      nativeQuery = true)
+  void syncResolvedFromAcceptedComments(Long postId);
 }

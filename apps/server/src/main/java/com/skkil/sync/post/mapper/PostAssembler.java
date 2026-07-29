@@ -8,6 +8,8 @@ import com.skkil.sync.post.dto.response.GetPostResponse;
 import com.skkil.sync.post.dto.summary.PostSummary;
 import com.skkil.sync.post.security.PostAccessLevel;
 import com.skkil.sync.post.security.PostAccessPolicy;
+import com.skkil.sync.post.security.PostCommentPolicy;
+import com.skkil.sync.post.security.PostModerationPolicy;
 import com.skkil.sync.post.service.PostContentMediaService;
 import com.skkil.sync.post.service.TagService;
 import com.skkil.sync.user.mapper.UserAssembler;
@@ -32,19 +34,27 @@ public class PostAssembler {
 
   private final PostAccessPolicy postAccessPolicy;
 
+  private final PostModerationPolicy postModerationPolicy;
+
+  private final PostCommentPolicy postCommentPolicy;
+
   public PostAssembler(
       PostMapper postMapper,
       UserAssembler userAssembler,
       TagService tagService,
       PostContentMediaService postContentMediaService,
       MediaDomainService mediaDomainService,
-      PostAccessPolicy postAccessPolicy) {
+      PostAccessPolicy postAccessPolicy,
+      PostModerationPolicy postModerationPolicy,
+      PostCommentPolicy postCommentPolicy) {
     this.postMapper = postMapper;
     this.userAssembler = userAssembler;
     this.tagService = tagService;
     this.postContentMediaService = postContentMediaService;
     this.mediaDomainService = mediaDomainService;
     this.postAccessPolicy = postAccessPolicy;
+    this.postModerationPolicy = postModerationPolicy;
+    this.postCommentPolicy = postCommentPolicy;
   }
 
   public GetPostResponse toGetPostResponse(PostDto post, List<MediaDto> media, Long requesterId) {
@@ -79,6 +89,8 @@ public class PostAssembler {
     var tagsByPostId = tagService.getTagsForPosts(requesterId, postIds);
     var previewMediaByPostId = postContentMediaService.getPreviewMediaForPosts(postIds);
     var accessLevelsByPostId = postAccessPolicy.resolveAccessLevels(requesterId, posts);
+    var deletableByPostId = postModerationPolicy.resolveDeletable(requesterId, posts);
+    var commentableByPostId = postCommentPolicy.resolveCommentable(requesterId, posts);
     var coverMediaIds =
         posts.stream().map(PostDto::coverMediaId).filter(id -> id != null).distinct().toList();
     Map<Long, URL> coverUrlsByMediaId =
@@ -112,6 +124,8 @@ public class PostAssembler {
                       authors.get(post.authorId()),
                       project,
                       isAuthor,
+                      deletableByPostId.getOrDefault(post.id(), false),
+                      commentableByPostId.getOrDefault(post.id(), false),
                       tags,
                       previewMedia,
                       coverUrl == null ? null : coverUrl.toExternalForm());

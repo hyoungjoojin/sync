@@ -26,6 +26,8 @@ public record PostSummary(
     boolean resolved,
     boolean isSeriesPost,
     boolean isAuthor,
+    boolean canDelete,
+    boolean canComment,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,
     Long likeCount,

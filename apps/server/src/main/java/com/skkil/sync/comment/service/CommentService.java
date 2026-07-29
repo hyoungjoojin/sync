@@ -5,19 +5,24 @@ import com.skkil.sync.comment.dto.request.CreateCommentRequest;
 import com.skkil.sync.comment.dto.request.UpdateCommentRequest;
 import com.skkil.sync.comment.dto.response.CreateCommentResponse;
 import com.skkil.sync.comment.dto.response.GetCommentsResponse;
+import com.skkil.sync.comment.exception.CommentNotAllowedException;
 import com.skkil.sync.comment.exception.CommentNotFoundException;
 import com.skkil.sync.comment.mapper.CommentAssembler;
 import com.skkil.sync.comment.model.Comment;
+import com.skkil.sync.comment.repository.CommentLikeRepository;
 import com.skkil.sync.comment.repository.CommentQueryRepository;
 import com.skkil.sync.comment.repository.CommentRepository;
 import com.skkil.sync.comment.repository.pagination.CommentCursorPaginationProvider;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.dto.response.CursorPaginationResponse;
 import com.skkil.sync.common.util.pagination.service.PaginationService;
+import com.skkil.sync.post.dto.data.PostDto;
 import com.skkil.sync.post.model.Post;
+import com.skkil.sync.post.security.PostCommentPolicy;
 import com.skkil.sync.post.service.PostDomainService;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.domain.UserDomainService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
 
   private final CommentRepository commentRepository;
+  private final CommentLikeRepository commentLikeRepository;
   private final CommentQueryRepository commentQueryRepository;
   private final PostDomainService postDomainService;
+  private final PostCommentPolicy postCommentPolicy;
   private final UserDomainService userDomainService;
   private final PaginationService paginationService;
   private final CommentCursorPaginationProvider paginationProvider;
@@ -35,15 +42,19 @@ public class CommentService {
 
   public CommentService(
       CommentRepository commentRepository,
+      CommentLikeRepository commentLikeRepository,
       CommentQueryRepository commentQueryRepository,
       PostDomainService postDomainService,
+      PostCommentPolicy postCommentPolicy,
       UserDomainService userDomainService,
       PaginationService paginationService,
       CommentCursorPaginationProvider paginationProvider,
       CommentAssembler commentAssembler) {
     this.commentRepository = commentRepository;
+    this.commentLikeRepository = commentLikeRepository;
     this.commentQueryRepository = commentQueryRepository;
     this.postDomainService = postDomainService;
+    this.postCommentPolicy = postCommentPolicy;
     this.userDomainService = userDomainService;
     this.paginationService = paginationService;
     this.paginationProvider = paginationProvider;
@@ -51,27 +62,35 @@ public class CommentService {
   }
 
   @Transactional(readOnly = true)
-  public GetCommentsResponse getPostComments(String slug, CursorPaginationRequest pagination) {
-    Post post = postDomainService.getPublicPublishedPostBySlug(slug);
+  public GetCommentsResponse getPostComments(
+      @Nullable Long requesterId, String slug, CursorPaginationRequest pagination) {
+    PostDto post = postDomainService.getReadablePostBySlug(requesterId, slug);
 
     CursorPaginationResponse<CommentDto> comments =
         paginationService.paginate(
-            commentQueryRepository.getCommentsByPost(post.getId()), paginationProvider, pagination);
+            commentQueryRepository.getCommentsByPost(post.id(), requesterId),
+            paginationProvider,
+            pagination);
 
-    return commentAssembler.toGetCommentsResponse(comments, post.getAuthor().getId());
+    return commentAssembler.toGetCommentsResponse(comments, post.authorId());
   }
 
   @Transactional
   public CreateCommentResponse createComment(
       Long authorId, String slug, CreateCommentRequest request) {
+    PostDto post = postDomainService.getReadablePostBySlug(authorId, slug);
+    if (!postCommentPolicy.canComment(authorId, post)) {
+      throw new CommentNotAllowedException(slug);
+    }
+
     User author = userDomainService.getUserReference(authorId);
-    Post post = postDomainService.getPublicPublishedPostBySlug(slug);
+    Post postReference = postDomainService.getPost(post.id());
 
     Comment comment =
-        Comment.builder().author(author).post(post).content(request.content()).build();
+        Comment.builder().author(author).post(postReference).content(request.content()).build();
 
     comment = commentRepository.save(comment);
-    commentRepository.incrementCommentCount(post.getId());
+    commentRepository.incrementCommentCount(post.id());
 
     return new CreateCommentResponse(comment.getId());
   }
@@ -96,6 +115,7 @@ public class CommentService {
             .orElseThrow(() -> new CommentNotFoundException(commentId));
 
     commentRepository.softDeleteAndDecrementIfPresent(comment.getId());
+    commentRepository.syncResolvedFromAcceptedComments(comment.getPost().getId());
   }
 
   @Transactional
@@ -108,6 +128,18 @@ public class CommentService {
   @PreAuthorize("hasPermission(@commentService.resolvePostId(#commentId), 'POST', 'EDIT')")
   public void unacceptComment(Long commentId) {
     setAccepted(commentId, false);
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(@commentService.resolvePostId(#commentId), 'POST', 'READ')")
+  public void likeComment(Long userId, Long commentId) {
+    commentLikeRepository.insertAndIncrementIfAbsent(userId, commentId);
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(@commentService.resolvePostId(#commentId), 'POST', 'READ')")
+  public void unlikeComment(Long userId, Long commentId) {
+    commentLikeRepository.deleteAndDecrementIfPresent(userId, commentId);
   }
 
   // @PreAuthorize는 메서드 본문 실행 전에 평가되므로, POST 'EDIT' 권한(게시글 작성자만 허용)을
@@ -131,5 +163,7 @@ public class CommentService {
     } else {
       comment.unaccept();
     }
+
+    commentRepository.syncResolvedFromAcceptedComments(comment.getPost().getId());
   }
 }

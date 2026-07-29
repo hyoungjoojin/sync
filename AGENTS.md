@@ -319,16 +319,24 @@ Permission evaluators (`TagPermissionEvaluator`, `PostPermissionEvaluator`,
 
 **Known holes in this model** — do not treat the current code as the target:
 
-- 🐞 **Comments are unreachable on every project post.** `CommentService` resolves
-  posts via `PostDomainService.getPublicPublishedPostBySlug`, which filters
-  `ProjectIsNull`. Project posts have a project, so
-  `GET`/`POST /posts/{slug}/comments` 404 for them — while the project post page
-  renders the comment panel anyway. Comments are the answer mechanism for
-  questions, so this breaks Q&A inside every space. Fixing it also requires
-  deciding whether a non-member may comment on a public project's post.
-- Platform `ADMIN` has **no override** in `PostPermissionEvaluator` — an admin
-  cannot hide or remove a post except through the report-review flow, so there is
-  no proactive takedown path.
+- **Commenting is now scope-aware — reading and writing are gated separately.**
+  `CommentService` resolves posts through
+  `PostDomainService.getReadablePostBySlug`, i.e. the shared
+  `PostQueryRepository.Conditions.readableCondition`, so comments follow the post's
+  own visibility (public project posts are world-readable, private ones
+  teammate-only). Writing is narrower: `PostCommentPolicy` requires **project
+  membership** to comment on a project post (any logged-in user may comment on a
+  personal post), and rejects unpublished posts. The same policy computes
+  `PostSummary.canComment` in batch so clients can hide the composer instead of
+  letting it 403 — keep the two in sync. The old `ProjectIsNull` lookups
+  (`getPublicPublishedPost*`) are gone; don't reintroduce them. `PostBookmarkService`
+  had the same defect and now gates on `hasPermission(#postId, 'POST', 'READ')`.
+- Platform `ADMIN` can **delete** personal (non-project) posts through
+  `PostPermissionEvaluator.canDelete`, but has no override for *project* posts —
+  those are moderated by that project's managers (`Teammate.canManageProject()`).
+  There is still no *hide* (soft-takedown) path outside the report-review flow.
+  `PostSummary.canDelete` exposes the same rule to clients, computed in batch by
+  `PostModerationPolicy`; keep the two in sync.
 - `PostAccessPolicy.resolveAccessLevels` is a seam that **always returns
   `PostAccessLevel.FULL`**. `PREVIEW` is wired through the DTOs and the web
   viewer (`PostBody.lockedPreview`) but nothing ever produces it. Monetization is
