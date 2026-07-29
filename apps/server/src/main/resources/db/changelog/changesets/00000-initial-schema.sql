@@ -62,7 +62,7 @@ CREATE TABLE users (
     contacts JSONB,
     profession VARCHAR(255),
     bio TEXT,
-    role VARCHAR(50) DEFAULT 'USER',
+    role VARCHAR(50) NOT NULL DEFAULT 'USER',
     is_onboarded BOOLEAN DEFAULT FALSE,
     is_email_verified BOOLEAN DEFAULT FALSE,
     deleted_at TIMESTAMPTZ DEFAULT NULL,

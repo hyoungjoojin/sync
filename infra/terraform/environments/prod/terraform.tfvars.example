@@ -16,3 +16,12 @@ mail_password = "changeme"
 slack_webhook_url = ""
 
 better_auth_secret = "changeme"
+
+# Platform ADMIN account, seeded by AdminSeeder on server boot. Leave both empty
+# to run with no platform admin at all.
+#
+# If the account for admin_email already registered through normal signup, it is
+# promoted and admin_password is ignored — so you can leave the password empty
+# and sign up first instead of shipping a password in Terraform state.
+admin_email    = ""
+admin_password = ""

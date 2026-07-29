@@ -82,3 +82,17 @@ variable "better_auth_secret" {
   sensitive   = true
   description = "Secret key used by Better Auth to sign sessions and tokens."
 }
+
+variable "admin_email" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Email of the platform ADMIN account seeded by AdminSeeder at boot. Leave empty to create no admin at all."
+}
+
+variable "admin_password" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Password for admin_email. If the account already exists it is only promoted and this is ignored, so it may be left empty for the promote-an-existing-signup flow."
+}

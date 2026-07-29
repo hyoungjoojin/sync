@@ -25,7 +25,7 @@ resource "aws_secretsmanager_secret_version" "postgres" {
 
 resource "aws_secretsmanager_secret" "server_app" {
   name                    = "${var.project_name}/${var.environment}/server/app"
-  description             = "Server application secrets (OAuth2, email, Slack)."
+  description             = "Server application secrets (OAuth2, email, Slack, platform admin)."
   kms_key_id              = var.kms_key_arn
   recovery_window_in_days = var.recovery_window_in_days
 
@@ -43,6 +43,8 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     MAIL_USERNAME                                   = var.mail_username
     MAIL_PASSWORD                                   = var.mail_password
     SLACK_WEBHOOK_URL                               = var.slack_webhook_url
+    ADMIN_EMAIL                                     = var.admin_email
+    ADMIN_PASSWORD                                  = var.admin_password
   })
 }
 

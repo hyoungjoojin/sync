@@ -130,4 +130,6 @@ module "secrets" {
   mail_password        = var.mail_password
   slack_webhook_url    = var.slack_webhook_url
   better_auth_secret   = var.better_auth_secret
+  admin_email          = var.admin_email
+  admin_password       = var.admin_password
 }

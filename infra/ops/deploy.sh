@@ -34,10 +34,10 @@ APP_DIR="/opt/sync"
 info() { echo "[INFO] $1"; }
 
 secret() {
-  aws secretsmanager get-secret-value \
-    --region "$AWS_REGION" \
-    --secret-id "${PROJECT_NAME}/${ENVIRONMENT}/$1" \
-    --query SecretString --output text
+    aws secretsmanager get-secret-value \
+        --region "$AWS_REGION" \
+        --secret-id "${PROJECT_NAME}/${ENVIRONMENT}/$1" \
+        --query SecretString --output text
 }
 
 info "Fetching secrets from Secrets Manager..."
@@ -67,6 +67,8 @@ OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET=$(echo "$SERVER_SECRET" | jq -r 
 MAIL_USERNAME=$(echo "$SERVER_SECRET" | jq -r .MAIL_USERNAME)
 MAIL_PASSWORD=$(echo "$SERVER_SECRET" | jq -r .MAIL_PASSWORD)
 SLACK_WEBHOOK_URL=$(echo "$SERVER_SECRET" | jq -r .SLACK_WEBHOOK_URL)
+ADMIN_EMAIL=$(echo "$SERVER_SECRET" | jq -r '.ADMIN_EMAIL // empty')
+ADMIN_PASSWORD=$(echo "$SERVER_SECRET" | jq -r '.ADMIN_PASSWORD // empty')
 APP_CORS_ALLOWED_ORIGINS=https://${APP_DOMAIN}
 APP_OAUTH2_FRONTEND_REDIRECT_URI=https://${APP_DOMAIN}
 OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI=https://${APP_DOMAIN}/api/login/oauth2/code/google
@@ -89,12 +91,12 @@ chmod 600 "$APP_DIR/server.env" "$APP_DIR/web.env"
 # (or dummy) cert is present this is skipped, so deploys never clobber it.
 CERT_DIR="$APP_DIR/certbot/conf/live/$APP_DOMAIN"
 if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
-  info "Seeding dummy self-signed cert for ${APP_DOMAIN}..."
-  mkdir -p "$CERT_DIR"
-  openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
-    -keyout "$CERT_DIR/privkey.pem" \
-    -out "$CERT_DIR/fullchain.pem" \
-    -subj "/CN=$APP_DOMAIN"
+    info "Seeding dummy self-signed cert for ${APP_DOMAIN}..."
+    mkdir -p "$CERT_DIR"
+    openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+        -keyout "$CERT_DIR/privkey.pem" \
+        -out "$CERT_DIR/fullchain.pem" \
+        -subj "/CN=$APP_DOMAIN"
 fi
 
 info "Writing docker-compose.yml..."

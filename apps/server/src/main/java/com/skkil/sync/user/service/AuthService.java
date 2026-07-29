@@ -1,7 +1,6 @@
 package com.skkil.sync.user.service;
 
 import com.skkil.sync.auth.AuthenticatedUser;
-import com.skkil.sync.user.constant.Role;
 import com.skkil.sync.user.dto.request.LoginRequest;
 import com.skkil.sync.user.dto.request.RegisterRequest;
 import com.skkil.sync.user.event.UserRegisteredEvent;
@@ -69,11 +68,6 @@ public class AuthService {
             .email(request.email())
             .hashedPassword(passwordEncoder.encode(request.password()))
             .build();
-
-    if (userRepository.count() == 0) {
-      log.info("Registering first user, assigning ADMIN role");
-      user.setRole(Role.ADMIN);
-    }
 
     user = userRepository.save(user);
     log.info("Registered new user with id {}", user.getId());
