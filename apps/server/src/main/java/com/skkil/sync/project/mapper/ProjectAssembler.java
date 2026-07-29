@@ -52,7 +52,8 @@ public class ProjectAssembler {
 
   public Map<Long, ProjectSummary> toProjectSummaries(List<Long> projectIds) {
     List<Project> projects = projectRepository.findAllById(projectIds);
-    Map<Long, URL> iconUrls = mediaDomainService.generatePublicGetUrls(projects, Project::getIcon);
+    Map<Long, URL> iconUrls =
+        mediaDomainService.generatePresignedGetUrls(projects, Project::getIcon);
 
     return projects.stream()
         .collect(
@@ -88,7 +89,8 @@ public class ProjectAssembler {
   }
 
   public GetProjectsResponse toGetProjectsResponse(List<Project> projects) {
-    Map<Long, URL> iconUrls = mediaDomainService.generatePublicGetUrls(projects, Project::getIcon);
+    Map<Long, URL> iconUrls =
+        mediaDomainService.generatePresignedGetUrls(projects, Project::getIcon);
 
     return new GetProjectsResponse(
         projects.stream().map(project -> toProjectSummary(project, iconUrls)).toList());
@@ -181,7 +183,7 @@ public class ProjectAssembler {
   private ProjectSummary toProjectSummary(Project project) {
     String iconUrl =
         project.getIcon() != null
-            ? mediaDomainService.generatePublicGetUrl(project.getIcon()).toExternalForm()
+            ? mediaDomainService.generatePresignedGetUrl(project.getIcon()).toExternalForm()
             : null;
 
     return projectMapper.toProjectSummary(project, iconUrl);
