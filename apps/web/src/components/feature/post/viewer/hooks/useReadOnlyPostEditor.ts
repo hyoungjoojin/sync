@@ -7,6 +7,7 @@ import type { GetPostResponse } from '@/api/__generated__/types';
 import { ReadOnlyCodeBlockNode } from '../../editor/extensions/nodes/code';
 import { ReadOnlyEmbedNode } from '../../editor/extensions/nodes/embed';
 import { ReadOnlyImageNode } from '../../editor/extensions/nodes/image';
+import { ReadOnlyTableNode } from '../../editor/extensions/nodes/table';
 import {
   TaskItemNode,
   TaskListNode,
@@ -42,6 +43,7 @@ export function useReadOnlyPostEditor(
       TaskItemNode,
       ReadOnlyImageNode,
       ReadOnlyEmbedNode,
+      ReadOnlyTableNode,
     ],
     content: doc,
     editable: false,

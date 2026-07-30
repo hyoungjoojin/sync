@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 import { NodeType } from '../extensions/nodes';
+import { isCellSelection } from '../extensions/nodes/table';
 
 interface EditorBubbleMenuProps {
   editor: ReturnType<typeof useEditor>;
@@ -119,6 +120,11 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
 
         if (isLinkMode) {
           return true;
+        }
+
+        // 여러 셀을 고른 상태는 서식이 아니라 표 편집 맥락이므로 표 메뉴에 넘긴다.
+        if (isCellSelection(state.selection)) {
+          return false;
         }
 
         const { empty } = state.selection;

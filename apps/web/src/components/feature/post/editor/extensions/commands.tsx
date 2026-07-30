@@ -7,6 +7,7 @@ import {
   ListChecksIcon,
   ListNumbersIcon,
   QuotesIcon,
+  TableIcon,
   TextBIcon,
   TextHTwoIcon,
   TextItalicIcon,
@@ -45,6 +46,7 @@ interface CommandsItemProps {
     | 'todo'
     | 'quote'
     | 'code'
+    | 'table'
     | 'image'
     | 'embed';
   icon: React.ReactNode;
@@ -123,6 +125,18 @@ const commands: CommandsItemProps[] = [
     icon: <CodeIcon />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setCodeBlock().run();
+    },
+  },
+  {
+    name: 'table',
+    icon: <TableIcon />,
+    command: ({ editor, range }) => {
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run();
     },
   },
   {

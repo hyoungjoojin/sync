@@ -123,6 +123,65 @@
     }
   }
 
+  /* 표 */
+  .tableWrapper {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    table-layout: fixed;
+    width: 100%;
+
+    td,
+    th {
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+      min-width: 3rem;
+      padding: 0.5rem 0.75rem;
+      position: relative;
+      vertical-align: top;
+
+      > * {
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+    }
+
+    th {
+      background-color: var(--secondary);
+      font-weight: 600;
+      text-align: left;
+    }
+
+    /* 선택된 셀 강조 */
+    .selectedCell::after {
+      background: color-mix(in oklab, var(--primary) 15%, transparent);
+      content: '';
+      inset: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    /* 열 너비 조절 핸들 */
+    .column-resize-handle {
+      background-color: var(--primary);
+      bottom: -1px;
+      pointer-events: none;
+      position: absolute;
+      right: -1px;
+      top: 0;
+      width: 2px;
+    }
+  }
+
+  &.resize-cursor {
+    cursor: col-resize;
+  }
+
   blockquote {
     border-left: 3px solid var(--border);
     margin: 1.5rem 0;

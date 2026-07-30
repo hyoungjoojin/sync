@@ -24,6 +24,7 @@ import { ReviewPostReportRequestResolution } from '@/api/__generated__/types/Rev
 import { ReadOnlyCodeBlockNode } from '@/components/feature/post/editor/extensions/nodes/code';
 import { ReadOnlyEmbedNode } from '@/components/feature/post/editor/extensions/nodes/embed';
 import { ImageNode } from '@/components/feature/post/editor/extensions/nodes/image';
+import { ReadOnlyTableNode } from '@/components/feature/post/editor/extensions/nodes/table';
 import {
   TaskItemNode,
   TaskListNode,
@@ -363,6 +364,7 @@ function PostContentPreview({ content }: { content: string }) {
       TaskItemNode,
       ImageNode,
       ReadOnlyEmbedNode,
+      ReadOnlyTableNode,
     ],
     content: toEditorContent(content),
     editable: false,
