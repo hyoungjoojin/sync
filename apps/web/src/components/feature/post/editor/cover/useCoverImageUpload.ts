@@ -20,7 +20,7 @@ export function useCoverImageUpload() {
     setIsUploading(true);
     try {
       const {
-        data: { uploadUrl, mediaId },
+        data: { uploadUrl, mediaId, contentType },
       } = await uploadMedia({
         data: {
           fileName: file.name,
@@ -29,7 +29,11 @@ export function useCoverImageUpload() {
         },
       });
 
-      const { success } = await uploadFileToS3({ file, uploadUrl });
+      const { success } = await uploadFileToS3({
+        file,
+        uploadUrl,
+        contentType,
+      });
       if (!success) return { ok: false };
       return { ok: true, mediaId };
     } catch {

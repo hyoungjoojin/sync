@@ -13,5 +13,6 @@ public record GetPostResponse(PostSummary summary, Content content) {
   public static record Content(String json, List<Media> media) {}
 
   @Builder
-  public static record Media(Long id, String url) {}
+  public static record Media(
+      Long id, String url, String fileName, Long fileSize, String mediaType) {}
 }

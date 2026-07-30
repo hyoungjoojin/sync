@@ -244,9 +244,7 @@ public class PostService {
     if (coverMediaId == null) {
       return null;
     }
-    Media cover = mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(coverMediaId));
-    cover.markAsUploaded();
-    return cover;
+    return mediaDomainService.linkMedia(requesterId, Long.valueOf(coverMediaId));
   }
 
   private @Nullable Media resolveUpdatedCover(
@@ -255,9 +253,7 @@ public class PostService {
       return null;
     }
     if (coverMediaId != null) {
-      Media cover = mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(coverMediaId));
-      cover.markAsUploaded();
-      return cover;
+      return mediaDomainService.linkMedia(requesterId, Long.valueOf(coverMediaId));
     }
     return post.getCoverMedia();
   }

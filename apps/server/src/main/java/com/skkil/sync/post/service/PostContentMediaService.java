@@ -1,6 +1,7 @@
 package com.skkil.sync.post.service;
 
 import com.skkil.sync.media.dto.MediaDto;
+import com.skkil.sync.media.enums.MediaType;
 import com.skkil.sync.media.model.Media;
 import com.skkil.sync.media.service.domain.MediaDomainService;
 import com.skkil.sync.post.constants.PostPreviewProperties;
@@ -9,6 +10,7 @@ import com.skkil.sync.post.model.PostMediaFile;
 import com.skkil.sync.post.repository.PostMediaFileRepository;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,36 +37,50 @@ public class PostContentMediaService {
 
     Map<Long, URL> urls = mediaService.generatePresignedGetUrls(medias);
 
-    return medias.stream()
-        .map(
-            m -> MediaDto.builder().id(m.getId()).url(urls.get(m.getId()).toExternalForm()).build())
-        .toList();
+    return medias.stream().map(media -> toMediaDto(media, urls)).toList();
   }
 
+  /**
+   * Only image media can be shown as a preview thumbnail, so attachments are filtered out before
+   * the per-post limit is applied — a post whose first attachment is a document must still show as
+   * many thumbnails as it has images.
+   */
   public Map<Long, List<MediaDto>> getPreviewMediaForPosts(List<Long> postIds) {
     if (postIds.isEmpty()) {
       return Map.of();
     }
 
-    List<PostMediaFile> postMediaFiles =
-        postMediaFileRepository.findByPostIdInAndSortOrderLessThanOrderByPostIdAscSortOrderAsc(
-            postIds, PostPreviewProperties.PREVIEW_MEDIA_MAX_COUNT);
+    Map<Long, List<Media>> previewMediaByPostId = new LinkedHashMap<>();
+    for (PostMediaFile postMediaFile :
+        postMediaFileRepository.findByPostIdInAndMediaTypeIn(postIds, MediaType.imageTypes())) {
+      List<Media> previewMedia =
+          previewMediaByPostId.computeIfAbsent(
+              postMediaFile.getPost().getId(), postId -> new ArrayList<>());
+
+      if (previewMedia.size() < PostPreviewProperties.PREVIEW_MEDIA_MAX_COUNT) {
+        previewMedia.add(postMediaFile.getMedia());
+      }
+    }
 
     Map<Long, URL> urls =
         mediaService.generatePresignedGetUrls(
-            postMediaFiles.stream().map(PostMediaFile::getMedia).toList());
+            previewMediaByPostId.values().stream().flatMap(List::stream).toList());
 
-    return postMediaFiles.stream()
+    return previewMediaByPostId.entrySet().stream()
         .collect(
-            Collectors.groupingBy(
-                postMediaFile -> postMediaFile.getPost().getId(),
-                Collectors.mapping(
-                    postMediaFile ->
-                        MediaDto.builder()
-                            .id(postMediaFile.getMedia().getId())
-                            .url(urls.get(postMediaFile.getMedia().getId()).toExternalForm())
-                            .build(),
-                    Collectors.toList())));
+            Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().stream().map(media -> toMediaDto(media, urls)).toList()));
+  }
+
+  private static MediaDto toMediaDto(Media media, Map<Long, URL> urls) {
+    return MediaDto.builder()
+        .id(media.getId())
+        .url(urls.get(media.getId()).toExternalForm())
+        .fileName(media.getFileName())
+        .fileSize(media.getFileSize())
+        .mediaType(media.getMediaType().getMimeType())
+        .build();
   }
 
   public List<Media> resolveMediaFilesForCreate(Long authorId, List<Long> mediaIds) {
@@ -74,9 +90,7 @@ public class PostContentMediaService {
 
     List<Media> mediaFiles = new ArrayList<>();
     for (Long mediaId : mediaIds) {
-      Media media = mediaService.getUnlinkedMedia(authorId, mediaId);
-      media.markAsUploaded();
-      mediaFiles.add(media);
+      mediaFiles.add(mediaService.linkMedia(authorId, mediaId));
     }
 
     return mediaFiles;
@@ -96,8 +110,7 @@ public class PostContentMediaService {
     for (Long mediaId : new LinkedHashSet<>(mediaIds)) {
       Media media = currentMedia.get(mediaId);
       if (media == null) {
-        media = mediaService.getUnlinkedMedia(authorId, mediaId);
-        media.markAsUploaded();
+        media = mediaService.linkMedia(authorId, mediaId);
       }
       mediaFiles.add(media);
     }

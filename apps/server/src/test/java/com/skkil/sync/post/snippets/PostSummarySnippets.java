@@ -62,6 +62,9 @@ public class PostSummarySnippets {
                 GetPostResponse.Media.builder()
                     .id(1L)
                     .url("https://example.com/image.png")
+                    .fileName("image.png")
+                    .fileSize(102400L)
+                    .mediaType("image/png")
                     .build()))
         .mediaCount(1)
         .wordCount(120)
@@ -185,7 +188,7 @@ public class PostSummarySnippets {
     fields.add(
         fieldWithPath(prefix + "previewMedia")
             .type(JsonFieldType.ARRAY)
-            .description("미리보기용 첨부 미디어 목록 (최대 3개)"));
+            .description("미리보기용 첨부 이미지 목록 (최대 3개). 이미지가 아닌 첨부 파일은 포함되지 않는다"));
     fields.add(
         fieldWithPath(prefix + "previewMedia[].id")
             .type(JsonFieldType.NUMBER)
@@ -194,6 +197,18 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "previewMedia[].url")
             .type(JsonFieldType.STRING)
             .description("미디어 URL"));
+    fields.add(
+        fieldWithPath(prefix + "previewMedia[].fileName")
+            .type(JsonFieldType.STRING)
+            .description("업로드된 원본 파일 이름"));
+    fields.add(
+        fieldWithPath(prefix + "previewMedia[].fileSize")
+            .type(JsonFieldType.NUMBER)
+            .description("파일 크기 (바이트)"));
+    fields.add(
+        fieldWithPath(prefix + "previewMedia[].mediaType")
+            .type(JsonFieldType.STRING)
+            .description("파일의 MIME 타입"));
     fields.add(
         fieldWithPath(prefix + "mediaCount")
             .type(JsonFieldType.NUMBER)

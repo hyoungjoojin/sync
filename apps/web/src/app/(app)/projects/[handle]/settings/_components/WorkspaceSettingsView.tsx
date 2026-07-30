@@ -209,7 +209,7 @@ function ProjectIconField({
     setError(null);
 
     const {
-      data: { uploadUrl, mediaId },
+      data: { uploadUrl, mediaId, contentType },
     } = await uploadMedia({
       data: {
         fileName: file.name,
@@ -221,6 +221,7 @@ function ProjectIconField({
     const { success: uploadSuccess } = await uploadFileToS3({
       file,
       uploadUrl,
+      contentType,
     });
 
     if (!uploadSuccess) {
@@ -550,6 +551,20 @@ function ProjectJoinPolicyField({
     updateProject({ handle, data: { joinPolicy } });
   };
 
+  if (!project.summary.isPublic) {
+    return (
+      <div className="max-w-sm space-y-2">
+        <Label htmlFor="project-join-policy">{t('label')}</Label>
+        <p className="text-sm font-medium">
+          {t(`options.${UpdateProjectRequestJoinPolicy.Invite}.label`)}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {t('private-locked-description')}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-sm space-y-2">
       <Label htmlFor="project-join-policy">{t('label')}</Label>
@@ -562,17 +577,11 @@ function ProjectJoinPolicyField({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {Object.values(UpdateProjectRequestJoinPolicy)
-            .filter(
-              (policy) =>
-                project.summary.isPublic ||
-                policy !== UpdateProjectRequestJoinPolicy.Open,
-            )
-            .map((policy) => (
-              <SelectItem key={policy} value={policy}>
-                {t(`options.${policy}.label`)}
-              </SelectItem>
-            ))}
+          {Object.values(UpdateProjectRequestJoinPolicy).map((policy) => (
+            <SelectItem key={policy} value={policy}>
+              {t(`options.${policy}.label`)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <p className="text-xs text-muted-foreground">

@@ -14,7 +14,13 @@ public class GetPostResponseSnippets {
 
   public static GetPostResponse getGetPostResponse() {
     GetPostResponse.Media media =
-        GetPostResponse.Media.builder().id(1L).url("https://example.com/media.png").build();
+        GetPostResponse.Media.builder()
+            .id(1L)
+            .url("https://example.com/media.png")
+            .fileName("media.png")
+            .fileSize(102400L)
+            .mediaType("image/png")
+            .build();
 
     GetPostResponse.Content content =
         GetPostResponse.Content.builder().json("Post Content").media(List.of(media)).build();
@@ -44,6 +50,18 @@ public class GetPostResponseSnippets {
         fieldWithPath("content.media[].id").type(JsonFieldType.NUMBER).description("Media ID"));
     fields.add(
         fieldWithPath("content.media[].url").type(JsonFieldType.STRING).description("Media URL"));
+    fields.add(
+        fieldWithPath("content.media[].fileName")
+            .type(JsonFieldType.STRING)
+            .description("업로드된 원본 파일 이름"));
+    fields.add(
+        fieldWithPath("content.media[].fileSize")
+            .type(JsonFieldType.NUMBER)
+            .description("파일 크기 (바이트)"));
+    fields.add(
+        fieldWithPath("content.media[].mediaType")
+            .type(JsonFieldType.STRING)
+            .description("파일의 MIME 타입"));
     return responseFields(fields.toArray(FieldDescriptor[]::new));
   }
 }

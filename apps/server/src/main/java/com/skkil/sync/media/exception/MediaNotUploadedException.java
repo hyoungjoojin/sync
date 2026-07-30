@@ -1,14 +1,14 @@
-package com.skkil.sync.project.exception;
+package com.skkil.sync.media.exception;
 
 import com.skkil.sync.common.exception.ErrorCode;
 import com.skkil.sync.common.exception.SyncException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-public class ProjectJoinPolicyNotAllowedException extends SyncException {
+public class MediaNotUploadedException extends SyncException {
 
-  public ProjectJoinPolicyNotAllowedException() {
-    super("A private project must use the INVITE join policy.");
+  public MediaNotUploadedException(Long mediaId, Throwable cause) {
+    super(String.format("Media with id %d has not been uploaded.", mediaId), cause);
   }
 
   @Override
@@ -18,6 +18,6 @@ public class ProjectJoinPolicyNotAllowedException extends SyncException {
 
   @Override
   public ErrorCode getErrorCode() {
-    return ErrorCode.PROJECT_JOIN_POLICY_NOT_ALLOWED;
+    return ErrorCode.MEDIA_NOT_UPLOADED;
   }
 }

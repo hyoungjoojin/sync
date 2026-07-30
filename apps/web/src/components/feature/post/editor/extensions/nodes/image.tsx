@@ -1,6 +1,4 @@
 import { ArrowCounterClockwiseIcon, ImageIcon } from '@phosphor-icons/react';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import type { EditorView } from '@tiptap/pm/view';
 import {
   Node,
   NodeViewProps,
@@ -21,6 +19,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { MAX_FILE_SIZE, cn } from '@/lib/tiptap-utils';
 
 import { NodeType } from '.';
+import { hasSupportedFileTransfer, takePendingFile } from '../media-drop';
 
 export type ImageNodeAttributes = {
   src: string | null;
@@ -28,73 +27,6 @@ export type ImageNodeAttributes = {
   mediaId: string | null;
   pendingId: string | null;
 };
-
-const pendingFiles = new Map<string, File>();
-let pendingFileSequence = 0;
-
-function stashPendingFile(file: File): string {
-  pendingFileSequence += 1;
-  const pendingId = `pending-${pendingFileSequence}`;
-  pendingFiles.set(pendingId, file);
-  return pendingId;
-}
-
-function takePendingFile(pendingId: string): File | null {
-  const file = pendingFiles.get(pendingId) ?? null;
-  pendingFiles.delete(pendingId);
-  return file;
-}
-
-function getImageFiles(transfer: DataTransfer | null): File[] {
-  if (!transfer) {
-    return [];
-  }
-
-  return Array.from(transfer.files).filter((file) =>
-    file.type.startsWith('image/'),
-  );
-}
-
-function hasImageFileTransfer(transfer: DataTransfer | null): boolean {
-  if (!transfer) {
-    return false;
-  }
-
-  return Array.from(transfer.items).some(
-    (item) => item.kind === 'file' && item.type.startsWith('image/'),
-  );
-}
-
-function resolveDropRange(
-  view: EditorView,
-  event: DragEvent,
-): { from: number; to: number } {
-  const coordinates = view.posAtCoords({
-    left: event.clientX,
-    top: event.clientY,
-  });
-
-  if (!coordinates) {
-    const { from, to } = view.state.selection;
-    return { from, to };
-  }
-
-  if (coordinates.inside >= 0) {
-    const target = view.state.doc.nodeAt(coordinates.inside);
-
-    if (
-      target?.type.name === NodeType.Image &&
-      target.attrs.status === 'none'
-    ) {
-      return {
-        from: coordinates.inside,
-        to: coordinates.inside + target.nodeSize,
-      };
-    }
-  }
-
-  return { from: coordinates.pos, to: coordinates.pos };
-}
 
 const imageNodeSchema = {
   name: NodeType.Image,
@@ -147,70 +79,6 @@ export const ImageNode = Node.create<ImageNodeAttributes>({
   ...imageNodeSchema,
   addNodeView() {
     return ReactNodeViewRenderer(ImageNodeComponent);
-  },
-  addProseMirrorPlugins() {
-    const { editor, name } = this;
-
-    const insertImageFiles = (
-      files: File[],
-      range: { from: number; to: number },
-    ) => {
-      editor
-        .chain()
-        .insertContentAt(
-          range,
-          files.map((file) => ({
-            type: name,
-            attrs: {
-              status: 'uploading',
-              pendingId: stashPendingFile(file),
-            },
-          })),
-        )
-        .focus()
-        .run();
-    };
-
-    return [
-      new Plugin({
-        key: new PluginKey('imageFileDropPaste'),
-        props: {
-          handlePaste: (view, event) => {
-            const files = getImageFiles(event.clipboardData);
-            if (files.length === 0) {
-              return false;
-            }
-
-            if (event.clipboardData?.types.includes('text/html')) {
-              return false;
-            }
-
-            event.preventDefault();
-
-            const { from, to } = view.state.selection;
-            insertImageFiles(files, { from, to });
-
-            return true;
-          },
-          handleDrop: (view, event, _slice, moved) => {
-            if (moved) {
-              return false;
-            }
-
-            const files = getImageFiles(event.dataTransfer);
-            if (files.length === 0) {
-              return false;
-            }
-
-            event.preventDefault();
-
-            insertImageFiles(files, resolveDropRange(view, event));
-
-            return true;
-          },
-        },
-      }),
-    ];
   },
 });
 
@@ -270,7 +138,7 @@ function ImageNodeComponent({
           mediaType: file.type,
         },
       })
-        .then(({ data: { mediaId, uploadUrl } }) => {
+        .then(({ data: { mediaId, uploadUrl, contentType } }) => {
           updateAttributes({
             mediaId,
           });
@@ -278,6 +146,7 @@ function ImageNodeComponent({
           return uploadFileToS3({
             uploadUrl,
             file,
+            contentType,
           });
         })
         .then(({ success }) => {
@@ -309,13 +178,16 @@ function ImageNodeComponent({
     }
 
     const file = takePendingFile(pendingId);
-    updateAttributes({ pendingId: null });
 
-    if (!file) {
-      return;
-    }
+    // updateAttributes 는 ProseMirror 트랜잭션을 flushSync 로 반영하므로, 커밋 중인
+    // 이펙트에서 바로 부르면 React 가 렌더 도중의 flushSync 라며 막는다.
+    queueMicrotask(() => {
+      updateAttributes({ pendingId: null });
 
-    handleFileUpload([file]);
+      if (file) {
+        handleFileUpload([file]);
+      }
+    });
   }, [pendingId, updateAttributes, handleFileUpload]);
 
   return (
@@ -334,7 +206,7 @@ function ImageNodeComponent({
           >
             <div
               onDragEnter={(event) => {
-                if (hasImageFileTransfer(event.dataTransfer)) {
+                if (hasSupportedFileTransfer(event.dataTransfer)) {
                   setIsDragOver(true);
                 }
               }}

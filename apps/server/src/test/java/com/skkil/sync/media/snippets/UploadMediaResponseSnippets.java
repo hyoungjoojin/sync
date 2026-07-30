@@ -14,6 +14,7 @@ public class UploadMediaResponseSnippets {
     return UploadMediaResponse.builder()
         .mediaId("1")
         .uploadUrl("https://example.com/upload")
+        .contentType("image/jpeg")
         .expiresAt(DateTimeTestUtils.defaultTestLocalDateTime())
         .build();
   }
@@ -22,6 +23,9 @@ public class UploadMediaResponseSnippets {
     return responseFields(
         fieldWithPath("mediaId").type(JsonFieldType.STRING).description("Media ID"),
         fieldWithPath("uploadUrl").type(JsonFieldType.STRING).description("Pre-signed Upload URL"),
+        fieldWithPath("contentType")
+            .type(JsonFieldType.STRING)
+            .description("Content-Type header the upload must send, signed into the URL"),
         fieldWithPath("expiresAt").type(JsonFieldType.STRING).description("Expiration Time"));
   }
 }

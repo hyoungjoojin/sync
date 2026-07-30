@@ -1,14 +1,14 @@
-package com.skkil.sync.project.exception;
+package com.skkil.sync.media.exception;
 
 import com.skkil.sync.common.exception.ErrorCode;
 import com.skkil.sync.common.exception.SyncException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-public class ProjectJoinPolicyNotAllowedException extends SyncException {
+public class UnsupportedMediaTypeException extends SyncException {
 
-  public ProjectJoinPolicyNotAllowedException() {
-    super("A private project must use the INVITE join policy.");
+  public UnsupportedMediaTypeException(String mediaType) {
+    super(String.format("Media type %s is not supported.", mediaType));
   }
 
   @Override
@@ -18,6 +18,6 @@ public class ProjectJoinPolicyNotAllowedException extends SyncException {
 
   @Override
   public ErrorCode getErrorCode() {
-    return ErrorCode.PROJECT_JOIN_POLICY_NOT_ALLOWED;
+    return ErrorCode.UNSUPPORTED_MEDIA_TYPE;
   }
 }

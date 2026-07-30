@@ -71,7 +71,7 @@ public class Project extends BaseEntity {
   }
 
   private static void validateJoinPolicy(boolean isPublic, JoinPolicy joinPolicy) {
-    if (!isPublic && joinPolicy == JoinPolicy.OPEN) {
+    if (!isPublic && joinPolicy != JoinPolicy.INVITE) {
       throw new ProjectJoinPolicyNotAllowedException();
     }
   }
@@ -119,6 +119,5 @@ public class Project extends BaseEntity {
     }
 
     this.icon = icon;
-    icon.markAsUploaded();
   }
 }

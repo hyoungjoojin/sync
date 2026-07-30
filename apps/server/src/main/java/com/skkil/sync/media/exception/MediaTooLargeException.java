@@ -1,14 +1,16 @@
-package com.skkil.sync.project.exception;
+package com.skkil.sync.media.exception;
 
 import com.skkil.sync.common.exception.ErrorCode;
 import com.skkil.sync.common.exception.SyncException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-public class ProjectJoinPolicyNotAllowedException extends SyncException {
+public class MediaTooLargeException extends SyncException {
 
-  public ProjectJoinPolicyNotAllowedException() {
-    super("A private project must use the INVITE join policy.");
+  public MediaTooLargeException(long fileSize, long maxFileSize) {
+    super(
+        String.format(
+            "Media size %d bytes exceeds the maximum of %d bytes.", fileSize, maxFileSize));
   }
 
   @Override
@@ -18,6 +20,6 @@ public class ProjectJoinPolicyNotAllowedException extends SyncException {
 
   @Override
   public ErrorCode getErrorCode() {
-    return ErrorCode.PROJECT_JOIN_POLICY_NOT_ALLOWED;
+    return ErrorCode.MEDIA_TOO_LARGE;
   }
 }

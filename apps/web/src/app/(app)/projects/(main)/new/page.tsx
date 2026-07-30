@@ -65,16 +65,18 @@ export default function CreateProjectPage() {
   // eslint-disable-next-line react-hooks/incompatible-library
   const handle = form.watch('handle');
   const isPublic = form.watch('isPublic');
+  const joinPolicy = form.watch('joinPolicy');
   const debouncedHandle = useDebounce(handle, 500);
+
+  const spaceShape = isPublic
+    ? (`PUBLIC_${joinPolicy}` as const)
+    : ('PRIVATE_INVITE' as const);
 
   const changeVisibility = (nextIsPublic: boolean) => {
     form.setValue('isPublic', nextIsPublic);
 
-    if (
-      !nextIsPublic &&
-      form.getValues('joinPolicy') === CreateProjectRequestJoinPolicy.Open
-    ) {
-      form.setValue('joinPolicy', CreateProjectRequestJoinPolicy.Request);
+    if (!nextIsPublic) {
+      form.setValue('joinPolicy', CreateProjectRequestJoinPolicy.Invite);
     }
   };
 
@@ -222,28 +224,23 @@ export default function CreateProjectPage() {
                 </Field>
               )}
             />
-            <Controller
-              name="joinPolicy"
-              control={form.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel>{t('form.join_policy.label')}</FieldLabel>
-                  <RadioGroup
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    className="mt-1"
-                  >
-                    {[
-                      CreateProjectRequestJoinPolicy.Open,
-                      CreateProjectRequestJoinPolicy.Request,
-                      CreateProjectRequestJoinPolicy.Invite,
-                    ]
-                      .filter(
-                        (policy) =>
-                          isPublic ||
-                          policy !== CreateProjectRequestJoinPolicy.Open,
-                      )
-                      .map((policy) => (
+            {isPublic ? (
+              <Controller
+                name="joinPolicy"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>{t('form.join_policy.label')}</FieldLabel>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="mt-1"
+                    >
+                      {[
+                        CreateProjectRequestJoinPolicy.Open,
+                        CreateProjectRequestJoinPolicy.Request,
+                        CreateProjectRequestJoinPolicy.Invite,
+                      ].map((policy) => (
                         <label
                           key={policy}
                           className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary"
@@ -259,10 +256,37 @@ export default function CreateProjectPage() {
                           </div>
                         </label>
                       ))}
-                  </RadioGroup>
-                </Field>
-              )}
-            />
+                    </RadioGroup>
+                  </Field>
+                )}
+              />
+            ) : (
+              <Field>
+                <FieldLabel>{t('form.join_policy.label')}</FieldLabel>
+                <div className="mt-1 rounded-lg border bg-muted/40 p-3">
+                  <p className="text-sm font-medium">
+                    {t('form.join_policy.INVITE.label')}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {t('form.join_policy.private_locked_description')}
+                  </p>
+                </div>
+              </Field>
+            )}
+            <div className="space-y-1 rounded-lg border border-primary/40 bg-primary/5 p-3">
+              <p className="text-muted-foreground text-xs">
+                {t('form.space_shape.label')}
+              </p>
+              <p className="text-sm font-medium">
+                {t(`form.space_shape.${spaceShape}.name`)}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {t(`form.space_shape.${spaceShape}.description`)}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {t(`form.space_shape.${spaceShape}.analogue`)}
+              </p>
+            </div>
           </FieldGroup>
         </div>
 

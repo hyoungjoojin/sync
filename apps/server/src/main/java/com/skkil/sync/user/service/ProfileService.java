@@ -120,10 +120,8 @@ public class ProfileService {
         user.getProfileImage().markAsDeleted();
       }
 
-      Media profileImage =
-          mediaService.getUnlinkedMedia(userId, Long.valueOf(request.profileImageId()));
+      Media profileImage = mediaService.linkMedia(userId, Long.valueOf(request.profileImageId()));
       user.setProfileImage(profileImage);
-      profileImage.markAsUploaded();
     }
 
     if (request.contacts() != null) {

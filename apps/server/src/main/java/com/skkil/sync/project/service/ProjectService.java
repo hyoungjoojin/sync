@@ -182,8 +182,7 @@ public class ProjectService {
     }
 
     if (request.iconMediaId() != null) {
-      Media icon =
-          mediaDomainService.getUnlinkedMedia(requesterId, Long.valueOf(request.iconMediaId()));
+      Media icon = mediaDomainService.linkMedia(requesterId, Long.valueOf(request.iconMediaId()));
       project.setIcon(icon);
     }
   }

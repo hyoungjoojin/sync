@@ -67,7 +67,7 @@ export function useProfileImageUpload({
     setError(null);
 
     const {
-      data: { uploadUrl, mediaId },
+      data: { uploadUrl, mediaId, contentType },
     } = await uploadMedia({
       data: {
         fileName: file.name,
@@ -79,6 +79,7 @@ export function useProfileImageUpload({
     const { success: uploadSuccess } = await uploadFileToS3({
       file,
       uploadUrl,
+      contentType,
     });
 
     if (!uploadSuccess) {
