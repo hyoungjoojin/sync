@@ -9,11 +9,13 @@ import {
   useGetFollowedTags,
   useGetTagRecommendations,
 } from '@/api/__generated__/tag/tag';
-import { RemovableTagBadge } from '@/components/feature/tag/TagBadge';
+import {
+  RemovableTagBadge,
+  SelectableTagBadge,
+} from '@/components/feature/tag/TagBadge';
 import { useFollowTag } from '@/components/feature/tag/hooks/useFollowTag';
 import { useTagSearch } from '@/components/feature/tag/hooks/useTagSearch';
 import { useUnfollowTag } from '@/components/feature/tag/hooks/useUnfollowTag';
-import { Button } from '@/components/ui/button';
 import {
   InputGroup,
   InputGroupAddon,
@@ -27,6 +29,13 @@ import { OnboardingStepContentProps, OnboardingStepContentRef } from '../page';
 
 const MINIMUM_FOLLOWED_TAGS = 3;
 const MAXIMUM_FOLLOWED_TAGS = 5;
+const TAG_BADGE_CLASSNAME = 'h-7 px-3 text-sm';
+
+interface SelectedTag {
+  id: number;
+  name: string;
+  description: string;
+}
 
 export const TagFollowStep = forwardRef<
   OnboardingStepContentRef,
@@ -64,9 +73,9 @@ export const TagFollowStep = forwardRef<
   const { mutate: followTag } = useFollowTag({ handle });
   const { mutate: unfollowTag } = useUnfollowTag({ handle });
 
-  const [selectedTags, setSelectedTags] = useState<
-    Map<number, { id: number; name: string }>
-  >(new Map());
+  const [selectedTags, setSelectedTags] = useState<Map<number, SelectedTag>>(
+    new Map(),
+  );
   const [isSeeded, setIsSeeded] = useState(false);
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
 
@@ -80,7 +89,7 @@ export const TagFollowStep = forwardRef<
       new Map(
         (followedTagsData.data.tags?.content ?? []).map((tag) => [
           tag.id,
-          { id: tag.id, name: tag.name },
+          { id: tag.id, name: tag.name, description: tag.description },
         ]),
       ),
     );
@@ -111,7 +120,7 @@ export const TagFollowStep = forwardRef<
     });
   };
 
-  const followTagAction = (tag: { id: number; name: string }) => {
+  const followTagAction = (tag: SelectedTag) => {
     if (followedCount >= MAXIMUM_FOLLOWED_TAGS) {
       toast.error(t('max-tags', { count: MAXIMUM_FOLLOWED_TAGS }));
       return;
@@ -164,16 +173,21 @@ export const TagFollowStep = forwardRef<
           </p>
         ) : (
           suggestedTags.map((tag) => (
-            <Button
+            <SelectableTagBadge
               key={tag.id}
-              type="button"
-              size="sm"
+              name={tag.name}
+              description={tag.description}
+              className={TAG_BADGE_CLASSNAME}
               isPending={pendingIds.has(tag.id)}
               disabled={followedCount >= MAXIMUM_FOLLOWED_TAGS}
-              onClick={() => followTagAction({ id: tag.id, name: tag.name })}
-            >
-              {tag.name}
-            </Button>
+              onSelect={() =>
+                followTagAction({
+                  id: tag.id,
+                  name: tag.name,
+                  description: tag.description,
+                })
+              }
+            />
           ))
         )}
       </div>
@@ -209,6 +223,8 @@ export const TagFollowStep = forwardRef<
               <RemovableTagBadge
                 key={tag.id}
                 name={tag.name}
+                description={tag.description}
+                className={TAG_BADGE_CLASSNAME}
                 onRemove={() => unfollowTagAction(tag.id)}
               />
             ))
@@ -224,7 +240,7 @@ function TagFollowStepSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, index) => (
-        <Skeleton key={index} className="h-8 w-20 rounded-full" />
+        <Skeleton key={index} className="h-7 w-20 rounded-full" />
       ))}
     </>
   );
