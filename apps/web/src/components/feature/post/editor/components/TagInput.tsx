@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useState } from 'react';
 import { toast } from 'sonner';
 
 import { RemovableTagBadge, TagBadge } from '@/components/feature/tag/TagBadge';
@@ -47,12 +47,17 @@ export function TagInput({
   const t = useTranslations('components.editor.tags');
   const anchor = useComboboxAnchor();
 
+  const [inputValue, setInputValue] = useState('');
   const {
-    query: inputValue,
-    setQuery: setInputValue,
+    setQuery,
     tags: searchedTags,
     isPending,
   } = useTagSearch({ handle: projectHandle });
+
+  const updateInputValue = (value: string) => {
+    setInputValue(value);
+    setQuery(value);
+  };
 
   const suggestions: TagOption[] = isPending
     ? []
@@ -80,13 +85,17 @@ export function TagInput({
     }
 
     onChange([...tags, { name: trimmed, isProjectTag }]);
-    setInputValue('');
+    updateInputValue('');
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) {
+      return;
+    }
+
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
-      addTag(inputValue, !!projectHandle);
+      addTag(e.currentTarget.value, !!projectHandle);
     }
   };
 
@@ -111,10 +120,10 @@ export function TagInput({
         }
 
         onChange(next);
-        setInputValue('');
+        updateInputValue('');
       }}
       inputValue={inputValue}
-      onInputValueChange={setInputValue}
+      onInputValueChange={updateInputValue}
       isItemEqualToValue={(item, value) =>
         item.name === value.name && item.isProjectTag === value.isProjectTag
       }
@@ -156,6 +165,7 @@ export function TagInput({
         <ComboboxChipsInput
           placeholder={tags.length === 0 ? t('placeholder') : ''}
           onKeyDown={handleKeyDown}
+          onInput={(e) => setQuery(e.currentTarget.value)}
         />
       </ComboboxChips>
 

@@ -9,15 +9,51 @@
     margin-top: 0;
   }
 
-  /* List styles */
+  /*
+   * 목록 스타일.
+   * Tailwind preflight가 `ul, ol { list-style: none }`으로 마커를 지우므로
+   * 여기서 다시 살려준다. 중첩 단계별 마커도 브라우저 기본값처럼 직접 지정한다.
+   */
   ul,
   ol {
     padding: 0 1rem;
     margin: 1.25rem 1rem 1.25rem 0.4rem;
+    list-style-position: outside;
 
     li p {
       margin-top: 0.25em;
       margin-bottom: 0.25em;
+    }
+
+    /* 중첩 목록은 바깥 목록의 항목 안에 들어가므로 상하 여백을 줄인다. */
+    ul,
+    ol {
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  ul:not([data-type='taskList']) {
+    list-style-type: disc;
+
+    ul:not([data-type='taskList']) {
+      list-style-type: circle;
+
+      ul:not([data-type='taskList']) {
+        list-style-type: square;
+      }
+    }
+  }
+
+  ol {
+    list-style-type: decimal;
+
+    ol {
+      list-style-type: lower-alpha;
+
+      ol {
+        list-style-type: lower-roman;
+      }
     }
   }
 

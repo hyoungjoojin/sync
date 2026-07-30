@@ -55,7 +55,10 @@ export function PostCard({ slug }: PostCardProps) {
 
 function PostCardBySource({ source }: { source: PostViewSource }) {
   const { summary, content } = source;
-  const editor = useReadOnlyPostEditor(normalizePostContent(content));
+  const editor = useReadOnlyPostEditor(
+    normalizePostContent(content),
+    summary.slug,
+  );
 
   const props: PostDetailCardProps = {
     summary,

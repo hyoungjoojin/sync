@@ -71,7 +71,7 @@ export type GetPostResponseSummary = {
   commentCount: number;
   /** 게시글이 어떤 시리즈에 속해 있는지 여부 */
   isSeriesPost: boolean;
-  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
+  /** 미리보기용 첨부 이미지 목록 (최대 3개). 이미지가 아닌 첨부 파일은 포함되지 않는다 */
   previewMedia: GetPostResponseSummaryPreviewMediaItem[];
   /** Post Status */
   status: GetPostResponseSummaryStatus;

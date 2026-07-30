@@ -136,6 +136,28 @@
           "error": "링크 복사에 실패했습니다."
         }
       },
+      "share": {
+        "trigger": "공유",
+        "targets": {
+          "device": "다른 앱으로 공유",
+          "x": "X에 공유",
+          "linkedin": "LinkedIn에 공유",
+          "facebook": "Facebook에 공유",
+          "email": "이메일로 보내기"
+        },
+        "messages": {
+          "error": "공유에 실패했습니다."
+        }
+      },
+      "export": {
+        "trigger": "마크다운으로 내보내기",
+        "messages": {
+          "success": "마크다운 파일을 내려받았습니다.",
+          "partial": "이미지 {count}개를 내려받지 못한 채 저장했습니다.",
+          "unavailable": "본문을 볼 수 없는 게시물은 내보낼 수 없습니다.",
+          "error": "내보내기에 실패했습니다."
+        }
+      },
       "edit": {
         "trigger": "수정",
         "title": "글 수정"
@@ -266,6 +288,30 @@
             "INVITE": {
               "label": "초대 전용",
               "description": "초대를 받은 사용자만 참여할 수 있습니다."
+            },
+            "private_locked_description": "비공개 프로젝트는 외부에 보이지 않기 때문에, 초대를 받은 사용자만 참여할 수 있습니다."
+          },
+          "space_shape": {
+            "label": "지금 설정으로 만들어지는 스페이스",
+            "PUBLIC_OPEN": {
+              "name": "커뮤니티",
+              "description": "누구나 이 스페이스를 볼 수 있고, 가입한 즉시 글과 댓글을 쓸 수 있습니다.",
+              "analogue": "누구나 드나드는 공개 포럼에 가깝습니다."
+            },
+            "PUBLIC_REQUEST": {
+              "name": "쇼케이스",
+              "description": "누구나 이 스페이스를 볼 수 있지만, 글과 댓글은 가입 요청이 승인된 팀원만 쓸 수 있습니다.",
+              "analogue": "누구나 읽을 수 있고 기여자는 관리자가 승인하는 공개 GitHub 저장소에 가깝습니다."
+            },
+            "PUBLIC_INVITE": {
+              "name": "공개 아카이브",
+              "description": "누구나 이 스페이스를 볼 수 있지만, 글과 댓글은 초대받은 팀원만 쓸 수 있습니다.",
+              "analogue": "외부에 공개하되 팀 안에서만 작성하는 문서 저장소에 가깝습니다."
+            },
+            "PRIVATE_INVITE": {
+              "name": "팀",
+              "description": "초대받은 팀원만 이 스페이스를 보고 글과 댓글을 쓸 수 있습니다. 스페이스 자체가 외부에는 보이지 않습니다.",
+              "analogue": "초대로만 들어오는 비공개 Slack 채널에 가깝습니다."
             }
           }
         }
@@ -523,6 +569,7 @@
                   "description": "초대를 받은 사용자만 참여할 수 있습니다."
                 }
               },
+              "private-locked-description": "비공개 프로젝트는 외부에 보이지 않기 때문에, 초대를 받은 사용자만 참여할 수 있습니다.",
               "messages": {
                 "success": "참여 정책을 변경했습니다.",
                 "error": "참여 정책 변경에 실패했습니다."
@@ -1203,6 +1250,15 @@
       "back": "홈으로 돌아가기",
       "explore": "탐색하기"
     },
+    "error": {
+      "eyebrow": "sync status",
+      "title": "문제가 발생했습니다.",
+      "description": "요청을 처리하는 중 오류가 생겼어요. 잠시 후 다시 시도해주세요.",
+      "network-title": "서버에 연결할 수 없습니다.",
+      "network-description": "네트워크 상태를 확인하거나, 잠시 후 다시 시도해주세요.",
+      "retry": "다시 시도",
+      "back": "홈으로 돌아가기"
+    },
     "collections": {
       "title": "컬렉션",
       "description": "포스트를 주제별로 모아 컬렉션으로 정리하세요.",
@@ -1622,8 +1678,16 @@
           "title": "코드 블록",
           "description": ""
         },
+        "table": {
+          "title": "표",
+          "description": ""
+        },
         "image": {
           "title": "이미지",
+          "description": ""
+        },
+        "file": {
+          "title": "파일",
           "description": ""
         },
         "embed": {
@@ -1675,6 +1739,34 @@
         },
         "actions": {
           "retry": "다시 시도"
+        }
+      },
+      "file": {
+        "placeholders": {
+          "upload": "클릭해서 파일을 첨부하세요",
+          "unknown-name": "이름 없는 파일"
+        },
+        "messages": {
+          "upload-success": "파일이 첨부되었습니다"
+        },
+        "errors": {
+          "upload-failed": "파일 첨부에 실패했습니다",
+          "s3-upload-failed": "파일 업로드에 실패했습니다",
+          "max-size": "파일 크기는 20MB 이하여야 합니다",
+          "download-failed": "파일을 내려받지 못했습니다"
+        },
+        "actions": {
+          "retry": "다시 시도",
+          "download": "내려받기",
+          "show-preview": "미리보기",
+          "hide-preview": "미리보기 닫기"
+        },
+        "preview": {
+          "unavailable": "미리보기를 불러오지 못했습니다",
+          "truncated": "파일이 길어 앞부분만 보여주고 있어요. 전체 내용은 내려받아 확인해 주세요",
+          "page-of": "{page} / {total}쪽",
+          "previous-page": "이전 쪽",
+          "next-page": "다음 쪽"
         }
       },
       "embed": {

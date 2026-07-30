@@ -15,6 +15,94 @@ import {
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+export const MAX_ATTACHMENT_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+/**
+ * 서버가 허용하는 첨부 파일 타입 (`MediaType` 중 이미지가 아닌 것). 이 목록은 업로드를 시도하기 전에
+ * 알려주기 위한 것이고, 실제 판정은 서버가 한다.
+ */
+export const ATTACHMENT_MEDIA_TYPES = [
+  'application/pdf',
+  'text/plain',
+  'text/csv',
+  'text/markdown',
+  'application/msword',
+  'application/vnd.ms-excel',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.oasis.opendocument.text',
+  'application/vnd.oasis.opendocument.spreadsheet',
+  'application/vnd.oasis.opendocument.presentation',
+] as const;
+
+export const ATTACHMENT_ACCEPT = ATTACHMENT_MEDIA_TYPES.join(',');
+
+export function isImageFile(file: File): boolean {
+  return file.type.startsWith('image/');
+}
+
+export function isAttachmentMediaType(mediaType: string): boolean {
+  return (ATTACHMENT_MEDIA_TYPES as readonly string[]).includes(
+    mediaType.split(';')[0]?.trim().toLowerCase() ?? '',
+  );
+}
+
+export function isAttachmentFile(file: File): boolean {
+  return isAttachmentMediaType(file.type);
+}
+
+function baseMediaType(mediaType: string): string {
+  return mediaType.split(';')[0]?.trim().toLowerCase() ?? '';
+}
+
+export function isPdfMediaType(mediaType: string): boolean {
+  return baseMediaType(mediaType) === 'application/pdf';
+}
+
+export function isTextMediaType(mediaType: string): boolean {
+  return baseMediaType(mediaType).startsWith('text/');
+}
+
+/**
+ * 본문 자리표시자("/ 를 입력하여 …")가 보이는 상태인지.
+ *
+ * 자리표시자는 `p.is-editor-empty:first-child::before` 로 그려진다. Placeholder
+ * 확장은 `editor.isEmpty` 일 때만 `is-editor-empty` 를 붙이고, 선택자는 첫 자식이
+ * 문단일 때만 맞으므로 두 조건을 함께 본다. 목록이나 제목으로 바꾸면 첫 자식이 문단이
+ * 아니게 되어 자리표시자가 사라지는데, 같은 조건에 걸린 안내 UI 도 그때 함께 사라져야
+ * 한다.
+ */
+export function isContentPlaceholderVisible(editor: Editor): boolean {
+  return (
+    editor.isEmpty && editor.state.doc.firstChild?.type.name === 'paragraph'
+  );
+}
+
+/** 본문 안에서 그대로 펼쳐 볼 수 있는 첨부 파일. 나머지는 내려받기만 지원한다. */
+export function isPreviewableMediaType(mediaType: string | null): boolean {
+  if (mediaType === null) {
+    return false;
+  }
+
+  return isPdfMediaType(mediaType) || isTextMediaType(mediaType);
+}
+
+export function formatFileSize(bytes: number): string {
+  const units = ['B', 'KB', 'MB', 'GB'];
+
+  let size = bytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${size >= 10 || unitIndex === 0 ? Math.round(size) : size.toFixed(1)} ${units[unitIndex]}`;
+}
+
 export const MAC_SYMBOLS: Record<string, string> = {
   mod: '⌘',
   command: '⌘',

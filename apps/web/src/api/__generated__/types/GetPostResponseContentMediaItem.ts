@@ -6,6 +6,12 @@
  */
 
 export type GetPostResponseContentMediaItem = {
+  /** 업로드된 원본 파일 이름 */
+  fileName: string;
+  /** 파일 크기 (바이트) */
+  fileSize: number;
+  /** 파일의 MIME 타입 */
+  mediaType: string;
   /** Media ID */
   id: number;
   /** Media URL */

@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  BookmarkSimpleIcon,
   DotsThreeIcon,
+  DownloadSimpleIcon,
   LinkSimpleIcon,
   PencilSimpleIcon,
   SirenIcon,
@@ -12,9 +12,9 @@ import {
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import { AddToCollectionDialog } from '@/components/feature/collection/AddToCollectionDialog';
+import { useExportPostMarkdown } from '@/components/feature/post/export/useExportPostMarkdown';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,10 +32,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useRequireAuth } from '@/hooks/use-require-auth';
-import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
-import { useBookmarkToggle } from '../hooks/useBookmarkToggle';
+import { useCopyPostLink } from '../hooks/useCopyPostLink';
 import { useDeletePostDialog } from '../hooks/useDeletePostDialog';
 import { useReportPostDialog } from '../hooks/useReportPostDialog';
 import type { PostCardVariant, PostSummary } from '../types';
@@ -55,8 +54,8 @@ export function PostActionsMenu({
   const tCopyLink = useTranslations('pages.posts.copy-link');
   const tViewer = useTranslations('components.post.viewer');
   const tEdit = useTranslations('pages.posts.edit');
-  const tBookmark = useTranslations('pages.posts.bookmark');
   const tCollection = useTranslations('pages.collections');
+  const tExport = useTranslations('pages.posts.export');
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
@@ -66,17 +65,11 @@ export function PostActionsMenu({
   const deleteDialog = useDeletePostDialog(summary.id, {
     redirectTo: isPreview ? undefined : ROUTES.HOME(),
   });
-  const { bookmarked } = summary;
-  const toggleBookmark = useBookmarkToggle(summary.id, bookmarked);
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.origin + postPath);
-      toast.success(tCopyLink('messages.success'));
-    } catch {
-      toast.error(tCopyLink('messages.error'));
-    }
-  };
+  const { exportMarkdown, isExporting } = useExportPostMarkdown({
+    slug: summary.slug,
+    postPath,
+  });
+  const copyLink = useCopyPostLink(postPath);
 
   const stopPropagation = isPreview
     ? (event: React.MouseEvent) => event.stopPropagation()
@@ -97,23 +90,13 @@ export function PostActionsMenu({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" onClick={stopPropagation}>
-          <DropdownMenuItem
-            onSelect={() => {
-              if (!requireAuth({ intent: 'bookmark' })) {
-                return;
-              }
-              toggleBookmark();
-            }}
-          >
-            <BookmarkSimpleIcon
-              className={cn(bookmarked && 'fill-primary text-primary')}
-              weight={bookmarked ? 'fill' : 'regular'}
-            />
-            {bookmarked ? tBookmark('remove') : tBookmark('add')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={handleCopyLink}>
+          <DropdownMenuItem onSelect={copyLink}>
             <LinkSimpleIcon />
             {tCopyLink('trigger')}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={isExporting} onSelect={exportMarkdown}>
+            <DownloadSimpleIcon />
+            {tExport('trigger')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {

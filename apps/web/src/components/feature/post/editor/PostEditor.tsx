@@ -16,6 +16,7 @@ import type {
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button, LinkButton } from '@/components/ui/button';
+import { isContentPlaceholderVisible } from '@/lib/tiptap-utils';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
@@ -24,6 +25,7 @@ import { PostScope, PostStatus, PostType } from '../types/post';
 import { PostDeleteButton } from '../viewer/components/PostDeleteButton';
 import { PostSummary } from '../viewer/types';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
+import { EditorTableControls } from './components/EditorTableControls';
 import { EditorTemplates } from './components/EditorTemplates';
 import { PostTypeSelector } from './components/PostTypeSelector';
 import { SeriesSelect, SeriesSelection } from './components/SeriesSelect';
@@ -33,9 +35,12 @@ import { type CoverState, initialCoverState } from './cover/coverState';
 import { renderCoverToFile } from './cover/generators';
 import { useCoverImageUpload } from './cover/useCoverImageUpload';
 import { CommandsExtension } from './extensions/commands';
+import { MediaDropPasteExtension } from './extensions/media-drop';
 import { CodeBlockNode } from './extensions/nodes/code';
 import { EmbedNode } from './extensions/nodes/embed';
+import { FileNode } from './extensions/nodes/file';
 import { ImageNode } from './extensions/nodes/image';
+import { TableNode } from './extensions/nodes/table';
 import { TaskItemNode, TaskListNode } from './extensions/nodes/tasks';
 import { SelectAllExtension } from './extensions/select-all';
 import { deserialize, serialize } from './utils/serializer';
@@ -158,6 +163,7 @@ export default function PostEditor({
   const { upload: uploadCover } = useCoverImageUpload();
   const [isPreparingCover, setIsPreparingCover] = useState(false);
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(true);
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
   );
@@ -202,7 +208,10 @@ export default function PostEditor({
       TaskListNode,
       TaskItemNode,
       ImageNode,
+      FileNode.configure({ slug: slug ?? null }),
       EmbedNode,
+      TableNode,
+      MediaDropPasteExtension,
     ],
     content: initialContent,
     immediatelyRender: false,
@@ -213,9 +222,11 @@ export default function PostEditor({
     },
     onUpdate: ({ editor }) => {
       setIsEditorEmpty(editor.isEmpty);
+      setIsPlaceholderVisible(isContentPlaceholderVisible(editor));
     },
     onCreate: ({ editor }) => {
       setIsEditorEmpty(editor.isEmpty);
+      setIsPlaceholderVisible(isContentPlaceholderVisible(editor));
     },
   });
 
@@ -285,7 +296,7 @@ export default function PostEditor({
       return;
     }
 
-    if (editor.getText().trim().length === 0) {
+    if (editor.isEmpty) {
       toast.error(t('messages.empty-content'));
       return;
     }
@@ -426,9 +437,12 @@ export default function PostEditor({
       )}
 
       <div className={cn(type === PostType.SHORT && 'text-lg')}>
-        <EditorContent editor={editor} />
+        <div className="relative">
+          <EditorContent editor={editor} />
+          {editor && <EditorTableControls editor={editor} />}
+        </div>
         {editor && <EditorBubbleMenu editor={editor} />}
-        {isEditorEmpty && type === PostType.LONG && (
+        {isPlaceholderVisible && type === PostType.LONG && (
           <EditorTemplates
             locale={locale}
             onSelect={(template) => {

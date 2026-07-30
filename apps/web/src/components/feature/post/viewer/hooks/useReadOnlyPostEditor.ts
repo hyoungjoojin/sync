@@ -6,6 +6,7 @@ import type { GetPostResponse } from '@/api/__generated__/types';
 
 import { ReadOnlyCodeBlockNode } from '../../editor/extensions/nodes/code';
 import { ReadOnlyEmbedNode } from '../../editor/extensions/nodes/embed';
+import { ReadOnlyFileNode } from '../../editor/extensions/nodes/file';
 import { ReadOnlyImageNode } from '../../editor/extensions/nodes/image';
 import { ReadOnlyTableNode } from '../../editor/extensions/nodes/table';
 import {
@@ -20,6 +21,7 @@ export function useReadOnlyPostEditor(
   content:
     | Pick<NonNullable<GetPostResponse['content']>, 'json' | 'media'>
     | undefined,
+  slug: string | null = null,
 ) {
   let doc: JSONContent;
   if (content === undefined) {
@@ -42,6 +44,7 @@ export function useReadOnlyPostEditor(
       TaskListNode,
       TaskItemNode,
       ReadOnlyImageNode,
+      ReadOnlyFileNode.configure({ slug }),
       ReadOnlyEmbedNode,
       ReadOnlyTableNode,
     ],

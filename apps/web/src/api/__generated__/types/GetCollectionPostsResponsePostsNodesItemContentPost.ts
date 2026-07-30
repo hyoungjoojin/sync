@@ -128,7 +128,7 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    * @nullable
    */
   isSeriesPost?: boolean | null;
-  /** 미리보기용 첨부 미디어 목록 (최대 3개) */
+  /** 미리보기용 첨부 이미지 목록 (최대 3개). 이미지가 아닌 첨부 파일은 포함되지 않는다 */
   previewMedia?: GetCollectionPostsResponsePostsNodesItemContentPostPreviewMediaItem[];
   /**
    * Post Status

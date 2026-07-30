@@ -6,6 +6,12 @@
  */
 
 export type GetPostsResponsePostsItemPreviewMediaItem = {
+  /** 업로드된 원본 파일 이름 */
+  fileName: string;
+  /** 파일 크기 (바이트) */
+  fileSize: number;
+  /** 파일의 MIME 타입 */
+  mediaType: string;
   /** 미디어 ID */
   id: number;
   /** 미디어 URL */

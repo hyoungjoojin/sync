@@ -8,6 +8,21 @@
 export type GetCollectionPostsResponsePostsNodesItemContentPostPreviewMediaItem =
   {
     /**
+     * 업로드된 원본 파일 이름
+     * @nullable
+     */
+    fileName?: string | null;
+    /**
+     * 파일 크기 (바이트)
+     * @nullable
+     */
+    fileSize?: number | null;
+    /**
+     * 파일의 MIME 타입
+     * @nullable
+     */
+    mediaType?: string | null;
+    /**
      * 미디어 ID
      * @nullable
      */

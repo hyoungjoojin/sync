@@ -6,6 +6,7 @@ import {
   ListBulletsIcon,
   ListChecksIcon,
   ListNumbersIcon,
+  PaperclipIcon,
   QuotesIcon,
   TableIcon,
   TextBIcon,
@@ -48,6 +49,7 @@ interface CommandsItemProps {
     | 'code'
     | 'table'
     | 'image'
+    | 'file'
     | 'embed';
   icon: React.ReactNode;
   command: (props: { editor: Editor; range: Range }) => void;
@@ -147,6 +149,18 @@ const commands: CommandsItemProps[] = [
         .chain()
         .deleteRange(range)
         .insertContent([{ type: NodeType.Image }, { type: 'paragraph' }])
+        .joinForward()
+        .run();
+    },
+  },
+  {
+    name: 'file',
+    icon: <PaperclipIcon />,
+    command: ({ editor, range }) => {
+      editor
+        .chain()
+        .deleteRange(range)
+        .insertContent([{ type: NodeType.File }, { type: 'paragraph' }])
         .joinForward()
         .run();
     },
