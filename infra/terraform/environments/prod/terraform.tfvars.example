@@ -20,8 +20,6 @@ slack_webhook_url = ""
 # boots anonymously — conversations will not attach to user accounts.
 channel_talk_secret_key = ""
 
-better_auth_secret = "changeme"
-
 # Platform ADMIN account, seeded by AdminSeeder on server boot. Leave both empty
 # to run with no platform admin at all.
 #

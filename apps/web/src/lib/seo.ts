@@ -76,14 +76,10 @@ export const NON_INDEXABLE_METADATA = {
 } satisfies Metadata;
 
 /**
- * 사이트의 정규 오리진.
- * 배포 파이프라인이 넘겨주는 공개 도메인(NEXT_PUBLIC_SITE_URL)을 우선 사용하고,
- * 없으면 인증 오리진(BETTER_AUTH_URL)으로 폴백한다.
+ * 사이트의 정규 오리진. 배포 파이프라인이 넘겨주는 공개 도메인을 사용한다.
  */
 export function getSiteUrl(path = '/'): URL {
-  const origin = env.NEXT_PUBLIC_SITE_URL ?? env.BETTER_AUTH_URL;
-
-  return new URL(path, new URL('/', origin));
+  return new URL(path, new URL('/', env.NEXT_PUBLIC_SITE_URL));
 }
 
 /** 상대 경로를 정규 오리진 기준 절대 URL 문자열로 바꾼다. 이미 절대 URL이면 그대로 둔다. */

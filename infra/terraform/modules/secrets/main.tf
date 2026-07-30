@@ -48,22 +48,3 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     ADMIN_PASSWORD                                  = var.admin_password
   })
 }
-
-resource "aws_secretsmanager_secret" "web_app" {
-  name                    = "${var.project_name}/${var.environment}/web/app"
-  description             = "Web application secrets (Better Auth)."
-  kms_key_id              = var.kms_key_arn
-  recovery_window_in_days = var.recovery_window_in_days
-
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "web_app" {
-  secret_id = aws_secretsmanager_secret.web_app.id
-  secret_string = jsonencode({
-    BETTER_AUTH_SECRET = var.better_auth_secret
-  })
-}

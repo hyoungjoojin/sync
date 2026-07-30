@@ -1,10 +1,19 @@
-import { inferAdditionalFields } from 'better-auth/client/plugins';
-import { createAuthClient } from 'better-auth/react';
+'use client';
 
-import type { auth } from '.';
+import { useGetAuthenticatedUser } from '@/api/__generated__/profile/profile';
 
-export const { useSession, signOut } = createAuthClient({
-  // 서버 basePath와 반드시 일치해야 한다 (기본값 /api/auth 는 Spring이 소유).
-  basePath: '/api/better-auth',
-  plugins: [inferAdditionalFields<typeof auth>()],
-});
+import { toSession } from './types';
+
+/**
+ * 미인증이면 백엔드가 401을 주고 쿼리는 error 상태로 끝나므로,
+ * data는 null·isPending은 false가 된다.
+ */
+export function useSession() {
+  const { data, isPending, refetch } = useGetAuthenticatedUser({
+    query: {
+      select: (response) => toSession(response.data),
+    },
+  });
+
+  return { data: data ?? null, isPending, refetch };
+}

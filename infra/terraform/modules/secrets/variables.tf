@@ -84,12 +84,6 @@ variable "channel_talk_secret_key" {
   description = "Channel Talk user data encryption key (채널 설정 > 보안 및 개발), used to sign the SDK member hash. Leave empty to boot the messenger anonymously."
 }
 
-variable "better_auth_secret" {
-  type        = string
-  sensitive   = true
-  description = "Secret key used by Better Auth to sign sessions and tokens."
-}
-
 variable "admin_email" {
   type        = string
   sensitive   = true

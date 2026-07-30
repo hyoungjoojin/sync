@@ -32,7 +32,9 @@ export function useProfileImageUpload({
 
   const { mutate: updateProfile } = useUpdateProfile({
     handle,
-    onSuccess: refetchSession,
+    onSuccess: () => {
+      refetchSession();
+    },
   });
 
   const { mutateAsync: uploadMedia, isPending: isUploadMediaPending } =

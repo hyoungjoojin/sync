@@ -9,8 +9,6 @@ resources:
   - postgres/externalsecret.yaml
   - server/configmap.yaml
   - server/externalsecret.yaml
-  - web/configmap.yaml
-  - web/externalsecret.yaml
 patches:
   - path: server/deployment-patch.yaml
   - path: web/deployment-patch.yaml

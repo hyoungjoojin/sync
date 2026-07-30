@@ -2,7 +2,6 @@ services:
   web:
     image: ${WEB_IMAGE}
     restart: unless-stopped
-    env_file: web.env
     expose:
       - "3000"
     networks:

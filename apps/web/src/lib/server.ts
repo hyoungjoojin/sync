@@ -1,4 +1,4 @@
-import ky from 'ky';
+import ky, { HTTPError } from 'ky';
 
 import koMessages from '@/public/locales/ko.json';
 import ROUTES from '@/util/routes';
@@ -6,6 +6,7 @@ import { getCookies, getCsrfToken, isServer } from '@/util/server';
 
 import { env } from './env';
 import SyncError, { ErrorCode } from './error';
+import { getQueryClient } from './query';
 
 interface ErrorResponse {
   detail: string;
@@ -15,19 +16,23 @@ interface ErrorResponse {
   code: ErrorCode;
 }
 
+// 정적 import는 generated 클라이언트 -> 이 모듈(api mutator) -> generated 클라이언트
+// 순환이 되므로, 쿼리 키만 필요한 이 경로에서는 동적 import로 끊는다.
 async function invalidateClientSessionIfAuthenticated() {
-  const sessionRes = await fetch('/api/better-auth/get-session', {
-    credentials: 'include',
-  });
+  const { getGetAuthenticatedUserQueryKey } =
+    await import('@/api/__generated__/profile/profile');
 
-  const session = sessionRes.ok ? await sessionRes.json() : null;
-  if (session) {
-    await fetch('/api/better-auth/sign-out', {
-      method: 'POST',
-      credentials: 'include',
-    });
-    window.location.href = ROUTES.LOGIN();
+  const queryClient = getQueryClient();
+
+  // 로그인 상태였던 적이 없으면(익명 사용자의 401) 아무것도 하지 않는다.
+  if (
+    queryClient.getQueryData(getGetAuthenticatedUserQueryKey()) === undefined
+  ) {
+    return;
   }
+
+  queryClient.clear();
+  window.location.href = ROUTES.LOGIN();
 }
 
 export const server = ky.extend({
@@ -103,6 +108,15 @@ export const api = async <T>(url: string, options: RequestInit): Promise<T> => {
   } catch (error) {
     if (error instanceof SyncError) {
       throw error;
+    }
+
+    // beforeError가 401을 HTTPError 그대로 흘려보내므로, 여기서 미인증을
+    // 네트워크 오류와 구분되는 코드로 변환한다. getSession이 이 코드를 본다.
+    if (error instanceof HTTPError && error.response.status === 401) {
+      throw new SyncError(
+        koMessages.errors['connection-failed'],
+        ErrorCode.UNAUTHORIZED,
+      );
     }
 
     throw new SyncError(

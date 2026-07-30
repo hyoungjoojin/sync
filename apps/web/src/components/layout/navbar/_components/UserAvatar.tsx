@@ -25,7 +25,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { ModalType } from '@/constants/modal';
 import { useModal } from '@/hooks/store';
 import { useMounted } from '@/hooks/use-mounted';
-import { signOut, useSession } from '@/lib/auth/client';
+import { useSession } from '@/lib/auth/client';
 import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
@@ -61,15 +61,21 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
     return null;
   }
 
+  const handle = session.user.handle;
+
   const menu = [
-    {
-      icon: UserIcon,
-      isAdmin: false,
-      label: t('user.profile'),
-      onClick: () => {
-        router.push(ROUTES.PROFILE(session.user.handle));
-      },
-    },
+    ...(handle
+      ? [
+          {
+            icon: UserIcon,
+            isAdmin: false,
+            label: t('user.profile'),
+            onClick: () => {
+              router.push(ROUTES.PROFILE(handle));
+            },
+          },
+        ]
+      : []),
     {
       icon: GearSixIcon,
       isAdmin: false,
@@ -98,7 +104,6 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
           return;
         }
 
-        await signOut();
         queryClient.clear();
         router.replace(ROUTES.HOME());
       },

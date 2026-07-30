@@ -43,7 +43,6 @@ secret() {
 info "Fetching secrets from Secrets Manager..."
 POSTGRES_SECRET="$(secret postgres/password)"
 SERVER_SECRET="$(secret server/app)"
-WEB_SECRET="$(secret web/app)"
 
 ECR_REGISTRY="$(echo "$WEB_IMAGE" | cut -d/ -f1)"
 
@@ -80,12 +79,7 @@ AI_PROVIDER=none
 ENABLE_TELEMETRY=false
 EOF
 
-cat > "$APP_DIR/web.env" <<EOF
-BETTER_AUTH_URL=https://${APP_DOMAIN}
-BETTER_AUTH_SECRET=$(echo "$WEB_SECRET" | jq -r .BETTER_AUTH_SECRET)
-EOF
-
-chmod 600 "$APP_DIR/server.env" "$APP_DIR/web.env"
+chmod 600 "$APP_DIR/server.env"
 
 # nginx won't start without cert files at the paths its config references, so
 # seed a dummy self-signed cert if none exists yet. infra/ops/certbot.sh

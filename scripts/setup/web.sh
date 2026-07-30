@@ -4,6 +4,4 @@ cat <<EOF > apps/web/.env.local
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY=
-BETTER_AUTH_URL=http://localhost:3000
-BETTER_AUTH_SECRET=$(openssl rand -base64 32)
 EOF

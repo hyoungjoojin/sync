@@ -78,8 +78,3 @@ variable "slack_webhook_url" {
   description = "Slack incoming webhook URL for notifications. Leave empty to disable."
 }
 
-variable "better_auth_secret" {
-  type        = string
-  sensitive   = true
-  description = "Secret key used by Better Auth to sign sessions and tokens."
-}

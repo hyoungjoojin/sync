@@ -14,8 +14,7 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     env: {
-      BETTER_AUTH_URL: 'https://sync.example.com',
-      BETTER_AUTH_SECRET: 'test-secret',
+      NEXT_PUBLIC_SITE_URL: 'https://sync.example.com',
       NEXT_PUBLIC_BACKEND_URL: 'http://localhost:8080',
     },
   },

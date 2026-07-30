@@ -20,11 +20,6 @@ spec:
           image: sync-web:latest
           ports:
             - containerPort: 3000
-          envFrom:
-            - configMapRef:
-                name: web-config
-            - secretRef:
-                name: web-secret
           resources:
             requests:
               cpu: "100m"

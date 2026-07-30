@@ -3,11 +3,13 @@ import { useTheme } from 'next-themes';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { toast } from 'sonner';
 
-import { useUpdateUserPreferences } from '@/api/__generated__/preferences/preferences';
+import {
+  useGetUserPreferences,
+  useUpdateUserPreferences,
+} from '@/api/__generated__/preferences/preferences';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { FieldContent, FieldTitle } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useSession } from '@/lib/auth/client';
 import SyncError, { ErrorCode } from '@/lib/error';
 
 import { SettingsCategoryRef } from '..';
@@ -16,7 +18,7 @@ import { SettingsSubTitle } from './ui/title';
 const ThemeSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
   const t = useTranslations('modals.settings.categories.theme');
 
-  const { data: session } = useSession();
+  const { data: preferences } = useGetUserPreferences();
 
   const { theme: previewedTheme, setTheme: setPreviewedTheme } = useTheme();
   const persistedThemeRef = useRef('system');
@@ -25,12 +27,12 @@ const ThemeSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
   const { mutate: updateUserPreferences } = useUpdateUserPreferences();
 
   useEffect(() => {
-    if (session && !hasInitializedRef.current) {
+    if (preferences && !hasInitializedRef.current) {
       hasInitializedRef.current = true;
-      persistedThemeRef.current = session.user.theme;
-      setPreviewedTheme(session.user.theme);
+      persistedThemeRef.current = preferences.data.theme;
+      setPreviewedTheme(preferences.data.theme);
     }
-  }, [session, setPreviewedTheme]);
+  }, [preferences, setPreviewedTheme]);
 
   useImperativeHandle(ref, () => ({
     submit: () => {
