@@ -10,6 +10,11 @@ const ROUTES = {
   MY_POSTS: () => '/posts/my',
   LOGIN: () => '/auth/login',
   REGISTER: () => '/auth/register',
+  FORGOT_PASSWORD: () => '/auth/forgot-password',
+  RESET_PASSWORD: (token?: string) =>
+    token
+      ? `/auth/reset-password?token=${encodeURIComponent(token)}`
+      : '/auth/reset-password',
   ONBOARDING: () => '/onboarding',
   POST: (slug: string) => `/posts/${slug}`,
   POST_EDIT: (slug: string) => `/posts/${slug}/edit`,

@@ -67,7 +67,10 @@ public class BucketConfig {
         "/auth/login",
         "/auth/register",
         "/auth/email-verification/send",
-        "/auth/email-verification/verify");
+        "/auth/email-verification/verify",
+        "/auth/password-reset/request",
+        "/auth/password-reset/confirm",
+        "/auth/password");
     registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
     return registration;

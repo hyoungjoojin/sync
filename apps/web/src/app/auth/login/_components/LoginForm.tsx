@@ -145,6 +145,14 @@ export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
             <LinkButton
               className="w-full"
               variant="link"
+              href={ROUTES.FORGOT_PASSWORD()}
+            >
+              {t('links.forgot_password.label')}
+            </LinkButton>
+
+            <LinkButton
+              className="w-full"
+              variant="link"
               href={ROUTES.REGISTER()}
             >
               {t('links.register.label')}

@@ -31,6 +31,7 @@ PROJECT_NAME="${PROJECT_NAME:-sync}"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 APP_DOMAIN="${APP_DOMAIN:-sync.skkil.org}"
 CHANNEL_TALK_PLUGIN_KEY="${CHANNEL_TALK_PLUGIN_KEY:-}"
+CAPTCHA_SITE_KEY="${CAPTCHA_SITE_KEY:-}"
 
 DO_BUILD=false
 IMAGE_TAG=""
@@ -71,6 +72,7 @@ if [[ "$DO_BUILD" == true ]]; then
       --build-arg NEXT_PUBLIC_BACKEND_URL="https://${APP_DOMAIN}/api" \
       --build-arg NEXT_PUBLIC_SITE_URL="https://${APP_DOMAIN}" \
       --build-arg NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY="${CHANNEL_TALK_PLUGIN_KEY}" \
+      --build-arg NEXT_PUBLIC_CAPTCHA_SITE_KEY="${CAPTCHA_SITE_KEY}" \
       -t "$WEB_IMAGE" .
 
   info "Building the nginx image..."

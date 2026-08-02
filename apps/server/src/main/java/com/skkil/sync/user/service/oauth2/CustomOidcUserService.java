@@ -97,7 +97,7 @@ public class CustomOidcUserService extends OidcUserService {
       user = optionalUser.get();
     } else {
       log.debug("User not found with email: {}. Creating new user.", email);
-      user = authService.registerUser(new RegisterRequest(email, null));
+      user = authService.registerUser(new RegisterRequest(email, null, null));
       user.setFullName(oidcUser.getFullName() == null ? "" : oidcUser.getFullName());
     }
 

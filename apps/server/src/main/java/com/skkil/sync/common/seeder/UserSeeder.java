@@ -26,7 +26,7 @@ class UserSeeder {
       String profession,
       String bio,
       Role role) {
-    User user = authService.registerUser(new RegisterRequest(email, password));
+    User user = authService.registerUser(new RegisterRequest(email, password, null));
     user.updateHandle(handle);
     user.updateFields(fullName, profession, bio);
     user.setRole(role);

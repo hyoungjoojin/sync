@@ -101,6 +101,7 @@ public class SecurityConfig {
                         "/auth/login",
                         "/auth/register",
                         "/auth/csrf",
+                        "/auth/password-reset/**",
                         "/providers/**")
                     .permitAll()
                     .anyRequest()

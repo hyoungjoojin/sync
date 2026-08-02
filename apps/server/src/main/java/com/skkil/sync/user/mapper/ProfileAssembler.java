@@ -28,6 +28,7 @@ public class ProfileAssembler {
         .followingCount(user.getFollowingCount())
         .isOnboarded(isAuthenticatedUser ? user.getIsOnboarded() : null)
         .isEmailVerified(isAuthenticatedUser ? user.isVerified() : null)
+        .hasPassword(isAuthenticatedUser ? user.getHashedPassword() != null : null)
         .isAuthenticatedUser(isAuthenticatedUser)
         .role(user.getRole())
         .contacts(profileMapper.toGetProfileResponseContacts(user.getContacts()))

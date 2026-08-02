@@ -366,3 +366,9 @@
     font-weight: 600;
   }
 }
+
+@layer base {
+  .grecaptcha-badge {
+    visibility: hidden;
+  }
+}

@@ -98,10 +98,14 @@ app:
     trusted-proxy-count: ${APP_RATE_LIMIT_TRUSTED_PROXY_COUNT:1}
   oauth2:
     frontend-redirect-uri: ${APP_OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:3000}
+  frontend:
+    base-url: ${APP_FRONTEND_BASE_URL:http://localhost:3000}
   slack:
     webhook-url: ${SLACK_WEBHOOK_URL:}
   channel-talk:
     secret-key: ${CHANNEL_TALK_SECRET_KEY:}
+  captcha:
+    secret-key: ${CAPTCHA_SECRET_KEY:}
   # 초기 출시 범위에서 제외 — 기능 완성 후 활성화 예정.
   websocket:
     enabled: ${WEBSOCKET_ENABLED:false}

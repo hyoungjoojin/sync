@@ -126,6 +126,13 @@ variable "channel_talk_secret_key" {
   description = "Channel Talk user data encryption key (채널 설정 > 보안 및 개발), used to sign the SDK member hash. Leave empty to boot the messenger anonymously."
 }
 
+variable "captcha_secret_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Captcha secret key (currently Google reCAPTCHA v3), used server-side to verify registration tokens. Leave empty to skip captcha verification."
+}
+
 variable "admin_email" {
   type        = string
   sensitive   = true

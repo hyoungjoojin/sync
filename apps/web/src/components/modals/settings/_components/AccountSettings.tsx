@@ -14,6 +14,7 @@ import SyncError, { ErrorCode } from '@/lib/error';
 import { OAuth2Provider } from '@/types/profile';
 
 import { SettingsCategoryRef } from '..';
+import PasswordSettings from './PasswordSettings';
 import ProfileSettings from './ProfileSettings';
 
 const OAuth2Providers: {
@@ -47,6 +48,8 @@ const AccountSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
   return (
     <div className="flex flex-col gap-8">
       <ProfileSettings ref={profileRef} />
+
+      <PasswordSettings />
 
       <div>
         <h2 className="font-bold">{t('oauth2.title')}</h2>

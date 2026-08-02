@@ -204,11 +204,23 @@ pnpm format       # Prettier (write)
 - There is **no `middleware.ts`** — route protection is per-page
   (`lib/auth/guards.ts` server-side, `hooks/use-auth-guard.ts` client-side), and
   there are no custom security headers from Next (nginx sets them in prod).
-- Auth is **dual-stack**: Spring owns the real session (`/auth/*`, JDBC-backed);
-  Better Auth runs in the Next process as a *mirror* of it, synced by the custom
-  `spring-session` plugin hook. Client at `src/lib/auth/`, API route at
-  `src/app/api/better-auth/[...all]` — the `/api/auth` namespace belongs to
-  Spring, so Better Auth is deliberately mounted elsewhere.
+- Auth is **Spring-session only**. Spring owns the session end to end (`/auth/*`,
+  JDBC-backed, `SESSION` cookie); the Next process holds no auth state and there
+  is no auth API route under `src/app/api/`. `src/lib/auth/client.ts` exposes
+  `useSession()`, which is a thin wrapper over the generated
+  `useGetAuthenticatedUser` query — an unauthenticated caller gets a 401, so
+  `data` is `null`. Better Auth was removed in `440e10c0`; do not reintroduce a
+  second session store or look for a mirror to keep in sync.
+- Changing a password (`PATCH /auth/password`) deletes **every** Spring session
+  for that user and issues a fresh one to the caller in the same response, per
+  OWASP's "renew the session ID after any privilege level change". Password reset
+  (`/auth/password-reset/*`) deletes all of them and issues none — that caller is
+  logged out by definition. Both go through
+  `auth/session/SessionInvalidationService`, which resolves sessions by principal
+  name (the user's email) via `FindByIndexNameSessionRepository`; that index is
+  only populated for sessions holding a security context, so any new login path
+  must store one or its sessions will silently survive a password change.
+  `PasswordSessionInvalidationIntegrationTests` guards this end to end.
 
 ### Env setup
 
@@ -311,11 +323,19 @@ Permission evaluators (`TagPermissionEvaluator`, `PostPermissionEvaluator`,
   is public (`Project.isPublic`); private-project posts are visible only to
   the author or a project teammate, regardless of caller. This condition must
   stay consistent across every read path — `PostQueryRepository.Conditions`
-  (`feedVisibleCondition`/`readableCondition`/`tagPostVisibilityCondition`/
+  (`feedVisibleCondition`/`readableCondition`/`readablePublishedCondition`/
   `getPostsByProject`/`getPostsByIdsInProject`) and
   `PostPermissionEvaluator.canRead` all encode the same rule; when adding a
   new post-listing query, reuse or mirror these instead of writing an ad hoc
-  condition.
+  condition. `Conditions` is package-private (not `private`) precisely so
+  sibling repositories in `com.skkil.sync.post.repository` — e.g.
+  `PostRecommendationQueryRepository` — can reuse it rather than copy it.
+- Post recommendations (`GET /posts/recommendations`) cover **both** scopes.
+  Candidates are gated by `Conditions.readablePublishedCondition`, so a
+  workspace post surfaces when its project is public or the caller is a
+  teammate, and drafts never surface. The optional `scope` query parameter
+  (`PUBLIC`/`WORKSPACE`, applied via `Conditions.scopeCondition`) narrows the
+  feed to personal-only or project-only; omitting it returns both.
 
 **Known holes in this model** — do not treat the current code as the target:
 

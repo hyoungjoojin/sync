@@ -1,5 +1,8 @@
 package com.skkil.sync.user.controller;
 
+import com.skkil.sync.auth.AuthenticatedUser;
+import com.skkil.sync.common.integration.captcha.CaptchaService;
+import com.skkil.sync.user.dto.request.ChangePasswordRequest;
 import com.skkil.sync.user.dto.request.LoginRequest;
 import com.skkil.sync.user.dto.request.RegisterRequest;
 import com.skkil.sync.user.service.AuthService;
@@ -7,12 +10,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,11 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 class AuthController {
 
   private final AuthService authService;
+  private final CaptchaService captchaService;
   private final SecurityContextHolderStrategy securityContextHolderStrategy =
       SecurityContextHolder.getContextHolderStrategy();
 
-  public AuthController(AuthService authService) {
+  public AuthController(AuthService authService, CaptchaService captchaService) {
     this.authService = authService;
+    this.captchaService = captchaService;
   }
 
   /**
@@ -56,6 +63,27 @@ class AuthController {
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void register(HttpServletRequest http, @RequestBody @Validated RegisterRequest request) {
+    captchaService.verify(request.captchaToken(), "register");
     authService.registerUser(request);
+  }
+
+  @PatchMapping("/auth/password")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void changePassword(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      HttpServletRequest http,
+      @RequestBody @Validated ChangePasswordRequest request) {
+    authService.changePassword(user.userId(), request);
+
+    SecurityContext securityContext = securityContextHolderStrategy.getContext();
+
+    HttpSession previousSession = http.getSession(false);
+    if (previousSession != null) {
+      previousSession.invalidate();
+    }
+
+    HttpSession session = http.getSession(true);
+    session.setAttribute(
+        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
   }
 }

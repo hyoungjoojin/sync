@@ -78,3 +78,10 @@ variable "slack_webhook_url" {
   description = "Slack incoming webhook URL for notifications. Leave empty to disable."
 }
 
+variable "captcha_secret_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Captcha secret key (currently Google reCAPTCHA v3), used server-side to verify registration tokens. Leave empty to skip captcha verification."
+}
+
