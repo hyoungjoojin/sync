@@ -6,6 +6,9 @@ import {
   useRemoveCollectionItem as useRemoveCollectionItemMutation,
 } from '@/api/__generated__/collection/collection';
 import type { CollectionSummary } from '@/api/__generated__/types/CollectionSummary';
+import type { GetCollectionsResponse } from '@/api/__generated__/types/GetCollectionsResponse';
+
+import { isCollectionsListKey } from '../utils';
 
 type CollectionPostsInfiniteData = {
   pages: getCollectionPostsResponse[];
@@ -13,9 +16,10 @@ type CollectionPostsInfiniteData = {
 };
 
 /**
- * 상세 페이지에서는 게시글 목록이 이미 캐시에 있으므로, 제거된 항목을
- * collectionPostId 로 찾아 무한 스크롤 캐시에서 직접 삭제하고 postCount 를
- * 직접 -1 한다. 목록을 다시 불러오지 않는다.
+ * 항목 ID(collectionPostId) 를 아는 모든 화면에서 쓰인다 — 상세 페이지의 항목
+ * 목록과, 게시글 화면의 컬렉션 토글 다이얼로그. 상세 페이지에서는 무한 스크롤
+ * 캐시에서 항목을 직접 걷어내고, 목록 캐시(memberships)가 있다면 거기서도
+ * 같은 항목을 제거한다. 두 캐시 모두 postCount 를 -1 한다.
  */
 export function useRemoveCollectionItem() {
   const queryClient = useQueryClient();
@@ -57,6 +61,29 @@ export function useRemoveCollectionItem() {
               data: {
                 ...previous.data,
                 postCount: Math.max(0, previous.data.postCount - 1),
+              },
+            },
+        );
+
+        queryClient.setQueriesData<{ data: GetCollectionsResponse }>(
+          { predicate: (query) => isCollectionsListKey(query.queryKey) },
+          (previous) =>
+            previous && {
+              ...previous,
+              data: {
+                ...previous.data,
+                collections: previous.data.collections.map((collection) =>
+                  collection.externalId === externalId
+                    ? {
+                        ...collection,
+                        postCount: Math.max(0, collection.postCount - 1),
+                      }
+                    : collection,
+                ),
+                memberships: previous.data.memberships?.filter(
+                  (membership) =>
+                    membership.collectionExternalId !== externalId,
+                ),
               },
             },
         );

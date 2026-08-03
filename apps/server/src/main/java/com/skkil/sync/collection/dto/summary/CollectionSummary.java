@@ -11,5 +11,4 @@ public record CollectionSummary(
     boolean isPublic,
     long postCount,
     Long creatorId,
-    @Nullable String projectHandle,
-    @Nullable Boolean containsPost) {}
+    @Nullable String projectHandle) {}

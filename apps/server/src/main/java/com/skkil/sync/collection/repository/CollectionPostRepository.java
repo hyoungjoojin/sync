@@ -1,5 +1,6 @@
 package com.skkil.sync.collection.repository;
 
+import com.skkil.sync.collection.dto.data.CollectionMembershipDto;
 import com.skkil.sync.collection.model.CollectionPost;
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +14,11 @@ public interface CollectionPostRepository extends JpaRepository<CollectionPost, 
 
   Optional<CollectionPost> findByIdAndCollectionId(Long id, Long collectionId);
 
-  /** 주어진 컬렉션들 중 해당 게시글을 담고 있는 컬렉션의 id 만 추린다. */
+  /** 주어진 컬렉션들 중 해당 게시글을 담고 있는 컬렉션의 멤버십(컬렉션 외부 식별자, 항목 id)만 추린다. */
   @Query(
-      "SELECT cp.collection.id FROM CollectionPost cp"
+      "SELECT new com.skkil.sync.collection.dto.data.CollectionMembershipDto(cp.collection.externalId,"
+          + " cp.id) FROM CollectionPost cp"
           + " WHERE cp.post.id = :postId AND cp.collection.id IN :collectionIds")
-  List<Long> findCollectionIdsByPostIdAndCollectionIdIn(
+  List<CollectionMembershipDto> findMembershipsByPostIdAndCollectionIdIn(
       @Param("postId") Long postId, @Param("collectionIds") List<Long> collectionIds);
 }

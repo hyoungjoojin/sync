@@ -21,7 +21,6 @@ public class CollectionSummarySnippets {
         true,
         3L,
         1L,
-        null,
         null);
   }
 
@@ -49,11 +48,6 @@ public class CollectionSummarySnippets {
         fieldWithPath(prefix + "projectHandle")
             .type(JsonFieldType.STRING)
             .description("소속 프로젝트 핸들 (WORKSPACE 범위인 경우, PERSONAL 이면 없음)")
-            .optional());
-    fields.add(
-        fieldWithPath(prefix + "containsPost")
-            .type(JsonFieldType.BOOLEAN)
-            .description("postHandle 쿼리 파라미터가 주어졌을 때, 해당 게시글이 이 컬렉션에 담겨 있는지 여부 (없으면 생략)")
             .optional());
     return fields;
   }

@@ -164,7 +164,7 @@ class CollectionControllerTests {
                 pathParameters(parameterWithName("userId").description("User ID")),
                 queryParameters(
                     parameterWithName("postHandle")
-                        .description("주어지면 각 컬렉션이 이 게시글(slug)을 담고 있는지 containsPost 로 표시한다.")
+                        .description("주어지면 이 게시글(slug)을 담고 있는 컬렉션의 멤버십을 memberships 로 표시한다.")
                         .optional()),
                 GetCollectionsResponseSnippets.getGetCollectionsResponseFields()));
   }
@@ -195,7 +195,7 @@ class CollectionControllerTests {
                 pathParameters(parameterWithName("handle").description("Project Handle")),
                 queryParameters(
                     parameterWithName("postHandle")
-                        .description("주어지면 각 컬렉션이 이 게시글(slug)을 담고 있는지 containsPost 로 표시한다.")
+                        .description("주어지면 이 게시글(slug)을 담고 있는 컬렉션의 멤버십을 memberships 로 표시한다.")
                         .optional()),
                 GetCollectionsResponseSnippets.getGetCollectionsResponseFields()));
   }

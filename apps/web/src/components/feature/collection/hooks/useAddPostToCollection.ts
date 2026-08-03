@@ -10,10 +10,10 @@ import type { GetCollectionsResponse } from '@/api/__generated__/types/GetCollec
 import { isCollectionsListKey } from '../utils';
 
 /**
- * 게시글 추가 응답은 본문이 없으므로(204) 새 항목을 목록에 직접 삽입할 수는 없다.
- * 대신 상세/목록 캐시의 postCount 를 +1 하고, containsPost(추가 여부 표시)를
- * true 로 바꾼다. 컬렉션은 externalId 로 유일하므로, 개인/프로젝트 목록의 모든
- * 파라미터 변형을 프레디킷으로 훑어 매칭되는 항목만 갱신한다.
+ * 게시글 추가 응답은 본문이 없으므로(204) 새로 생긴 collectionPostId 를 알 수
+ * 없다. 상세/목록 캐시의 postCount 는 +1 로 직접 패치하지만, 목록 캐시의
+ * memberships(제거에 필요한 항목 ID)는 직접 채워 넣지 않고 무효화해 다음
+ * 조회 때 실제 항목 ID 를 받아온다.
  */
 export function useAddPostToCollection() {
   const queryClient = useQueryClient();
@@ -42,16 +42,16 @@ export function useAddPostToCollection() {
                 ...previous.data,
                 collections: previous.data.collections.map((collection) =>
                   collection.externalId === externalId
-                    ? {
-                        ...collection,
-                        postCount: collection.postCount + 1,
-                        containsPost: true,
-                      }
+                    ? { ...collection, postCount: collection.postCount + 1 }
                     : collection,
                 ),
               },
             },
         );
+
+        queryClient.invalidateQueries({
+          predicate: (query) => isCollectionsListKey(query.queryKey),
+        });
       },
     },
   });

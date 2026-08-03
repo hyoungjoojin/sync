@@ -1,6 +1,7 @@
 package com.skkil.sync.collection.service;
 
 import com.skkil.sync.auth.AuthenticatedUser;
+import com.skkil.sync.collection.dto.data.CollectionMembershipDto;
 import com.skkil.sync.collection.dto.data.CollectionPostDto;
 import com.skkil.sync.collection.dto.request.AddPostToCollectionRequest;
 import com.skkil.sync.collection.dto.request.CreateCollectionRequest;
@@ -31,10 +32,8 @@ import com.skkil.sync.project.repository.TeammateRepository;
 import com.skkil.sync.project.service.ProjectDomainService;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.domain.UserDomainService;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -217,9 +216,9 @@ public class CollectionService {
             .filter(collection -> collection.isPublic() || userId.equals(viewerId))
             .toList();
 
-    Set<Long> containingCollectionIds =
-        resolveContainingCollectionIds(viewerId, postHandle, collections);
-    return collectionAssembler.toGetCollectionsResponse(collections, containingCollectionIds);
+    List<CollectionMembershipDto> memberships =
+        resolveMemberships(viewerId, postHandle, collections);
+    return collectionAssembler.toGetCollectionsResponse(collections, memberships);
   }
 
   /**
@@ -240,17 +239,17 @@ public class CollectionService {
             .filter(collection -> isTeammate || (project.isPublic() && collection.isPublic()))
             .toList();
 
-    Set<Long> containingCollectionIds =
-        resolveContainingCollectionIds(viewerId, postHandle, collections);
-    return collectionAssembler.toGetCollectionsResponse(collections, containingCollectionIds);
+    List<CollectionMembershipDto> memberships =
+        resolveMemberships(viewerId, postHandle, collections);
+    return collectionAssembler.toGetCollectionsResponse(collections, memberships);
   }
 
   /**
-   * {@code postHandle} 컨텍스트가 주어졌을 때, {@code collections} 중 그 게시글을 담고 있는 컬렉션의 id 집합을 반환한다. {@code
-   * postHandle} 이 없으면 {@code null} 을 반환해 응답의 {@code containsPost} 를 생략한다. 게시글은 addPost 와 동일한 열람
-   * 게이트를 거치며, 볼 수 없거나 존재하지 않으면 {@link PostNotFoundException} 을 던진다.
+   * {@code postHandle} 컨텍스트가 주어졌을 때, {@code collections} 중 그 게시글을 담고 있는 컬렉션들의 멤버십(컬렉션 외부 식별자, 항목
+   * id)을 반환한다. {@code postHandle} 이 없으면 {@code null} 을 반환해 응답의 {@code memberships} 를 생략한다. 게시글은
+   * addPost 와 동일한 열람 게이트를 거치며, 볼 수 없거나 존재하지 않으면 {@link PostNotFoundException} 을 던진다.
    */
-  private @Nullable Set<Long> resolveContainingCollectionIds(
+  private @Nullable List<CollectionMembershipDto> resolveMemberships(
       @Nullable Long viewerId, @Nullable String postHandle, List<Collection> collections) {
     if (postHandle == null) {
       return null;
@@ -263,12 +262,11 @@ public class CollectionService {
 
     List<Long> collectionIds = collections.stream().map(Collection::getId).toList();
     if (collectionIds.isEmpty()) {
-      return Set.of();
+      return List.of();
     }
 
-    return new HashSet<>(
-        collectionPostRepository.findCollectionIdsByPostIdAndCollectionIdIn(
-            post.getId(), collectionIds));
+    return collectionPostRepository.findMembershipsByPostIdAndCollectionIdIn(
+        post.getId(), collectionIds);
   }
 
   private Collection getCollectionByExternalId(String externalId) {

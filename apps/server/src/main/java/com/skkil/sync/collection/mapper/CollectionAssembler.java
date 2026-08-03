@@ -1,5 +1,6 @@
 package com.skkil.sync.collection.mapper;
 
+import com.skkil.sync.collection.dto.data.CollectionMembershipDto;
 import com.skkil.sync.collection.dto.data.CollectionPostDto;
 import com.skkil.sync.collection.dto.response.GetCollectionPostsResponse;
 import com.skkil.sync.collection.dto.response.GetCollectionsResponse;
@@ -11,7 +12,6 @@ import com.skkil.sync.post.service.PostDomainService;
 import com.skkil.sync.project.model.Project;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
@@ -28,30 +28,22 @@ public class CollectionAssembler {
     return toGetCollectionsResponse(collections, null);
   }
 
-  /**
-   * 컬렉션 목록을 응답으로 변환한다. {@code containingCollectionIds} 가 {@code null} 이면 게시글 컨텍스트가 주어지지 않은 것이므로 각
-   * 요약의 {@code containsPost} 는 {@code null} 로 남는다. {@code null} 이 아니면 해당 집합에 포함된 컬렉션만 {@code true}
-   * 다.
-   */
   public GetCollectionsResponse toGetCollectionsResponse(
-      List<Collection> collections, @Nullable Set<Long> containingCollectionIds) {
+      List<Collection> collections, @Nullable List<CollectionMembershipDto> memberships) {
     return new GetCollectionsResponse(
-        collections.stream()
-            .map(collection -> toSummary(collection, containingCollectionIds))
-            .toList());
+        collections.stream().map(this::toSummary).toList(),
+        memberships == null
+            ? null
+            : memberships.stream()
+                .map(
+                    membership ->
+                        new GetCollectionsResponse.Membership(
+                            membership.collectionExternalId(), membership.collectionPostId()))
+                .toList());
   }
 
   public CollectionSummary toSummary(Collection collection) {
-    return toSummary(collection, null);
-  }
-
-  private CollectionSummary toSummary(
-      Collection collection, @Nullable Set<Long> containingCollectionIds) {
     Project project = collection.getProject();
-    Boolean containsPost =
-        containingCollectionIds == null
-            ? null
-            : containingCollectionIds.contains(collection.getId());
     return new CollectionSummary(
         collection.getExternalId(),
         collection.getName(),
@@ -60,8 +52,7 @@ public class CollectionAssembler {
         collection.isPublic(),
         collection.getPostCount(),
         collection.getCreator().getId(),
-        project == null ? null : project.getHandle(),
-        containsPost);
+        project == null ? null : project.getHandle());
   }
 
   public GetCollectionPostsResponse toGetCollectionPostsResponse(
