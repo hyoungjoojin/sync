@@ -7,7 +7,11 @@ import { PostCardTitle } from '../components/PostCardTitle';
 import { PostCoverImage } from '../components/PostCoverImage';
 import { PostTags } from '../components/PostTags';
 import { PostViewHeader } from '../components/PostViewHeader';
-import { POST_CARD_SURFACE, type PostDetailCardProps } from './types';
+import {
+  POST_CARD_SURFACE,
+  POST_DETAIL_HEADER,
+  type PostDetailCardProps,
+} from './types';
 
 export function LongPostCard({
   summary,
@@ -23,7 +27,7 @@ export function LongPostCard({
 
       {/* 카드가 작성자 줄과 본문을 붙여 놓으므로, 커버 바로 아래에 올 때만
           위 여백을 되살린다. */}
-      <CardHeader className="pt-6">
+      <CardHeader className={cn('pt-6', POST_DETAIL_HEADER)}>
         <PostViewHeader
           summary={summary}
           postPath={postPath}

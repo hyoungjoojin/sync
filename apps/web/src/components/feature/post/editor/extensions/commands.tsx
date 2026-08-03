@@ -21,10 +21,12 @@ import {
   type SuggestionOptions,
   type SuggestionProps,
 } from '@tiptap/suggestion';
+import { convertHangulToQwerty, getChoseong } from 'es-hangul';
 import { useTranslations } from 'next-intl';
 import {
   type RefAttributes,
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useState,
 } from 'react';
@@ -34,23 +36,27 @@ import { cn } from '@/lib/utils';
 
 import { NodeType } from './nodes';
 
-const MAX_COMMAND_QUERY_LENGTH = 6;
+const MAX_COMMAND_QUERY_LENGTH = 12;
+
+export type CommandName =
+  | 'h1'
+  | 'h2'
+  | 'bold'
+  | 'italic'
+  | 'bullet'
+  | 'numbered'
+  | 'todo'
+  | 'quote'
+  | 'code'
+  | 'table'
+  | 'image'
+  | 'file'
+  | 'embed';
+
+export type CommandSearchTerms = Partial<Record<CommandName, string[]>>;
 
 interface CommandsItemProps {
-  name:
-    | 'h1'
-    | 'h2'
-    | 'bold'
-    | 'italic'
-    | 'bullet'
-    | 'numbered'
-    | 'todo'
-    | 'quote'
-    | 'code'
-    | 'table'
-    | 'image'
-    | 'file'
-    | 'embed';
+  name: CommandName;
   icon: React.ReactNode;
   command: (props: { editor: Editor; range: Range }) => void;
 }
@@ -179,25 +185,53 @@ const commands: CommandsItemProps[] = [
   },
 ];
 
+export const COMMAND_NAMES: CommandName[] = commands.map((item) => item.name);
+
+const IME_COMPOSITION_KEY_CODE = 229;
+
+function isImeComposing(event: KeyboardEvent) {
+  return event.isComposing || event.keyCode === IME_COMPOSITION_KEY_CODE;
+}
+
+function normalize(value: string) {
+  return value.toLowerCase().replace(/\s+/g, '');
+}
+
+function toSearchable(term: string) {
+  const normalized = normalize(term);
+  return [normalized, normalize(getChoseong(normalized))];
+}
+
+function filterCommands(query: string, searchTerms: CommandSearchTerms) {
+  const normalizedQuery = normalize(query);
+  const queries = [
+    normalizedQuery,
+    normalize(convertHangulToQwerty(normalizedQuery)),
+  ];
+
+  return commands
+    .filter((item) =>
+      [item.name, ...(searchTerms[item.name] ?? [])]
+        .flatMap(toSearchable)
+        .some((term) => queries.some((candidate) => term.includes(candidate))),
+    )
+    .slice(0, 10);
+}
+
 interface CommandsExtensionOptions {
   suggestion: Partial<SuggestionOptions<CommandsItemProps>>;
+  searchTerms: CommandSearchTerms;
 }
 
 export const CommandsExtension = Extension.create<CommandsExtensionOptions>({
   name: 'commands',
   addOptions() {
     return {
+      searchTerms: {},
       suggestion: {
         char: '/',
         command({ editor, range, props }) {
           props.command({ editor, range });
-        },
-        items({ query }) {
-          return commands
-            .filter((item) => {
-              return item.name.startsWith(query.toLowerCase());
-            })
-            .slice(0, 10);
         },
         startOfLine: false,
         allow: ({ editor }) => editor.isFocused,
@@ -209,73 +243,75 @@ export const CommandsExtension = Extension.create<CommandsExtensionOptions>({
               >
             | undefined;
 
+          const unmount = () => {
+            if (!renderer) {
+              return;
+            }
+
+            renderer.element.remove();
+            renderer.destroy();
+            renderer = undefined;
+          };
+
+          const mount = (props: CommandsProps) => {
+            renderer = new ReactRenderer(Commands, {
+              props,
+              editor: props.editor,
+            });
+
+            (renderer.element as HTMLElement).style.position = 'absolute';
+            document.body.appendChild(renderer.element);
+            updatePosition(props.editor, renderer.element as HTMLElement);
+          };
+
+          const shouldShow = (props: CommandsProps) =>
+            props.query.length < MAX_COMMAND_QUERY_LENGTH &&
+            props.items.length > 0;
+
+          const sync = (props: CommandsProps) => {
+            if (!shouldShow(props)) {
+              unmount();
+              return;
+            }
+
+            if (!renderer) {
+              mount(props);
+              return;
+            }
+
+            renderer.updateProps(props);
+            updatePosition(props.editor, renderer.element as HTMLElement);
+          };
+
           return {
-            onStart(props) {
-              if (!props.clientRect) {
-                return;
-              }
-
-              renderer = new ReactRenderer(Commands, {
-                props,
-                editor: props.editor,
-              });
-
-              (renderer.element as HTMLElement).style.position = 'absolute';
-              document.body.appendChild(renderer.element);
-              updatePosition(props.editor, renderer.element as HTMLElement);
-            },
-            onUpdate(props) {
-              if (!renderer) {
-                return;
-              }
-
-              if (
-                props.query.length >= MAX_COMMAND_QUERY_LENGTH ||
-                props.items.length === 0
-              ) {
-                renderer.element.remove();
-                renderer.destroy();
-                renderer = undefined;
-                return;
-              }
-
-              renderer.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              updatePosition(props.editor, renderer.element as HTMLElement);
-            },
+            onStart: sync,
+            onUpdate: sync,
             onKeyDown(props) {
-              if (props.event.key === 'Escape') {
-                if (renderer) {
-                  renderer.element.remove();
-                  renderer.destroy();
-                  renderer = undefined;
-                }
+              if (!renderer) {
+                return false;
+              }
 
+              if (props.event.key === 'Escape') {
+                unmount();
                 return true;
               }
 
-              return renderer?.ref?.onKeyDown(props) ?? false;
+              return renderer.ref?.onKeyDown(props) ?? false;
             },
-            onExit: () => {
-              if (renderer) {
-                renderer.element.remove();
-                renderer.destroy();
-              }
-            },
+            onExit: unmount,
           };
         },
       },
     };
   },
   addProseMirrorPlugins() {
+    const { searchTerms } = this.options;
+
     return [
       Suggestion<CommandsItemProps>({
         editor: this.editor,
         ...this.options.suggestion,
+        items: ({ query }) => filterCommands(query, searchTerms),
       }),
     ];
   },
@@ -314,6 +350,11 @@ const Commands = forwardRef<CommandsRef, CommandsProps>((props, ref) => {
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  const items = props.items;
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [items]);
+
   const selectItem = (index: number) => {
     const item = props.items[index];
     if (item) {
@@ -323,6 +364,10 @@ const Commands = forwardRef<CommandsRef, CommandsProps>((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }) => {
+      if (isImeComposing(event)) {
+        return false;
+      }
+
       if (event.key === 'ArrowUp') {
         if (props.items.length !== 0) {
           setSelectedIndex(

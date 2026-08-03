@@ -18,6 +18,13 @@ const POST_CARD_TIGHT_ROWS = 'gap-0 data-[size=sm]:gap-0';
 export const POST_CARD_SURFACE = `border-0 shadow-none ${POST_CARD_TIGHT_ROWS}`;
 
 /**
+ * 상세 화면에서 작성자 줄과 본문 사이 여백. `POST_CARD_TIGHT_ROWS`가 지운
+ * 간격을 상세 카드에서만 되살리는 값이라, 그 규칙을 바꿀 때 같이 본다.
+ * 피드 카드는 붙어 있는 지금 간격이 맞으므로 쓰지 않는다.
+ */
+export const POST_DETAIL_HEADER = 'pb-4';
+
+/**
  * 피드 카드가 놓이는 자리에 따른 겉모습.
  *
  * - `card`: 관련 게시물처럼 낱개로 떠 있는 자리. 카드 표면색으로 구분한다.

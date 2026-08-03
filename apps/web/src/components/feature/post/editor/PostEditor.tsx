@@ -34,7 +34,11 @@ import { CoverPicker } from './cover/CoverPicker';
 import { type CoverState, initialCoverState } from './cover/coverState';
 import { renderCoverToFile } from './cover/generators';
 import { useCoverImageUpload } from './cover/useCoverImageUpload';
-import { CommandsExtension } from './extensions/commands';
+import {
+  COMMAND_NAMES,
+  CommandSearchTerms,
+  CommandsExtension,
+} from './extensions/commands';
 import { MediaDropPasteExtension } from './extensions/media-drop';
 import { CodeBlockNode } from './extensions/nodes/code';
 import { EmbedNode } from './extensions/nodes/embed';
@@ -176,6 +180,20 @@ export default function PostEditor({
     el.style.height = `${el.scrollHeight}px`;
   }, [title]);
 
+  const commandSearchTerms = useMemo<CommandSearchTerms>(
+    () =>
+      Object.fromEntries(
+        COMMAND_NAMES.map((name) => [
+          name,
+          [
+            t(`commands.${name}.title`),
+            ...t(`commands.${name}.keywords`).split(/\s+/),
+          ],
+        ]),
+      ),
+    [t],
+  );
+
   const initialContent = useMemo(() => {
     if (!initialContentJson) {
       return '';
@@ -202,7 +220,7 @@ export default function PostEditor({
         placeholder: getContentPlaceholder(t, type),
       }),
       CharacterCount,
-      CommandsExtension,
+      CommandsExtension.configure({ searchTerms: commandSearchTerms }),
       SelectAllExtension,
       CodeBlockNode,
       TaskListNode,

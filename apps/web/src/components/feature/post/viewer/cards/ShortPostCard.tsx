@@ -5,7 +5,11 @@ import { PostCardActions } from '../components/PostCardActions';
 import { PostCardTitle } from '../components/PostCardTitle';
 import { PostTags } from '../components/PostTags';
 import { PostViewHeader } from '../components/PostViewHeader';
-import { POST_CARD_SURFACE, type PostDetailCardProps } from './types';
+import {
+  POST_CARD_SURFACE,
+  POST_DETAIL_HEADER,
+  type PostDetailCardProps,
+} from './types';
 
 export function ShortPostCard({
   summary,
@@ -15,7 +19,7 @@ export function ShortPostCard({
 }: PostDetailCardProps) {
   return (
     <Card className={POST_CARD_SURFACE}>
-      <CardHeader>
+      <CardHeader className={POST_DETAIL_HEADER}>
         <PostViewHeader
           summary={summary}
           postPath={postPath}
