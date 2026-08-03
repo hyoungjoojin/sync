@@ -6,6 +6,9 @@ function getClientId(provider: OAuth2Provider) {
     case 'GOOGLE':
       return 'google';
 
+    case 'NAVER':
+      return 'naver';
+
     default:
       return provider;
   }

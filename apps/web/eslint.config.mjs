@@ -90,6 +90,7 @@ const eslintConfig = defineConfig([
           'attribute', // next-themes <ThemeProvider attribute="class">
           'defaultTheme', // next-themes <ThemeProvider defaultTheme="system">
           'autoComplete',
+          'inputMode',
           'color', // badge/icon color variants (e.g. Phosphor icon color)
           'weight', // Phosphor icon weight ('fill' | 'regular' | 'bold')
           'answerCode', // <Console> demo code block content in marketing copy
@@ -103,6 +104,7 @@ const eslintConfig = defineConfig([
           // Brand names — never translated, regardless of where they appear
           'sync',
           'Google',
+          'Naver',
         ],
       },
       'object-properties': {

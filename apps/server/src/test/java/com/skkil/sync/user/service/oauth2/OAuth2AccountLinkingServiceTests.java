@@ -12,23 +12,18 @@ import com.skkil.sync.user.exception.OAuth2AccountCannotBeLinkedException;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.repository.UserRepository;
 import com.skkil.sync.user.service.AuthService;
-import java.util.List;
+import com.skkil.sync.user.service.oauth2.userinfo.OAuth2UserDetails;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 @ExtendWith(MockitoExtension.class)
-public class CustomOidcUserServiceTests {
+public class OAuth2AccountLinkingServiceTests {
 
-  @InjectMocks private CustomOidcUserService customOidcUserService;
+  @InjectMocks private OAuth2AccountLinkingService oAuth2AccountLinkingService;
 
   @Mock private AuthService authService;
   @Mock private UserRepository userRepository;
@@ -37,7 +32,7 @@ public class CustomOidcUserServiceTests {
   void getOrCreateUser_userNotExists_registerUser() {
     String email = "newuser@email.com";
     String fullName = "New User";
-    OidcUser oidcUser = createMockOidcUser(email, fullName);
+    OAuth2UserDetails userDetails = new OAuth2UserDetails("provider-user-id-123", email, fullName);
 
     User newUser = User.builder().email(email).fullName(fullName).hashedPassword(null).build();
     newUser.setId(1L);
@@ -46,7 +41,7 @@ public class CustomOidcUserServiceTests {
     when(authService.registerUser(any(RegisterRequest.class))).thenReturn(newUser);
     when(userRepository.save(any(User.class))).thenReturn(newUser);
 
-    User result = customOidcUserService.getOrCreateUser(OAuth2Provider.GOOGLE, oidcUser);
+    User result = oAuth2AccountLinkingService.getOrCreateUser(OAuth2Provider.GOOGLE, userDetails);
 
     assertThat(result).isNotNull();
     assertThat(result.getEmail()).isEqualTo(email);
@@ -61,7 +56,7 @@ public class CustomOidcUserServiceTests {
   void getOrCreateUser_userExists_returnExistingUser() {
     String email = "existinguser@email.com";
     String fullName = "Existing User";
-    OidcUser oidcUser = createMockOidcUser(email, fullName);
+    OAuth2UserDetails userDetails = new OAuth2UserDetails("provider-user-id-123", email, fullName);
 
     User existingUser =
         User.builder().email(email).fullName(fullName).hashedPassword("hashedPassword").build();
@@ -70,7 +65,7 @@ public class CustomOidcUserServiceTests {
     when(userRepository.findByEmailWithOAuthAccounts(email)).thenReturn(Optional.of(existingUser));
     when(userRepository.save(any(User.class))).thenReturn(existingUser);
 
-    User result = customOidcUserService.getOrCreateUser(OAuth2Provider.GOOGLE, oidcUser);
+    User result = oAuth2AccountLinkingService.getOrCreateUser(OAuth2Provider.NAVER, userDetails);
 
     assertThat(result).isNotNull();
     assertThat(result.getEmail()).isEqualTo(email);
@@ -82,7 +77,8 @@ public class CustomOidcUserServiceTests {
   @Test
   void linkOAuth2Account_emailMatches_linkAccount() {
     String email = "user@email.com";
-    OidcUser oidcUser = createMockOidcUser(email, "User Name");
+    OAuth2UserDetails userDetails =
+        new OAuth2UserDetails("provider-user-id-123", email, "User Name");
 
     User user =
         User.builder().email(email).fullName("User Name").hashedPassword("password").build();
@@ -90,33 +86,36 @@ public class CustomOidcUserServiceTests {
 
     when(userRepository.save(any(User.class))).thenReturn(user);
 
-    customOidcUserService.linkOAuth2Account(user, OAuth2Provider.GOOGLE, oidcUser);
+    oAuth2AccountLinkingService.linkOAuth2Account(user, OAuth2Provider.NAVER, userDetails);
 
     assertThat(user.getOAuth2Accounts()).hasSize(1);
-    assertThat(user.getOAuth2Accounts().get(0).getOAuth2Provider())
-        .isEqualTo(OAuth2Provider.GOOGLE);
+    assertThat(user.getOAuth2Accounts().get(0).getOAuth2Provider()).isEqualTo(OAuth2Provider.NAVER);
     verify(userRepository).save(user);
   }
 
   @Test
   void linkOAuth2Account_emailDoesNotMatch_throwException() {
     String userEmail = "user@email.com";
-    String oidcEmail = "different@email.com";
-    OidcUser oidcUser = createMockOidcUser(oidcEmail, "Different User");
+    String otherEmail = "different@email.com";
+    OAuth2UserDetails userDetails =
+        new OAuth2UserDetails("provider-user-id-123", otherEmail, "Other");
 
     User user =
         User.builder().email(userEmail).fullName("User Name").hashedPassword("password").build();
     user.setId(1L);
 
     assertThatThrownBy(
-            () -> customOidcUserService.linkOAuth2Account(user, OAuth2Provider.GOOGLE, oidcUser))
+            () ->
+                oAuth2AccountLinkingService.linkOAuth2Account(
+                    user, OAuth2Provider.GOOGLE, userDetails))
         .isInstanceOf(OAuth2AccountCannotBeLinkedException.class);
   }
 
   @Test
   void linkOAuth2Account_accountAlreadyLinked_doNothing() {
     String email = "user@email.com";
-    OidcUser oidcUser = createMockOidcUser(email, "User Name");
+    OAuth2UserDetails userDetails =
+        new OAuth2UserDetails("provider-user-id-123", email, "User Name");
 
     User user =
         User.builder().email(email).fullName("User Name").hashedPassword("password").build();
@@ -124,25 +123,11 @@ public class CustomOidcUserServiceTests {
 
     when(userRepository.save(any(User.class))).thenReturn(user);
 
-    customOidcUserService.linkOAuth2Account(user, OAuth2Provider.GOOGLE, oidcUser);
+    oAuth2AccountLinkingService.linkOAuth2Account(user, OAuth2Provider.GOOGLE, userDetails);
     int initialSize = user.getOAuth2Accounts().size();
 
-    customOidcUserService.linkOAuth2Account(user, OAuth2Provider.GOOGLE, oidcUser);
+    oAuth2AccountLinkingService.linkOAuth2Account(user, OAuth2Provider.GOOGLE, userDetails);
 
     assertThat(user.getOAuth2Accounts()).hasSize(initialSize);
-  }
-
-  private OidcUser createMockOidcUser(String email, String fullName) {
-    OidcIdToken idToken =
-        OidcIdToken.withTokenValue("token")
-            .subject("oidc-user-id-123")
-            .claim("email", email)
-            .claim("name", fullName)
-            .build();
-
-    OidcUserInfo userInfo =
-        OidcUserInfo.builder().subject("oidc-user-id-123").email(email).name(fullName).build();
-
-    return new DefaultOidcUser(List.of(new SimpleGrantedAuthority("ROLE_USER")), idToken, userInfo);
   }
 }

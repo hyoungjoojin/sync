@@ -21,7 +21,11 @@ import {
 } from '@/api/__generated__/profile/profile';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
 import SyncError, { ErrorCode } from '@/lib/error';
 
 import { OnboardingStepContentProps, OnboardingStepContentRef } from '../page';
@@ -192,14 +196,23 @@ export const EmailVerificationStep = forwardRef<
         <Field>
           <FieldLabel>{t('form.token.label')}</FieldLabel>
           <div className="flex gap-2">
-            <Input
+            <InputOTP
+              maxLength={EMAIL_VERIFICATION_TOKEN_LENGTH}
               value={token}
-              onChange={(event) => tokenChangeHandler(event.target.value)}
+              onChange={tokenChangeHandler}
               autoComplete="one-time-code"
+              inputMode="text"
               placeholder={t('form.token.placeholder')}
               disabled={isTokenExpired}
-              spellCheck={false}
-            />
+            >
+              <InputOTPGroup>
+                {Array.from({ length: EMAIL_VERIFICATION_TOKEN_LENGTH }).map(
+                  (_, index) => (
+                    <InputOTPSlot key={index} index={index} />
+                  ),
+                )}
+              </InputOTPGroup>
+            </InputOTP>
             <Button
               type="button"
               isPending={isVerifyPending}

@@ -126,6 +126,8 @@ module "secrets" {
 
   google_client_id     = var.google_client_id
   google_client_secret = var.google_client_secret
+  naver_client_id      = var.naver_client_id
+  naver_client_secret  = var.naver_client_secret
   mail_username        = var.mail_username
   mail_password        = var.mail_password
   slack_webhook_url    = var.slack_webhook_url

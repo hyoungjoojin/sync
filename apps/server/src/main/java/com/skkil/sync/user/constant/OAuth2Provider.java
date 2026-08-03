@@ -3,7 +3,8 @@ package com.skkil.sync.user.constant;
 import lombok.Getter;
 
 public enum OAuth2Provider {
-  GOOGLE("google");
+  GOOGLE("google"),
+  NAVER("naver");
 
   @Getter private final String id;
 

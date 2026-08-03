@@ -1,4 +1,6 @@
 google_client_id     = ""
 google_client_secret = ""
+naver_client_id      = ""
+naver_client_secret  = ""
 mail_username        = ""
 mail_password        = ""

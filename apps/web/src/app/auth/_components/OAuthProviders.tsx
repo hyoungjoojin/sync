@@ -23,6 +23,17 @@ const providers: {
       />
     ),
   },
+  {
+    id: 'NAVER',
+    icon: (
+      <Image
+        src="/assets/icons/naver_logo.svg"
+        alt="Naver"
+        width={18}
+        height={18}
+      />
+    ),
+  },
 ];
 
 export default function OAuthProviders() {
