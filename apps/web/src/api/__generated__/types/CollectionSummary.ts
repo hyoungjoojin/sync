@@ -7,11 +7,6 @@
 import type { CollectionSummaryScope } from './CollectionSummaryScope';
 
 export interface CollectionSummary {
-  /**
-   * postHandle 쿼리 파라미터가 주어졌을 때, 해당 게시글이 이 컬렉션에 담겨 있는지 여부 (없으면 생략)
-   * @nullable
-   */
-  containsPost?: boolean | null;
   /** 컬렉션 범위 (PERSONAL: 개인, WORKSPACE: 프로젝트 소속) */
   scope: CollectionSummaryScope;
   /** 컬렉션 생성자 ID */

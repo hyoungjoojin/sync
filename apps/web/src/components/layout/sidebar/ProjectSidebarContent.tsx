@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ArrowLeftIcon,
   BookOpenIcon,
   BookmarkSimpleIcon,
   CaretDownIcon,
@@ -72,6 +73,8 @@ export default function ProjectSidebarContent({
           <SidebarCloseButton />
         </div>
 
+        <BackToHomeButton />
+
         <ProjectSwitcher handle={handle} />
 
         {isViewer && <AskOrWriteButton handle={handle} />}
@@ -104,6 +107,23 @@ export default function ProjectSidebarContent({
 
 interface SectionProps {
   handle: string;
+}
+
+function BackToHomeButton() {
+  const t = useTranslations('components.layout.sidebar');
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild className="text-sidebar-foreground/70">
+          <Link href={ROUTES.HOME()}>
+            <ArrowLeftIcon />
+            {t('back-to-home')}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
 }
 
 const PROJECT_SWITCHER_VISIBLE_COUNT = 5;

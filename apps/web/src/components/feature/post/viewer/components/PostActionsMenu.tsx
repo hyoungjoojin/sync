@@ -5,6 +5,8 @@ import {
   DownloadSimpleIcon,
   LinkSimpleIcon,
   PencilSimpleIcon,
+  PushPinIcon,
+  PushPinSlashIcon,
   SirenIcon,
   StackSimpleIcon,
   TrashIcon,
@@ -13,6 +15,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useGetProjectByHandle } from '@/api/__generated__/project/project';
+import { GetProjectResponseRole } from '@/api/__generated__/types';
 import { AddToCollectionDialog } from '@/components/feature/collection/AddToCollectionDialog';
 import { useExportPostMarkdown } from '@/components/feature/post/export/useExportPostMarkdown';
 import {
@@ -36,6 +40,7 @@ import ROUTES from '@/util/routes';
 
 import { useCopyPostLink } from '../hooks/useCopyPostLink';
 import { useDeletePostDialog } from '../hooks/useDeletePostDialog';
+import { usePinToggle } from '../hooks/usePinToggle';
 import { useReportPostDialog } from '../hooks/useReportPostDialog';
 import type { PostCardVariant, PostSummary } from '../types';
 import { ReportPostDialog } from './ReportPostDialog';
@@ -56,6 +61,7 @@ export function PostActionsMenu({
   const tEdit = useTranslations('pages.posts.edit');
   const tCollection = useTranslations('pages.collections');
   const tExport = useTranslations('pages.posts.export');
+  const tPin = useTranslations('pages.posts.pin');
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
@@ -70,6 +76,16 @@ export function PostActionsMenu({
     postPath,
   });
   const copyLink = useCopyPostLink(postPath);
+
+  const projectHandle = summary.project?.handle;
+  const { data: projectData } = useGetProjectByHandle(projectHandle ?? '', {
+    query: { enabled: Boolean(projectHandle) },
+  });
+  const project = projectData?.data;
+  const canManageProject =
+    project?.role === GetProjectResponseRole.Admin || project?.isOwner;
+  const isPinned = Boolean(summary.pinnedAt);
+  const togglePin = usePinToggle(summary.id, projectHandle ?? '', isPinned);
 
   const stopPropagation = isPreview
     ? (event: React.MouseEvent) => event.stopPropagation()
@@ -124,6 +140,12 @@ export function PostActionsMenu({
             >
               <PencilSimpleIcon />
               {tEdit('trigger')}
+            </DropdownMenuItem>
+          )}
+          {canManageProject && (
+            <DropdownMenuItem onSelect={togglePin}>
+              {isPinned ? <PushPinSlashIcon /> : <PushPinIcon />}
+              {isPinned ? tPin('unpin-trigger') : tPin('trigger')}
             </DropdownMenuItem>
           )}
           {summary.canDelete && (

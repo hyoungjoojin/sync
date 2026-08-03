@@ -113,4 +113,11 @@ public class PostQueryController {
     return postQueryService.getPostsByProject(
         user == null ? null : user.userId(), handle, type, authorHandle, pagination);
   }
+
+  @GetMapping("/projects/{handle}/posts/pinned")
+  @ResponseStatus(HttpStatus.OK)
+  public GetPostsResponse getPinnedPostsByProject(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable String handle) {
+    return postQueryService.getPinnedPostsByProject(user == null ? null : user.userId(), handle);
+  }
 }

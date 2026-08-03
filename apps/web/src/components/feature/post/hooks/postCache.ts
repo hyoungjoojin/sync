@@ -5,6 +5,7 @@ import {
   LIKED_POSTS_PATH,
   getQueryPath,
   isPostRelatedQueryKey,
+  pinnedPostsPath,
 } from './postQueryKeys';
 
 interface CachedPostSummary {
@@ -13,6 +14,7 @@ interface CachedPostSummary {
   likeCount: number;
   bookmarked: boolean;
   commentCount?: number | null;
+  pinnedAt?: string | null;
 }
 
 /**
@@ -199,6 +201,30 @@ export function applyBookmarkToCache(
     markListStale(queryClient, BOOKMARKED_POSTS_PATH);
   } else {
     removeFromCachedList(queryClient, postId, BOOKMARKED_POSTS_PATH);
+  }
+}
+
+/**
+ * `pinnedAt` 은 서버가 정확한 시각을 부여하므로 낙관적 갱신 시점에는 알 수 없다.
+ * 고정 여부(참/거짓)만 반영하면 되므로 고정 시에는 현재 시각을 임시 값으로 쓰고,
+ * 실제 값은 다음 조회에서 서버 응답으로 갱신된다.
+ */
+export function applyPinToCache(
+  queryClient: QueryClient,
+  postId: number,
+  projectHandle: string,
+  pinned: boolean,
+) {
+  patchCachedPost(queryClient, postId, (summary) =>
+    Boolean(summary.pinnedAt) === pinned
+      ? null
+      : { pinnedAt: pinned ? new Date().toISOString() : null },
+  );
+
+  if (pinned) {
+    markListStale(queryClient, pinnedPostsPath(projectHandle));
+  } else {
+    removeFromCachedList(queryClient, postId, pinnedPostsPath(projectHandle));
   }
 }
 

@@ -73,4 +73,16 @@ public class PostController {
   public void deletePost(@PathVariable Long postId) {
     postService.deletePost(postId);
   }
+
+  @PostMapping("/projects/{handle}/posts/{postId}/pin")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void pinPost(@PathVariable String handle, @PathVariable Long postId) {
+    postService.pinPost(postId, handle);
+  }
+
+  @DeleteMapping("/projects/{handle}/posts/{postId}/pin")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void unpinPost(@PathVariable String handle, @PathVariable Long postId) {
+    postService.unpinPost(postId, handle);
+  }
 }

@@ -7,6 +7,6 @@
 import type { GetPostsResponsePostsItem } from './GetPostsResponsePostsItem';
 
 export interface GetPostsResponse {
-  /** 검색 결과 게시글 목록 */
+  /** 이 글이 참조하는 게시글 목록 (작성자가 지정한 순서, 열람 불가한 참조는 제외) */
   posts: GetPostsResponsePostsItem[];
 }

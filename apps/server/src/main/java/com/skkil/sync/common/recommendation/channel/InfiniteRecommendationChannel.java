@@ -5,10 +5,10 @@ import com.skkil.sync.common.util.pagination.keyset.KeysetCursorPaginationProvid
 import com.skkil.sync.common.util.pagination.model.Cursor;
 
 public interface InfiniteRecommendationChannel<
-        TType extends Enum<TType>, TCandidate, TCursor extends Cursor>
+        TType extends Enum<TType>, TContext, TCandidate, TCursor extends Cursor>
     extends RecommendationChannel<TType> {
 
-  CursorPaginationDataFetcher<TCandidate> getCandidateFetcher(Long requesterId);
+  CursorPaginationDataFetcher<TCandidate> getCandidateFetcher(TContext context);
 
   KeysetCursorPaginationProvider<TCandidate, TCursor> getPaginationProvider();
 }

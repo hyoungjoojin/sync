@@ -9,13 +9,17 @@ import {
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { useGetPinnedPostsByProject } from '@/api/__generated__/post/post';
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
+import type { GetPostsResponsePostsItem } from '@/api/__generated__/types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { RelativeTime } from '@/components/ui/relative-time';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Unimplemented } from '@/components/ui/unimplemented';
 import ROUTES from '@/util/routes';
+
+const WORDS_PER_MINUTE = 200;
 
 // TODO: there's no knowledge-verification feature yet — placeholder stats
 // until that backend work exists.
@@ -24,13 +28,6 @@ const MOCK_KNOWLEDGE_HEALTH = {
   needsReviewCount: 4,
   unansweredCount: 3,
 };
-
-// TODO: there's no "pinned/canonical post" feature yet — placeholder cards
-// until that exists.
-const MOCK_PINNED_POSTS = [
-  { title: '배포 파이프라인, 처음부터 끝까지', author: 'Priya', minutes: 12 },
-  { title: '온콜 런북 & 에스컬레이션 경로', author: 'Dev', minutes: 8 },
-];
 
 interface ProjectDashboardProps {
   handle: string;
@@ -42,7 +39,7 @@ export default function ProjectDashboard({ handle }: ProjectDashboardProps) {
   return (
     <div className="space-y-6">
       <KnowledgeHealthSection />
-      <PinnedSection />
+      <PinnedSection handle={handle} />
       <RecentActivitySection
         activities={data?.data.recentActivities ?? []}
         isPending={isPending}
@@ -100,8 +97,14 @@ function KnowledgeHealthSection() {
   );
 }
 
-function PinnedSection() {
+function PinnedSection({ handle }: { handle: string }) {
   const t = useTranslations('pages.projects.project.dashboard.pinned');
+  const { data, isPending } = useGetPinnedPostsByProject(handle);
+  const posts = data?.data.posts ?? [];
+
+  if (!isPending && posts.length === 0) {
+    return null;
+  }
 
   return (
     <section className="space-y-3">
@@ -110,27 +113,50 @@ function PinnedSection() {
         {t('heading')}
       </h2>
 
-      <Unimplemented>
+      {isPending ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {MOCK_PINNED_POSTS.map((post) => (
-            <Card key={post.title}>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <Badge variant="secondary">{t('badge')}</Badge>
-                  <span className="text-muted-foreground">
-                    {t('type-guide')}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold">{post.title}</p>
-                <p className="text-muted-foreground text-xs">
-                  {t('meta', { author: post.author, minutes: post.minutes })}
-                </p>
-              </CardContent>
-            </Card>
+          {Array.from({ length: 2 }).map((_, index) => (
+            <Skeleton key={index} className="h-20 w-full rounded-lg" />
           ))}
         </div>
-      </Unimplemented>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {posts.map((post) => (
+            <PinnedPostCard key={post.id} handle={handle} post={post} t={t} />
+          ))}
+        </div>
+      )}
     </section>
+  );
+}
+
+function PinnedPostCard({
+  handle,
+  post,
+  t,
+}: {
+  handle: string;
+  post: GetPostsResponsePostsItem;
+  t: ReturnType<
+    typeof useTranslations<'pages.projects.project.dashboard.pinned'>
+  >;
+}) {
+  const minutes = Math.max(1, Math.ceil(post.wordCount / WORDS_PER_MINUTE));
+
+  return (
+    <Link href={ROUTES.PROJECT_POST(handle, post.slug)}>
+      <Card>
+        <CardContent className="space-y-2">
+          <div className="flex items-center gap-2 text-xs">
+            <Badge variant="secondary">{t('badge')}</Badge>
+          </div>
+          <p className="text-sm font-semibold">{post.title ?? post.preview}</p>
+          <p className="text-muted-foreground text-xs">
+            {t('meta', { author: post.author.name, minutes })}
+          </p>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 

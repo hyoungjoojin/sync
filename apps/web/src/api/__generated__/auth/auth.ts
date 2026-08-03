@@ -15,8 +15,11 @@ import type {
 import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
 import type {
+  ChangePasswordRequest,
+  ConfirmPasswordResetRequest,
   LoginRequest,
   RegisterRequest,
+  RequestPasswordResetRequest,
   SendVerificationEmailResponse,
   VerifyEmailRequest,
 } from '../types';
@@ -209,6 +212,105 @@ export const useLogout = <TError = ErrorType<unknown>, TContext = unknown>(
   TContext
 > => {
   return useMutation(getLogoutMutationOptions(options), queryClient);
+};
+export type changePasswordResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type changePasswordResponseSuccess = changePasswordResponse204 & {
+  headers: Headers;
+};
+export type changePasswordResponse = changePasswordResponseSuccess;
+
+export const getChangePasswordUrl = () => {
+  return `/auth/password`;
+};
+
+/**
+ * 로그인한 사용자의 비밀번호를 변경합니다. 변경하면 기존 세션이 모두 만료되고 새 세션이 발급되며, 발급된 재설정 링크도 무효화됩니다.
+ * @summary Change Password
+ */
+export const changePassword = async (
+  changePasswordRequest?: ChangePasswordRequest,
+  options?: RequestInit,
+): Promise<changePasswordResponse> => {
+  return api<changePasswordResponse>(getChangePasswordUrl(), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(changePasswordRequest),
+  });
+};
+
+export const getChangePasswordMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof changePassword>>,
+    TError,
+    { data?: ChangePasswordRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof changePassword>>,
+  TError,
+  { data?: ChangePasswordRequest },
+  TContext
+> => {
+  const mutationKey = ['changePassword'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof changePassword>>,
+    { data?: ChangePasswordRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return changePassword(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ChangePasswordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof changePassword>>
+>;
+export type ChangePasswordMutationBody = ChangePasswordRequest | undefined;
+export type ChangePasswordMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Change Password
+ */
+export const useChangePassword = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof changePassword>>,
+      TError,
+      { data?: ChangePasswordRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof changePassword>>,
+  TError,
+  { data?: ChangePasswordRequest },
+  TContext
+> => {
+  return useMutation(getChangePasswordMutationOptions(options), queryClient);
 };
 export type registerResponse204 = {
   data: void;
@@ -500,4 +602,214 @@ export const useVerifyEmail = <TError = ErrorType<unknown>, TContext = unknown>(
   TContext
 > => {
   return useMutation(getVerifyEmailMutationOptions(options), queryClient);
+};
+export type confirmPasswordResetResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type confirmPasswordResetResponseSuccess =
+  confirmPasswordResetResponse204 & {
+    headers: Headers;
+  };
+export type confirmPasswordResetResponse = confirmPasswordResetResponseSuccess;
+
+export const getConfirmPasswordResetUrl = () => {
+  return `/auth/password-reset/confirm`;
+};
+
+/**
+ * 재설정 토큰을 사용해 새 비밀번호를 저장합니다. 토큰은 1회만 사용할 수 있으며, 기존 세션은 모두 만료됩니다.
+ * @summary Confirm Password Reset
+ */
+export const confirmPasswordReset = async (
+  confirmPasswordResetRequest?: ConfirmPasswordResetRequest,
+  options?: RequestInit,
+): Promise<confirmPasswordResetResponse> => {
+  return api<confirmPasswordResetResponse>(getConfirmPasswordResetUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(confirmPasswordResetRequest),
+  });
+};
+
+export const getConfirmPasswordResetMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof confirmPasswordReset>>,
+    TError,
+    { data?: ConfirmPasswordResetRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof confirmPasswordReset>>,
+  TError,
+  { data?: ConfirmPasswordResetRequest },
+  TContext
+> => {
+  const mutationKey = ['confirmPasswordReset'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof confirmPasswordReset>>,
+    { data?: ConfirmPasswordResetRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return confirmPasswordReset(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ConfirmPasswordResetMutationResult = NonNullable<
+  Awaited<ReturnType<typeof confirmPasswordReset>>
+>;
+export type ConfirmPasswordResetMutationBody =
+  | ConfirmPasswordResetRequest
+  | undefined;
+export type ConfirmPasswordResetMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Confirm Password Reset
+ */
+export const useConfirmPasswordReset = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof confirmPasswordReset>>,
+      TError,
+      { data?: ConfirmPasswordResetRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof confirmPasswordReset>>,
+  TError,
+  { data?: ConfirmPasswordResetRequest },
+  TContext
+> => {
+  return useMutation(
+    getConfirmPasswordResetMutationOptions(options),
+    queryClient,
+  );
+};
+export type requestPasswordResetResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type requestPasswordResetResponseSuccess =
+  requestPasswordResetResponse204 & {
+    headers: Headers;
+  };
+export type requestPasswordResetResponse = requestPasswordResetResponseSuccess;
+
+export const getRequestPasswordResetUrl = () => {
+  return `/auth/password-reset/request`;
+};
+
+/**
+ * 비밀번호 재설정 링크를 이메일로 발송합니다. 등록되지 않은 이메일이면 404와 함께 USER_NOT_FOUND를 반환합니다.
+ * @summary Request Password Reset
+ */
+export const requestPasswordReset = async (
+  requestPasswordResetRequest?: RequestPasswordResetRequest,
+  options?: RequestInit,
+): Promise<requestPasswordResetResponse> => {
+  return api<requestPasswordResetResponse>(getRequestPasswordResetUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(requestPasswordResetRequest),
+  });
+};
+
+export const getRequestPasswordResetMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestPasswordReset>>,
+    TError,
+    { data?: RequestPasswordResetRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestPasswordReset>>,
+  TError,
+  { data?: RequestPasswordResetRequest },
+  TContext
+> => {
+  const mutationKey = ['requestPasswordReset'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestPasswordReset>>,
+    { data?: RequestPasswordResetRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return requestPasswordReset(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestPasswordResetMutationResult = NonNullable<
+  Awaited<ReturnType<typeof requestPasswordReset>>
+>;
+export type RequestPasswordResetMutationBody =
+  | RequestPasswordResetRequest
+  | undefined;
+export type RequestPasswordResetMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Request Password Reset
+ */
+export const useRequestPasswordReset = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof requestPasswordReset>>,
+      TError,
+      { data?: RequestPasswordResetRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof requestPasswordReset>>,
+  TError,
+  { data?: RequestPasswordResetRequest },
+  TContext
+> => {
+  return useMutation(
+    getRequestPasswordResetMutationOptions(options),
+    queryClient,
+  );
 };

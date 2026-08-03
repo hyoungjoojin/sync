@@ -20,8 +20,10 @@ import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
 import com.skkil.sync.common.util.pagination.snippets.CursorPaginationRequestSnippets;
 import com.skkil.sync.config.SecurityConfig;
+import com.skkil.sync.post.dto.data.PostRecommendationContext;
 import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.model.PostRecommendationType;
+import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.service.PostRecommendationService;
 import com.skkil.sync.post.snippets.PaginatedGetPostsResponseSnippets;
 import java.util.function.Function;
@@ -59,7 +61,8 @@ class PostRecommendationControllerTests {
     MultiValueMap<String, String> queryParams =
         CursorPaginationRequestSnippets.getCursorPaginationRequestQueryParams();
 
-    when(postRecommendationService.getRecommendations(eq(user.userId()), isNull(), any()))
+    when(postRecommendationService.getRecommendations(
+            eq(new PostRecommendationContext(user.userId(), null)), isNull(), any()))
         .thenReturn(response);
 
     mockMvc
@@ -77,7 +80,13 @@ class PostRecommendationControllerTests {
                 preprocessResponse(prettyPrint()),
                 Function.identity(),
                 CursorPaginationRequestSnippets.getCursorPaginationRequestParameters()
-                    .and(parameterWithName("type").description("추천 게시글 종류").optional()),
+                    .and(
+                        parameterWithName("type").description("추천 게시글 종류").optional(),
+                        parameterWithName("scope")
+                            .description(
+                                "게시글 범위 필터. PUBLIC 은 개인 게시글만, WORKSPACE 는 프로젝트 게시글만 조회한다. "
+                                    + "생략하면 두 종류를 모두 포함한다.")
+                            .optional()),
                 PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 
@@ -90,11 +99,35 @@ class PostRecommendationControllerTests {
         PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postRecommendationService.getRecommendations(
-            eq(user.userId()), eq(PostRecommendationType.TRENDING), any()))
+            eq(new PostRecommendationContext(user.userId(), null)),
+            eq(PostRecommendationType.TRENDING),
+            any()))
         .thenReturn(response);
 
     mockMvc
         .perform(get("/posts/recommendations").queryParam("type", "TRENDING"))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("[getRecommendations] scope 파라미터가 주어지면 해당 범위의 게시글만 조회한다")
+  @WithAuthenticatedUser
+  void getRecommendations_withScope_shouldFilterByScope() throws Exception {
+    AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
+
+    when(postRecommendationService.getRecommendations(
+            eq(new PostRecommendationContext(user.userId(), PostScope.WORKSPACE)),
+            eq(PostRecommendationType.TRENDING),
+            any()))
+        .thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/posts/recommendations")
+                .queryParam("type", "TRENDING")
+                .queryParam("scope", "WORKSPACE"))
         .andExpect(status().isOk());
   }
 

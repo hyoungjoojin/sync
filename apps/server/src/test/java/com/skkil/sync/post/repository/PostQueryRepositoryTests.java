@@ -63,6 +63,26 @@ class PostQueryRepositoryTests {
     assertThat(postQueryRepository.getPostBySlug(null, post.getSlug())).isEmpty();
   }
 
+  @Test
+  @DisplayName("[getPinnedPostsByProject] 고정되지 않은 게시글은 제외하고, 비공개 프로젝트는 팀원에게만 노출한다")
+  void getPinnedPostsByProject_returnsOnlyPinnedAndRespectsVisibility() {
+    User author = saveUser("pinned-post-author");
+    User outsider = saveUser("pinned-post-outsider");
+    Project project = saveProject("pinned-project", false);
+    teammateRepository.saveAndFlush(Teammate.owner(project, author));
+
+    Post pinnedPost = savePost("pinned-post", author, project);
+    pinnedPost.pin();
+    postRepository.saveAndFlush(pinnedPost);
+    savePost("unpinned-post", author, project);
+
+    assertThat(postQueryRepository.getPinnedPostsByProject(author.getId(), project.getHandle()))
+        .extracting(dto -> dto.id())
+        .containsExactly(pinnedPost.getId());
+    assertThat(postQueryRepository.getPinnedPostsByProject(outsider.getId(), project.getHandle()))
+        .isEmpty();
+  }
+
   private User saveUser(String key) {
     return userRepository.saveAndFlush(
         User.builder().email(key + "@example.com").fullName("사용자").build());

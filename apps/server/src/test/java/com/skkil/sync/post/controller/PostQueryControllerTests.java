@@ -380,6 +380,32 @@ class PostQueryControllerTests {
   }
 
   @Test
+  @DisplayName("[getPinnedPostsByProject] API 문서화 테스트")
+  void getPinnedPostsByProject() throws Exception {
+    String handle = "project";
+    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
+
+    when(postQueryService.getPinnedPostsByProject(any(), eq(handle))).thenReturn(response);
+
+    mockMvc
+        .perform(get("/projects/{handle}/posts/pinned", handle))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetPinnedPostsByProject",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Get Pinned Posts By Project")
+                    .description("프로젝트 대시보드에 고정된 게시글 목록을 조회합니다.")
+                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
+                GetPostsResponseSnippets.getPostsResponseFields("프로젝트에 고정된 게시글 목록")));
+  }
+
+  @Test
   @DisplayName("[getDrafts] 로그인하지 않은 사용자는 접근할 수 없다")
   void getDrafts_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
     mockMvc.perform(get("/posts/drafts")).andExpect(status().isUnauthorized());

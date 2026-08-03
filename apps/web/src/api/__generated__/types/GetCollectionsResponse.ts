@@ -5,8 +5,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { GetCollectionsResponseCollectionsItem } from './GetCollectionsResponseCollectionsItem';
+import type { GetCollectionsResponseMembershipsItem } from './GetCollectionsResponseMembershipsItem';
 
 export interface GetCollectionsResponse {
   /** 컬렉션 목록 */
   collections: GetCollectionsResponseCollectionsItem[];
+  /** postHandle 쿼리 파라미터가 주어졌을 때, 해당 게시글을 담고 있는 컬렉션의 멤버십 목록 (없으면 생략) */
+  memberships?: GetCollectionsResponseMembershipsItem[];
 }

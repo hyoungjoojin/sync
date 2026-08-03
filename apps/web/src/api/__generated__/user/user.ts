@@ -58,6 +58,107 @@ const withQueryKey = <T extends object, K>(
   return result;
 };
 
+export type promoteUserToAdminResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type promoteUserToAdminResponseSuccess =
+  promoteUserToAdminResponse204 & {
+    headers: Headers;
+  };
+export type promoteUserToAdminResponse = promoteUserToAdminResponseSuccess;
+
+export const getPromoteUserToAdminUrl = (handle: string) => {
+  return `/admin/users/${handle}/promote`;
+};
+
+/**
+ * 주어진 핸들의 사용자를 플랫폼 ADMIN으로 승격합니다.
+ * @summary Promote User To Admin
+ */
+export const promoteUserToAdmin = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<promoteUserToAdminResponse> => {
+  return api<promoteUserToAdminResponse>(getPromoteUserToAdminUrl(handle), {
+    ...options,
+    method: 'PATCH',
+  });
+};
+
+export const getPromoteUserToAdminMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof promoteUserToAdmin>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof promoteUserToAdmin>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['promoteUserToAdmin'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof promoteUserToAdmin>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return promoteUserToAdmin(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PromoteUserToAdminMutationResult = NonNullable<
+  Awaited<ReturnType<typeof promoteUserToAdmin>>
+>;
+
+export type PromoteUserToAdminMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Promote User To Admin
+ */
+export const usePromoteUserToAdmin = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof promoteUserToAdmin>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof promoteUserToAdmin>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(
+    getPromoteUserToAdminMutationOptions(options),
+    queryClient,
+  );
+};
 export type getHandleAvailabilityResponse200 = {
   data: GetHandleAvailabilityResponse;
   status: 200;

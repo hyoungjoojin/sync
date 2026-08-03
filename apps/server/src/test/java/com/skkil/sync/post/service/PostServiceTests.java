@@ -3,9 +3,11 @@ package com.skkil.sync.post.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.dto.request.CreatePostRequest;
 import com.skkil.sync.post.dto.request.PostContentRequest;
 import com.skkil.sync.post.dto.request.UpdatePostRequest;
@@ -13,6 +15,7 @@ import com.skkil.sync.post.dto.request.UpdateProjectPostRequest;
 import com.skkil.sync.post.dto.response.CreatePostResponse;
 import com.skkil.sync.post.exception.InvalidPostPublishRequestException;
 import com.skkil.sync.post.exception.PostNotFoundException;
+import com.skkil.sync.post.exception.PostPinLimitExceededException;
 import com.skkil.sync.post.model.Post;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
@@ -184,6 +187,112 @@ class PostServiceTests {
 
     assertThatThrownBy(() -> postService.updateProjectPost(postId, handle, request))
         .isInstanceOf(PostNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("[pinPost] 다른 프로젝트의 글을 고정하려는 경우 PostNotFoundException 예외 발생")
+  void pinPost_postBelongsToOtherProject_throwsException() {
+    Long postId = 1L;
+    String handle = "project-handle";
+    Project postProject = Project.builder().handle("other-project").name("Other").build();
+    postProject.setId(1L);
+    Project requestedProject = Project.builder().handle(handle).name("Project").build();
+    requestedProject.setId(2L);
+    Post post =
+        Post.builder()
+            .slug("project-post")
+            .title("제목")
+            .content("{\"text\":\"content\"}")
+            .type(PostType.LONG)
+            .status(PostStatus.PUBLISHED)
+            .project(postProject)
+            .build();
+
+    when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+    when(projectDomainService.getProjectByHandle(handle)).thenReturn(requestedProject);
+
+    assertThatThrownBy(() -> postService.pinPost(postId, handle))
+        .isInstanceOf(PostNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("[pinPost] 프로젝트에 이미 최대 개수만큼 고정된 게시글이 있으면 PostPinLimitExceededException 예외 발생")
+  void pinPost_pinLimitReached_throwsException() {
+    Long postId = 1L;
+    String handle = "project-handle";
+    Project project = Project.builder().handle(handle).name("Project").build();
+    project.setId(1L);
+    Post post =
+        Post.builder()
+            .slug("project-post")
+            .title("제목")
+            .content("{\"text\":\"content\"}")
+            .type(PostType.LONG)
+            .status(PostStatus.PUBLISHED)
+            .project(project)
+            .build();
+
+    when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+    when(projectDomainService.getProjectByHandle(handle)).thenReturn(project);
+    when(postRepository.countByProjectAndPinnedAtIsNotNull(project))
+        .thenReturn((long) PostConstants.MAX_PINNED_POSTS_PER_PROJECT);
+
+    assertThatThrownBy(() -> postService.pinPost(postId, handle))
+        .isInstanceOf(PostPinLimitExceededException.class);
+    assertThat(post.isPinned()).isFalse();
+  }
+
+  @Test
+  @DisplayName("[pinPost] 이미 고정된 게시글을 다시 고정하면 한도 검사 없이 그대로 유지")
+  void pinPost_alreadyPinned_isIdempotent() {
+    Long postId = 1L;
+    String handle = "project-handle";
+    Project project = Project.builder().handle(handle).name("Project").build();
+    project.setId(1L);
+    Post post =
+        Post.builder()
+            .slug("project-post")
+            .title("제목")
+            .content("{\"text\":\"content\"}")
+            .type(PostType.LONG)
+            .status(PostStatus.PUBLISHED)
+            .project(project)
+            .build();
+    post.pin();
+
+    when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+    when(projectDomainService.getProjectByHandle(handle)).thenReturn(project);
+
+    postService.pinPost(postId, handle);
+
+    assertThat(post.isPinned()).isTrue();
+    verify(postRepository, never()).countByProjectAndPinnedAtIsNotNull(any());
+  }
+
+  @Test
+  @DisplayName("[unpinPost] 고정된 게시글의 고정을 해제")
+  void unpinPost_pinnedPost_unpinsIt() {
+    Long postId = 1L;
+    String handle = "project-handle";
+    Project project = Project.builder().handle(handle).name("Project").build();
+    project.setId(1L);
+    Post post =
+        Post.builder()
+            .slug("project-post")
+            .title("제목")
+            .content("{\"text\":\"content\"}")
+            .type(PostType.LONG)
+            .status(PostStatus.PUBLISHED)
+            .project(project)
+            .build();
+    post.pin();
+
+    when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+    when(projectDomainService.getProjectByHandle(handle)).thenReturn(project);
+
+    postService.unpinPost(postId, handle);
+
+    assertThat(post.isPinned()).isFalse();
   }
 
   @Test

@@ -2,17 +2,19 @@ package com.skkil.sync.post.repository;
 
 import static com.skkil.sync.jooq.tables.Posts.POSTS;
 import static com.skkil.sync.jooq.tables.ProjectFollowRelationships.PROJECT_FOLLOW_RELATIONSHIPS;
+import static com.skkil.sync.jooq.tables.Projects.PROJECTS;
 import static com.skkil.sync.jooq.tables.UserFollowRelationships.USER_FOLLOW_RELATIONSHIPS;
 
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
 import com.skkil.sync.post.dto.data.PostRecommendationCandidate;
-import com.skkil.sync.post.model.PostStatus;
-import com.skkil.sync.post.model.PostVisibility;
+import com.skkil.sync.post.dto.data.PostRecommendationContext;
+import com.skkil.sync.post.model.PostScope;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -31,19 +33,24 @@ public class PostRecommendationQueryRepository {
    * com.skkil.sync.post.repository.PostQueryRepository#getPostsByIds}로 materialize한다. 정렬 순서는 호출 측에서
    * 전달하는 {@code orderFields}(채널별 {@link
    * com.skkil.sync.common.util.pagination.keyset.KeysetCursorPaginationProvider})에 의해 결정된다.
+   *
+   * <p>가시성 판정은 다른 게시글 목록 조회와 동일하게 {@link PostConditions}를 재사용한다. 개인 게시글과 프로젝트 게시글이 모두 후보에 포함되므로,
+   * 프로젝트 공개 여부를 확인할 수 있도록 PROJECTS 를 left join 한다.
    */
   public CursorPaginationDataFetcher<PostRecommendationCandidate> getCandidates(
-      Condition channelCondition) {
+      Condition channelCondition, PostRecommendationContext context) {
     return (condition, orderFields, size) ->
         dsl.select(
                 POSTS.ID.as("id"),
                 POSTS.CREATED_AT.as("createdAt"),
                 POSTS.LIKE_COUNT.as("likeCount"))
             .from(POSTS)
+            .leftJoin(PROJECTS)
+            .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
             .where(
                 condition
-                    .and(visibleCondition())
-                    .and(publicPublishedCondition())
+                    .and(PostConditions.readablePublished(context.requesterId()))
+                    .and(scopeCondition(context.scope()))
                     .and(channelCondition))
             .orderBy(orderFields)
             .limit(size)
@@ -71,11 +78,7 @@ public class PostRecommendationQueryRepository {
     return POSTS.CREATED_AT.ge(since);
   }
 
-  private Condition visibleCondition() {
-    return POSTS.VISIBILITY.eq(PostVisibility.VISIBLE.name());
-  }
-
-  private Condition publicPublishedCondition() {
-    return POSTS.PROJECT_ID.isNull().and(POSTS.STATUS.eq(PostStatus.PUBLISHED.name()));
+  private Condition scopeCondition(@Nullable PostScope scope) {
+    return scope == null ? DSL.noCondition() : PostConditions.scope(scope);
   }
 }

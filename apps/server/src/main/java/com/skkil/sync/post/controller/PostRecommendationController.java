@@ -2,8 +2,10 @@ package com.skkil.sync.post.controller;
 
 import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
+import com.skkil.sync.post.dto.data.PostRecommendationContext;
 import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.model.PostRecommendationType;
+import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.service.PostRecommendationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +29,9 @@ public class PostRecommendationController {
   public PaginatedGetPostsResponse getRecommendations(
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestParam(required = false) PostRecommendationType type,
+      @RequestParam(required = false) PostScope scope,
       @Validated CursorPaginationRequest pagination) {
-    return postRecommendationService.getRecommendations(user.userId(), type, pagination);
+    var context = new PostRecommendationContext(user.userId(), scope);
+    return postRecommendationService.getRecommendations(context, type, pagination);
   }
 }

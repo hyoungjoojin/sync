@@ -2,6 +2,7 @@ package com.skkil.sync.post.service;
 
 import com.skkil.sync.media.model.Media;
 import com.skkil.sync.media.service.domain.MediaDomainService;
+import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.dto.request.CreatePostRequest;
 import com.skkil.sync.post.dto.request.CreateProjectPostRequest;
 import com.skkil.sync.post.dto.request.PostContentRequest;
@@ -13,6 +14,7 @@ import com.skkil.sync.post.event.PostContentChangedEvent;
 import com.skkil.sync.post.event.PostPublishedEvent;
 import com.skkil.sync.post.exception.InvalidPostPublishRequestException;
 import com.skkil.sync.post.exception.PostNotFoundException;
+import com.skkil.sync.post.exception.PostPinLimitExceededException;
 import com.skkil.sync.post.model.Post;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
@@ -282,6 +284,29 @@ public class PostService {
         postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
     post.updateSummary(request.summary());
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
+  public void pinPost(Long postId, String handle) {
+    Project project = projectDomainService.getProjectByHandle(handle);
+    Post post = requirePost(postId, project);
+    if (post.isPinned()) {
+      return;
+    }
+    if (postRepository.countByProjectAndPinnedAtIsNotNull(project)
+        >= PostConstants.MAX_PINNED_POSTS_PER_PROJECT) {
+      throw new PostPinLimitExceededException();
+    }
+    post.pin();
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
+  public void unpinPost(Long postId, String handle) {
+    Project project = projectDomainService.getProjectByHandle(handle);
+    Post post = requirePost(postId, project);
+    post.unpin();
   }
 
   @Transactional

@@ -41,9 +41,8 @@ public class PostDomainService {
   }
 
   /**
-   * 요청자가 열람할 수 있는 게시글만 돌려준다. 개인 게시글인지 프로젝트 게시글인지에 따른 노출 규칙은
-   * PostQueryRepository.Conditions.readableCondition 이 단독으로 정의하며, 열람할 수 없는 게시글은 존재 자체를 숨기기 위해 404 로
-   * 처리한다.
+   * 요청자가 열람할 수 있는 게시글만 돌려준다. 개인 게시글인지 프로젝트 게시글인지에 따른 노출 규칙은 PostConditions.readable 이 단독으로 정의하며,
+   * 열람할 수 없는 게시글은 존재 자체를 숨기기 위해 404 로 처리한다.
    */
   @Transactional(readOnly = true)
   public PostDto getReadablePostBySlug(@Nullable Long requesterId, String slug) {

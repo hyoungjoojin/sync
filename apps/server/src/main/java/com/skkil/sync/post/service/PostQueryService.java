@@ -139,6 +139,13 @@ public class PostQueryService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'READ')")
+  public GetPostsResponse getPinnedPostsByProject(Long requesterId, String handle) {
+    var pinned = postQueryRepository.getPinnedPostsByProject(requesterId, handle);
+    return new GetPostsResponse(postAssembler.toPostResponses(pinned, requesterId));
+  }
+
+  @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#userId, 'PROFILE', 'READ')")
   public PaginatedGetPostsResponse getCommentedPosts(
       Long requesterId, Long userId, String projectHandle, CursorPaginationRequest pagination) {

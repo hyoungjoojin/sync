@@ -130,6 +130,7 @@ class PostCommentPolicyTests {
         0,
         null,
         false,
+        null,
         now);
   }
 }

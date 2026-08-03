@@ -3652,6 +3652,192 @@ export const useCreateProjectPost = <
 > => {
   return useMutation(getCreateProjectPostMutationOptions(options), queryClient);
 };
+export type getPinnedPostsByProjectResponse200 = {
+  data: GetPostsResponse;
+  status: 200;
+};
+
+export type getPinnedPostsByProjectResponseSuccess =
+  getPinnedPostsByProjectResponse200 & {
+    headers: Headers;
+  };
+export type getPinnedPostsByProjectResponse =
+  getPinnedPostsByProjectResponseSuccess;
+
+export const getGetPinnedPostsByProjectUrl = (handle: string) => {
+  return `/projects/${handle}/posts/pinned`;
+};
+
+/**
+ * 프로젝트 대시보드에 고정된 게시글 목록을 조회합니다.
+ * @summary Get Pinned Posts By Project
+ */
+export const getPinnedPostsByProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<getPinnedPostsByProjectResponse> => {
+  return api<getPinnedPostsByProjectResponse>(
+    getGetPinnedPostsByProjectUrl(handle),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetPinnedPostsByProjectQueryKey = (handle: string) => {
+  return [`/projects/${handle}/posts/pinned`] as const;
+};
+
+export const getGetPinnedPostsByProjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPinnedPostsByProjectQueryKey(handle);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPinnedPostsByProject>>
+  > = ({ signal }) =>
+    getPinnedPostsByProject(handle, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: handle !== null && handle !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPinnedPostsByProjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPinnedPostsByProject>>
+>;
+export type GetPinnedPostsByProjectQueryError = ErrorType<unknown>;
+
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+          TError,
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+          TError,
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Pinned Posts By Project
+ */
+
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPinnedPostsByProjectQueryOptions(handle, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type updateProjectPostResponse204 = {
   data: void;
   status: 204;
@@ -3757,6 +3943,196 @@ export const useUpdateProjectPost = <
   TContext
 > => {
   return useMutation(getUpdateProjectPostMutationOptions(options), queryClient);
+};
+export type pinPostResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type pinPostResponseSuccess = pinPostResponse204 & {
+  headers: Headers;
+};
+export type pinPostResponse = pinPostResponseSuccess;
+
+export const getPinPostUrl = (handle: string, postId: string) => {
+  return `/projects/${handle}/posts/${postId}/pin`;
+};
+
+/**
+ * 프로젝트 관리자가 게시글을 프로젝트 대시보드에 고정합니다.
+ * @summary Pin Post
+ */
+export const pinPost = async (
+  handle: string,
+  postId: string,
+  options?: RequestInit,
+): Promise<pinPostResponse> => {
+  return api<pinPostResponse>(getPinPostUrl(handle, postId), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getPinPostMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof pinPost>>,
+    TError,
+    { handle: string; postId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof pinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  const mutationKey = ['pinPost'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof pinPost>>,
+    { handle: string; postId: string }
+  > = (props) => {
+    const { handle, postId } = props ?? {};
+
+    return pinPost(handle, postId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PinPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof pinPost>>
+>;
+
+export type PinPostMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Pin Post
+ */
+export const usePinPost = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof pinPost>>,
+      TError,
+      { handle: string; postId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof pinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  return useMutation(getPinPostMutationOptions(options), queryClient);
+};
+export type unpinPostResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type unpinPostResponseSuccess = unpinPostResponse204 & {
+  headers: Headers;
+};
+export type unpinPostResponse = unpinPostResponseSuccess;
+
+export const getUnpinPostUrl = (handle: string, postId: string) => {
+  return `/projects/${handle}/posts/${postId}/pin`;
+};
+
+/**
+ * 프로젝트 관리자가 게시글의 고정을 해제합니다.
+ * @summary Unpin Post
+ */
+export const unpinPost = async (
+  handle: string,
+  postId: string,
+  options?: RequestInit,
+): Promise<unpinPostResponse> => {
+  return api<unpinPostResponse>(getUnpinPostUrl(handle, postId), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getUnpinPostMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unpinPost>>,
+    TError,
+    { handle: string; postId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unpinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  const mutationKey = ['unpinPost'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unpinPost>>,
+    { handle: string; postId: string }
+  > = (props) => {
+    const { handle, postId } = props ?? {};
+
+    return unpinPost(handle, postId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnpinPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unpinPost>>
+>;
+
+export type UnpinPostMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unpin Post
+ */
+export const useUnpinPost = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof unpinPost>>,
+      TError,
+      { handle: string; postId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof unpinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  return useMutation(getUnpinPostMutationOptions(options), queryClient);
 };
 export type searchPostsResponse200 = {
   data: GetPostsResponse;

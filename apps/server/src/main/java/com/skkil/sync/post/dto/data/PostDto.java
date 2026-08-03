@@ -33,4 +33,5 @@ public record PostDto(
     int wordCount,
     @Nullable Long coverMediaId,
     Boolean isSeriesPost,
+    @Nullable OffsetDateTime pinnedAt,
     @Nullable OffsetDateTime sortKey) {}

@@ -26,4 +26,8 @@ export type GetPostRecommendationsParams = {
    * 추천 게시글 종류
    */
   type?: string;
+  /**
+   * 게시글 범위 필터. PUBLIC 은 개인 게시글만, WORKSPACE 는 프로젝트 게시글만 조회한다. 생략하면 두 종류를 모두 포함한다.
+   */
+  scope?: string;
 };

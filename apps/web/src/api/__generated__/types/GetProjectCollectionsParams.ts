@@ -7,7 +7,7 @@
 
 export type GetProjectCollectionsParams = {
   /**
-   * 주어지면 각 컬렉션이 이 게시글(slug)을 담고 있는지 containsPost 로 표시한다.
+   * 주어지면 이 게시글(slug)을 담고 있는 컬렉션의 멤버십을 memberships 로 표시한다.
    */
   postHandle?: string;
 };

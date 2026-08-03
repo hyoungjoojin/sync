@@ -25,6 +25,7 @@ public record PostSummary(
     @Nullable ProjectSummary project,
     boolean resolved,
     boolean isSeriesPost,
+    @Nullable OffsetDateTime pinnedAt,
     boolean isAuthor,
     boolean canDelete,
     boolean canComment,

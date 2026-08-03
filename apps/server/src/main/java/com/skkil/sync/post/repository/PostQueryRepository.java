@@ -7,16 +7,15 @@ import static com.skkil.sync.jooq.tables.PostReferences.POST_REFERENCES;
 import static com.skkil.sync.jooq.tables.PostTags.POST_TAGS;
 import static com.skkil.sync.jooq.tables.Posts.POSTS;
 import static com.skkil.sync.jooq.tables.Projects.PROJECTS;
-import static com.skkil.sync.jooq.tables.Teammates.TEAMMATES;
 import static com.skkil.sync.jooq.tables.Users.USERS;
 import static com.skkil.sync.post.repository.pagination.CommentedPostCursorPaginationProvider.COMMENTED_AT;
 
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
+import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.dto.data.PostDto;
 import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
-import com.skkil.sync.post.model.PostVisibility;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,7 @@ public class PostQueryRepository {
         .from(POSTS)
         .leftJoin(PROJECTS)
         .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
-        .where(POSTS.SLUG.eq(slug).and(Conditions.readableCondition(requesterId)))
+        .where(POSTS.SLUG.eq(slug).and(PostConditions.readable(requesterId)))
         .fetchOptionalInto(PostDto.class);
   }
 
@@ -54,7 +53,7 @@ public class PostQueryRepository {
             .from(POSTS)
             .leftJoin(PROJECTS)
             .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
-            .where(condition.and(Conditions.feedVisibleCondition()))
+            .where(condition.and(PostConditions.feedVisible()))
             .orderBy(orderFields)
             .limit(size)
             .fetchInto(PostDto.class);
@@ -87,7 +86,7 @@ public class PostQueryRepository {
           .on(POST_TAGS.POST_ID.eq(POSTS.ID))
           .leftJoin(PROJECTS)
           .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
-          .where(tagCondition.and(Conditions.tagPostVisibilityCondition(requesterId)))
+          .where(tagCondition.and(PostConditions.readablePublished(requesterId)))
           .orderBy(orderFields)
           .limit(size)
           .fetchInto(PostDto.class);
@@ -100,10 +99,8 @@ public class PostQueryRepository {
       Condition projectCondition =
           condition
               .and(PROJECTS.HANDLE.eq(handle))
-              .and(Conditions.workspacePublishedCondition())
-              .and(
-                  Conditions.publicProjectCondition()
-                      .or(Conditions.workspaceReadableCondition(requesterId)));
+              .and(PostConditions.workspacePublished())
+              .and(PostConditions.publicProject().or(PostConditions.teammate(requesterId)));
       if (type != null) {
         projectCondition = projectCondition.and(POSTS.POST_TYPE.eq(type.name()));
       }
@@ -124,6 +121,25 @@ public class PostQueryRepository {
     };
   }
 
+  public List<PostDto> getPinnedPostsByProject(Long requesterId, String handle) {
+    Condition pinnedCondition =
+        PROJECTS
+            .HANDLE
+            .eq(handle)
+            .and(POSTS.PINNED_AT.isNotNull())
+            .and(PostConditions.workspacePublished())
+            .and(PostConditions.publicProject().or(PostConditions.teammate(requesterId)));
+
+    return dsl.select(post(requesterId))
+        .from(POSTS)
+        .join(PROJECTS)
+        .on(POSTS.PROJECT_ID.eq(PROJECTS.ID))
+        .where(pinnedCondition)
+        .orderBy(POSTS.PINNED_AT.desc())
+        .limit(PostConstants.MAX_PINNED_POSTS_PER_PROJECT)
+        .fetchInto(PostDto.class);
+  }
+
   public CursorPaginationDataFetcher<PostDto> getDraftsByAuthor(
       Long requesterId, PostType type, PostScope scope, String projectHandle) {
     return (condition, orderFields, size) -> {
@@ -131,18 +147,14 @@ public class PostQueryRepository {
           condition
               .and(POSTS.AUTHOR_ID.eq(requesterId))
               .and(POSTS.STATUS.eq(PostStatus.DRAFT.name()))
-              .and(Conditions.visibleCondition());
+              .and(PostConditions.visible());
 
       if (type != null) {
         draftCondition = draftCondition.and(POSTS.POST_TYPE.eq(type.name()));
       }
 
       if (scope != null) {
-        draftCondition =
-            draftCondition.and(
-                scope == PostScope.PUBLIC
-                    ? POSTS.PROJECT_ID.isNull()
-                    : POSTS.PROJECT_ID.isNotNull());
+        draftCondition = draftCondition.and(PostConditions.scope(scope));
       }
 
       if (projectHandle != null) {
@@ -164,9 +176,7 @@ public class PostQueryRepository {
       Long userId, String projectHandle) {
     return (condition, orderFields, size) -> {
       Condition bookmarkCondition =
-          condition
-              .and(POST_BOOKMARKS.USER_ID.eq(userId))
-              .and(Conditions.readableCondition(userId));
+          condition.and(POST_BOOKMARKS.USER_ID.eq(userId)).and(PostConditions.readable(userId));
 
       if (projectHandle != null) {
         bookmarkCondition = bookmarkCondition.and(PROJECTS.HANDLE.eq(projectHandle));
@@ -188,7 +198,7 @@ public class PostQueryRepository {
   public CursorPaginationDataFetcher<PostDto> getLikedPosts(Long userId, String projectHandle) {
     return (condition, orderFields, size) -> {
       Condition likeCondition =
-          condition.and(POST_LIKES.USER_ID.eq(userId)).and(Conditions.readableCondition(userId));
+          condition.and(POST_LIKES.USER_ID.eq(userId)).and(PostConditions.readable(userId));
 
       if (projectHandle != null) {
         likeCondition = likeCondition.and(PROJECTS.HANDLE.eq(projectHandle));
@@ -216,7 +226,7 @@ public class PostQueryRepository {
               .groupBy(COMMENTS.POST_ID)
               .asTable(DSL.name("commented_posts"));
 
-      Condition commentedCondition = condition.and(Conditions.readableCondition(userId));
+      Condition commentedCondition = condition.and(PostConditions.readable(userId));
       if (projectHandle != null) {
         commentedCondition = commentedCondition.and(PROJECTS.HANDLE.eq(projectHandle));
       }
@@ -245,7 +255,7 @@ public class PostQueryRepository {
             POST_REFERENCES
                 .SOURCE_POST_ID
                 .eq(sourcePostId)
-                .and(Conditions.readableCondition(requesterId)))
+                .and(PostConditions.readable(requesterId)))
         .orderBy(POST_REFERENCES.SORT_ORDER.asc())
         .fetchInto(PostDto.class);
   }
@@ -262,7 +272,7 @@ public class PostQueryRepository {
             .where(
                 condition
                     .and(POST_REFERENCES.REFERENCED_POST_ID.eq(targetPostId))
-                    .and(Conditions.readableCondition(requesterId)))
+                    .and(PostConditions.readable(requesterId)))
             .orderBy(orderFields)
             .limit(size)
             .fetchInto(PostDto.class);
@@ -270,7 +280,7 @@ public class PostQueryRepository {
 
   public List<PostDto> getPostsByIds(Long requesterId, List<Long> ids) {
     return getPostsByIds(
-        requesterId, ids, POSTS.ID.in(ids).and(Conditions.readableCondition(requesterId)));
+        requesterId, ids, POSTS.ID.in(ids).and(PostConditions.readable(requesterId)));
   }
 
   public List<PostDto> getPostsByIdsInProject(
@@ -281,8 +291,8 @@ public class PostQueryRepository {
         POSTS
             .ID
             .in(ids)
-            .and(Conditions.readableCondition(requesterId))
-            .and(Conditions.publishedCondition())
+            .and(PostConditions.readable(requesterId))
+            .and(PostConditions.published())
             .and(PROJECTS.HANDLE.eq(projectHandle)));
   }
 
@@ -373,78 +383,7 @@ public class PostQueryRepository {
         POSTS.WORD_COUNT.as("wordCount"),
         POSTS.COVER_MEDIA_ID.as("coverMediaId"),
         POSTS.IS_SERIES_POST.as("isSeriesPost"),
+        POSTS.PINNED_AT.as("pinnedAt"),
         sortKey.as("sortKey"));
-  }
-
-  private static final class Conditions {
-    private static Condition visibleCondition() {
-      return POSTS.VISIBILITY.eq(PostVisibility.VISIBLE.name());
-    }
-
-    private static Condition publishedCondition() {
-      return POSTS.STATUS.eq(PostStatus.PUBLISHED.name());
-    }
-
-    private static Condition publicPublishedCondition() {
-      return visibleCondition().and(POSTS.PROJECT_ID.isNull()).and(publishedCondition());
-    }
-
-    private static Condition workspacePublishedCondition() {
-      return visibleCondition().and(POSTS.PROJECT_ID.isNotNull()).and(publishedCondition());
-    }
-
-    // 프로젝트가 공개(public)로 설정된 경우, 해당 프로젝트의 게시글은 팀원이 아니어도 읽을 수 있다.
-    private static Condition publicProjectCondition() {
-      return PROJECTS.IS_PUBLIC.isTrue();
-    }
-
-    // 공개 피드(전체 게시글 목록)에 노출 가능한 게시글: 프로젝트에 속하지 않은 개인 게시글이거나,
-    // 공개 프로젝트에 속한 게시글. 비공개 프로젝트 게시글은 작성자/팀원 여부와 무관하게 피드에서 제외한다.
-    private static Condition feedVisibleCondition() {
-      return publicPublishedCondition()
-          .or(workspacePublishedCondition().and(publicProjectCondition()));
-    }
-
-    private static Condition tagPostVisibilityCondition(Long requesterId) {
-      return visibleCondition()
-          .and(publishedCondition())
-          .and(
-              POSTS
-                  .PROJECT_ID
-                  .isNull()
-                  .or(publicProjectCondition())
-                  .or(workspaceReadableCondition(requesterId)));
-    }
-
-    // 워크스페이스(프로젝트) 게시글은 현재 팀원에게만 접근을 허용한다. 작성자라도 프로젝트에서
-    // 나가거나 추방되면(TEAMMATES 레코드 삭제) 접근 권한을 잃으므로, 작성자 분기를 두지 않는다.
-    private static Condition workspaceReadableCondition(Long requesterId) {
-      if (requesterId == null) {
-        return DSL.falseCondition();
-      }
-
-      return DSL.exists(
-          DSL.selectOne()
-              .from(TEAMMATES)
-              .where(TEAMMATES.PROJECT_ID.eq(POSTS.PROJECT_ID))
-              .and(TEAMMATES.USER_ID.eq(requesterId)));
-    }
-
-    private static Condition readableCondition(Long requesterId) {
-      Condition publiclyReadable =
-          publicPublishedCondition()
-              .or(workspacePublishedCondition().and(publicProjectCondition()));
-      if (requesterId == null) {
-        return publiclyReadable;
-      }
-
-      // 개인 게시글(PROJECT_ID null)은 작성자 본인에게 항상 노출한다(초안 포함). 워크스페이스 게시글은
-      // 작성자 여부와 무관하게 현재 팀원 조건(workspaceReadableCondition)을 통해서만 노출한다.
-      return visibleCondition()
-          .and(
-              publiclyReadable
-                  .or(POSTS.PROJECT_ID.isNull().and(POSTS.AUTHOR_ID.eq(requesterId)))
-                  .or(workspacePublishedCondition().and(workspaceReadableCondition(requesterId))));
-    }
   }
 }

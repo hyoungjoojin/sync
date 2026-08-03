@@ -207,6 +207,7 @@ class PostAssemblerTests {
         100,
         null,
         false,
+        null,
         now);
   }
 }

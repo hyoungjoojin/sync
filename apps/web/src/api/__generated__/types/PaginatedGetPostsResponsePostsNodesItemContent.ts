@@ -39,6 +39,11 @@ export type PaginatedGetPostsResponsePostsNodesItemContent = {
   liked: boolean;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
+  /**
+   * 게시글이 프로젝트 대시보드에 고정된 시각 (고정되지 않은 경우 없음)
+   * @nullable
+   */
+  pinnedAt?: string | null;
   /** Creation Timestamp */
   createdAt: string;
   /** 게시글 공개 범위 */

@@ -47,6 +47,8 @@ export interface PostSummary {
   canDelete: boolean;
   createdAt: string;
   resolved: boolean;
+  /** 프로젝트 대시보드에 고정된 시각 (고정되지 않은 경우 없음) */
+  pinnedAt?: string | null;
   tags: PostTagSummary[];
   /** 게시물 내용의 일반 텍스트 미리보기 */
   preview: string;

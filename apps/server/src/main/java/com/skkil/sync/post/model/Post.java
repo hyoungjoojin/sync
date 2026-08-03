@@ -87,6 +87,9 @@ public class Post extends BaseEntity {
   @Column(name = "hidden_reason", columnDefinition = "TEXT")
   private String hiddenReason;
 
+  @Column(name = "pinned_at")
+  private Instant pinnedAt;
+
   @Column(name = "preview", columnDefinition = "TEXT", nullable = false)
   private String preview;
 
@@ -193,5 +196,17 @@ public class Post extends BaseEntity {
 
   public void unmarkInSeries() {
     this.isSeriesPost = false;
+  }
+
+  public boolean isPinned() {
+    return pinnedAt != null;
+  }
+
+  public void pin() {
+    this.pinnedAt = Instant.now();
+  }
+
+  public void unpin() {
+    this.pinnedAt = null;
   }
 }

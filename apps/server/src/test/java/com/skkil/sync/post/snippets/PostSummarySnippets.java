@@ -37,6 +37,7 @@ public class PostSummarySnippets {
         .project(ProjectSummarySnippets.getProjectSummary())
         .resolved(false)
         .isSeriesPost(false)
+        .pinnedAt(null)
         .isAuthor(false)
         .canDelete(false)
         .canComment(true)
@@ -119,6 +120,11 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "isSeriesPost")
             .type(JsonFieldType.BOOLEAN)
             .description("게시글이 어떤 시리즈에 속해 있는지 여부"));
+    fields.add(
+        fieldWithPath(prefix + "pinnedAt")
+            .type(JsonFieldType.STRING)
+            .description("게시글이 프로젝트 대시보드에 고정된 시각 (고정되지 않은 경우 없음)")
+            .optional());
     fields.add(
         fieldWithPath(prefix + "isAuthor")
             .type(JsonFieldType.BOOLEAN)

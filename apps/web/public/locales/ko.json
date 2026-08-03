@@ -71,6 +71,23 @@
         "empty": {
           "title": "추천 프로젝트가 없습니다",
           "description": "잠시 후 다시 확인해 주세요."
+        },
+        "rank": "{rank}.",
+        "no-description": "설명이 없습니다.",
+        "follower-count": "팔로워 {count}명",
+        "space": {
+          "community": "커뮤니티",
+          "showcase": "쇼케이스",
+          "team": "팀"
+        },
+        "join": {
+          "open": "누구나 참여 가능",
+          "request": "승인 후 참여",
+          "invite": "초대 전용"
+        },
+        "trending-posts": {
+          "title": "프로젝트 인기 포스트",
+          "empty": "아직 인기 있는 프로젝트 포스트가 없습니다."
         }
       }
     },
@@ -161,6 +178,13 @@
       "edit": {
         "trigger": "수정",
         "title": "글 수정"
+      },
+      "pin": {
+        "trigger": "고정",
+        "unpin-trigger": "고정 해제",
+        "messages": {
+          "error": "게시글 고정에 실패했습니다."
+        }
       },
       "new": {
         "title": "새 글 작성"
@@ -458,9 +482,8 @@
             "unanswered": "미답변"
           },
           "pinned": {
-            "heading": "고정 · 정본",
-            "badge": "정본",
-            "type-guide": "가이드",
+            "heading": "고정된 게시글",
+            "badge": "고정",
             "meta": "{author} · {minutes}분"
           },
           "recent-activity": {
@@ -761,12 +784,86 @@
           "password_min_length": "비밀번호는 최소 {length}자 이상이어야 합니다.",
           "passwords_must_match": "비밀번호가 일치하지 않습니다.",
           "required_confirm_password": "비밀번호 확인은 필수 항목입니다.",
-          "user-already-exists": "사용자가 이미 존재합니다."
+          "user-already-exists": "사용자가 이미 존재합니다.",
+          "captcha_failed": "보안 인증에 실패했습니다. 다시 시도해 주세요."
         },
+        "captcha_notice": "이 사이트는 reCAPTCHA로 보호되며 Google <privacy>개인정보처리방침</privacy> 및 <terms>서비스 약관</terms>이 적용됩니다.",
         "links": {
           "login": {
             "label": "이미 계정이 있으신가요? 로그인하기"
           }
+        }
+      }
+    },
+    "forgot_password": {
+      "title": "비밀번호 재설정",
+      "description": "가입할 때 사용한 이메일로 재설정 링크를 보내드립니다.",
+      "form": {
+        "email": {
+          "label": "이메일",
+          "placeholder": "이메일을 입력하세요"
+        },
+        "submit": {
+          "label": "재설정 링크 받기"
+        },
+        "errors": {
+          "required_email": "이메일은 필수 항목입니다.",
+          "invalid_email": "유효한 이메일 주소를 입력하세요.",
+          "account_not_found": "가입된 계정이 없는 이메일입니다.",
+          "request_failed": "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요."
+        },
+        "links": {
+          "login": {
+            "label": "로그인으로 돌아가기"
+          }
+        }
+      },
+      "sent": {
+        "title": "이메일을 확인해주세요",
+        "description": "재설정 링크를 보냈습니다. 받는 주소는 {email}입니다. 링크는 메일에 안내된 시간이 지나면 만료됩니다.",
+        "notice": "메일이 보이지 않는다면 스팸함을 확인해주세요."
+      }
+    },
+    "reset_password": {
+      "title": "새 비밀번호 설정",
+      "description": "새로 사용할 비밀번호를 입력하세요.",
+      "form": {
+        "password": {
+          "label": "새 비밀번호",
+          "placeholder": "새 비밀번호를 입력하세요"
+        },
+        "confirm_password": {
+          "label": "새 비밀번호 확인",
+          "placeholder": "새 비밀번호를 다시 입력하세요"
+        },
+        "submit": {
+          "label": "비밀번호 변경"
+        },
+        "errors": {
+          "required_password": "비밀번호는 필수 항목입니다.",
+          "password_min_length": "비밀번호는 최소 {length}자 이상이어야 합니다.",
+          "required_confirm_password": "비밀번호 확인은 필수 항목입니다.",
+          "passwords_must_match": "비밀번호가 일치하지 않습니다.",
+          "reset_failed": "비밀번호를 변경하지 못했습니다. 잠시 후 다시 시도해주세요."
+        },
+        "links": {
+          "login": {
+            "label": "로그인으로 돌아가기"
+          }
+        }
+      },
+      "success": "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.",
+      "invalid_link": {
+        "expired": {
+          "title": "링크가 만료되었습니다",
+          "description": "재설정 링크는 메일에 안내된 시간이 지나면 만료됩니다. 새 링크를 요청해주세요."
+        },
+        "invalid": {
+          "title": "사용할 수 없는 링크입니다",
+          "description": "이미 사용했거나 더 이상 유효하지 않은 링크입니다. 새 링크를 요청해주세요."
+        },
+        "action": {
+          "label": "새 링크 요청하기"
         }
       }
     },
@@ -1324,11 +1421,10 @@
         "create-new": "새 컬렉션 만들기",
         "empty": "아직 컬렉션이 없습니다. 새로 만들어 보세요.",
         "messages": {
-          "success": "컬렉션에 추가했습니다.",
-          "error": "컬렉션에 추가하지 못했습니다."
+          "error": "컬렉션에 추가하지 못했습니다.",
+          "remove-error": "컬렉션에서 제거하지 못했습니다."
         },
         "sections": {
-          "personal": "내 컬렉션",
           "project": "프로젝트 컬렉션"
         }
       }
@@ -1409,14 +1505,57 @@
               "error": "프로필 업데이트에 실패했습니다."
             }
           },
+          "password": {
+            "title": "비밀번호",
+            "description": "비밀번호를 변경하면 다른 모든 기기에서 로그아웃됩니다.",
+            "form": {
+              "fields": {
+                "current_password": {
+                  "label": "현재 비밀번호",
+                  "placeholder": "현재 비밀번호를 입력하세요"
+                },
+                "new_password": {
+                  "label": "새 비밀번호",
+                  "placeholder": "새 비밀번호를 입력하세요"
+                },
+                "confirm_password": {
+                  "label": "새 비밀번호 확인",
+                  "placeholder": "새 비밀번호를 다시 입력하세요"
+                }
+              },
+              "submit": {
+                "label": "비밀번호 변경",
+                "set_label": "비밀번호 설정"
+              },
+              "errors": {
+                "required_current_password": "현재 비밀번호는 필수 항목입니다.",
+                "required_new_password": "새 비밀번호는 필수 항목입니다.",
+                "password_min_length": "비밀번호는 최소 {length}자 이상이어야 합니다.",
+                "required_confirm_password": "새 비밀번호 확인은 필수 항목입니다.",
+                "passwords_must_match": "비밀번호가 일치하지 않습니다.",
+                "invalid_current_password": "현재 비밀번호가 올바르지 않습니다.",
+                "change_failed": "비밀번호를 변경하지 못했습니다. 잠시 후 다시 시도해주세요."
+              }
+            },
+            "messages": {
+              "success": "비밀번호가 변경되었습니다. 다른 기기에서는 다시 로그인해야 합니다.",
+              "set_success": "비밀번호가 설정되었습니다. 다른 기기에서는 다시 로그인해야 합니다."
+            },
+            "set": {
+              "title": "비밀번호 설정",
+              "description": "비밀번호를 설정하면 소셜 로그인 없이도 이메일로 로그인할 수 있습니다."
+            }
+          },
           "oauth2": {
             "title": "소셜 로그인",
             "description": "계정을 연결하여 더 쉽게 로그인하세요",
             "connected": {
-              "GOOGLE": "Google에 연결됨"
+              "GOOGLE": "Google에 연결됨",
+              "NAVER": "Naver에 연결됨"
             },
             "connect": {
-              "GOOGLE": "Google 계정 연결"
+              "GOOGLE": "Google 계정 연결",
+              "NAVER": "Naver 계정 연결"
             },
             "errors": {
               "cannot_be_deleted": "이 로그인 방법은 삭제할 수 없습니다. 다른 로그인 방법을 먼저 연결하세요."
@@ -1465,7 +1604,8 @@
   },
   "components": {
     "oauth": {
-      "GOOGLE": "Google로 계속하기"
+      "GOOGLE": "Google로 계속하기",
+      "NAVER": "Naver로 계속하기"
     },
     "post": {
       "type": {
@@ -1574,6 +1714,7 @@
     },
     "layout": {
       "sidebar": {
+        "back-to-home": "홈으로 돌아가기",
         "ask-write": "게시물 작성",
         "yours": "내 활동",
         "your-projects": "내 프로젝트",
@@ -1644,55 +1785,68 @@
       "commands": {
         "h1": {
           "title": "제목 1",
-          "description": ""
+          "description": "",
+          "keywords": "제목 헤딩 대제목 큰제목 heading title"
         },
         "h2": {
           "title": "제목 2",
-          "description": ""
+          "description": "",
+          "keywords": "제목 헤딩 소제목 중제목 heading subtitle"
         },
         "bold": {
           "title": "굵게",
-          "description": ""
+          "description": "",
+          "keywords": "굵게 굵기 볼드 강조 진하게 bold strong"
         },
         "italic": {
           "title": "기울임",
-          "description": ""
+          "description": "",
+          "keywords": "기울임 이탤릭 기울기 italic emphasis"
         },
         "bullet": {
           "title": "글머리 기호 목록",
-          "description": ""
+          "description": "",
+          "keywords": "글머리기호 목록 리스트 불릿 점 bullet list"
         },
         "numbered": {
           "title": "번호 매기기 목록",
-          "description": ""
+          "description": "",
+          "keywords": "번호매기기 목록 리스트 순서 숫자 numbered ordered list"
         },
         "todo": {
           "title": "할 일 목록",
-          "description": ""
+          "description": "",
+          "keywords": "할일 목록 체크 체크리스트 투두 todo task checklist"
         },
         "quote": {
           "title": "인용구",
-          "description": ""
+          "description": "",
+          "keywords": "인용구 인용 따옴표 quote blockquote"
         },
         "code": {
           "title": "코드 블록",
-          "description": ""
+          "description": "",
+          "keywords": "코드블록 코드 소스 스니펫 code snippet"
         },
         "table": {
           "title": "표",
-          "description": ""
+          "description": "",
+          "keywords": "표 테이블 격자 table grid"
         },
         "image": {
           "title": "이미지",
-          "description": ""
+          "description": "",
+          "keywords": "이미지 사진 그림 image photo picture"
         },
         "file": {
           "title": "파일",
-          "description": ""
+          "description": "",
+          "keywords": "파일 첨부 문서 다운로드 file attachment"
         },
         "embed": {
           "title": "임베드",
-          "description": ""
+          "description": "",
+          "keywords": "임베드 링크 유튜브 미리보기 embed link youtube iframe"
         },
         "ignore": {
           "title": "/ 를 입력하기",
