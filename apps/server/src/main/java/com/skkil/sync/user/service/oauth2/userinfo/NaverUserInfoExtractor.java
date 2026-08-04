@@ -14,7 +14,7 @@ public class NaverUserInfoExtractor implements OAuth2UserInfoExtractor {
 
   @Override
   @SuppressWarnings("unchecked")
-  public OAuth2UserDetails extract(Map<String, Object> attributes) {
+  public OAuth2UserDetails extract(Map<String, Object> attributes, String accessToken) {
     Object response = attributes.get("response");
     if (!(response instanceof Map)) {
       throw new IllegalArgumentException(

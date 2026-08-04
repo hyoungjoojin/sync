@@ -30,7 +30,7 @@ public class NaverUserInfoExtractorTests {
                 "email", "user@naver.com",
                 "name", "User Name"));
 
-    OAuth2UserDetails result = extractor.extract(attributes);
+    OAuth2UserDetails result = extractor.extract(attributes, "access-token");
 
     assertThat(result.providerUserId()).isEqualTo("naver-user-id-123");
     assertThat(result.email()).isEqualTo("user@naver.com");
@@ -41,7 +41,7 @@ public class NaverUserInfoExtractorTests {
   void extract_missingResponseObject_throwsIllegalArgumentException() {
     Map<String, Object> attributes = Map.of("resultcode", "00", "message", "success");
 
-    assertThatThrownBy(() -> extractor.extract(attributes))
+    assertThatThrownBy(() -> extractor.extract(attributes, "access-token"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

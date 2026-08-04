@@ -4,7 +4,8 @@ import lombok.Getter;
 
 public enum OAuth2Provider {
   GOOGLE("google"),
-  NAVER("naver");
+  NAVER("naver"),
+  GITHUB("github");
 
   @Getter private final String id;
 

@@ -1,4 +1,4 @@
-export type OAuth2Provider = 'GOOGLE' | 'NAVER';
+export type OAuth2Provider = 'GOOGLE' | 'NAVER' | 'GITHUB';
 
 export interface Profile {
   id: string;

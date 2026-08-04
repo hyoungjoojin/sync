@@ -1534,11 +1534,13 @@
             "description": "계정을 연결하여 더 쉽게 로그인하세요",
             "connected": {
               "GOOGLE": "Google에 연결됨",
-              "NAVER": "Naver에 연결됨"
+              "NAVER": "Naver에 연결됨",
+              "GITHUB": "GitHub에 연결됨"
             },
             "connect": {
               "GOOGLE": "Google 계정 연결",
-              "NAVER": "Naver 계정 연결"
+              "NAVER": "Naver 계정 연결",
+              "GITHUB": "GitHub 계정 연결"
             },
             "errors": {
               "cannot_be_deleted": "이 로그인 방법은 삭제할 수 없습니다. 다른 로그인 방법을 먼저 연결하세요."
@@ -1588,7 +1590,8 @@
   "components": {
     "oauth": {
       "GOOGLE": "Google로 계속하기",
-      "NAVER": "Naver로 계속하기"
+      "NAVER": "Naver로 계속하기",
+      "GITHUB": "GitHub로 계속하기"
     },
     "post": {
       "type": {

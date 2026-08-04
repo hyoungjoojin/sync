@@ -9,6 +9,9 @@ function getClientId(provider: OAuth2Provider) {
     case 'NAVER':
       return 'naver';
 
+    case 'GITHUB':
+      return 'github';
+
     default:
       return provider;
   }

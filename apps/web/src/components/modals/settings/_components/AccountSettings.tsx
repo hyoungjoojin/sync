@@ -1,6 +1,6 @@
 'use client';
 
-import { GoogleLogoIcon } from '@phosphor-icons/react';
+import { GithubLogoIcon, GoogleLogoIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -36,6 +36,10 @@ const OAuth2Providers: {
         height={16}
       />
     ),
+  },
+  {
+    id: 'GITHUB',
+    icon: <GithubLogoIcon />,
   },
 ];
 

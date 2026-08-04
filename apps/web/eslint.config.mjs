@@ -105,6 +105,7 @@ const eslintConfig = defineConfig([
           'sync',
           'Google',
           'Naver',
+          'GitHub',
         ],
       },
       'object-properties': {

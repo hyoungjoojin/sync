@@ -7,5 +7,5 @@ public interface OAuth2UserInfoExtractor {
 
   OAuth2Provider getProvider();
 
-  OAuth2UserDetails extract(Map<String, Object> attributes);
+  OAuth2UserDetails extract(Map<String, Object> attributes, String accessToken);
 }

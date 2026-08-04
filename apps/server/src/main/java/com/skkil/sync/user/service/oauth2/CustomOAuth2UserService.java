@@ -43,7 +43,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     OAuth2User oAuth2User = super.loadUser(userRequest);
-    OAuth2UserDetails userDetails = extractor.extract(oAuth2User.getAttributes());
+    OAuth2UserDetails userDetails =
+        extractor.extract(oAuth2User.getAttributes(), userRequest.getAccessToken().getTokenValue());
     log.debug("OAuth2 user loaded: {}", userDetails.email());
 
     return oAuth2AccountLinkingService.resolveUser(provider, userDetails);

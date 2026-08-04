@@ -34,6 +34,17 @@ const providers: {
       />
     ),
   },
+  {
+    id: 'GITHUB',
+    icon: (
+      <Image
+        src="/assets/icons/github_logo.svg"
+        alt="GitHub"
+        width={18}
+        height={18}
+      />
+    ),
+  },
 ];
 
 export default function OAuthProviders() {

@@ -55,6 +55,13 @@ spring:
             scope:
               - name
               - email
+          github:
+            client-id: ${OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_ID:ID}
+            client-secret: ${OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_SECRET:SECRET}
+            redirect-uri: ${OAUTH2_CLIENT_REGISTRATION_GITHUB_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}
+            scope:
+              - read:user
+              - user:email
         provider:
           naver:
             authorization-uri: https://nid.naver.com/oauth2.0/authorize
