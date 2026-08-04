@@ -96,11 +96,25 @@ variable "channel_talk_secret_key" {
   description = "Channel Talk user data encryption key (채널 설정 > 보안 및 개발), used to sign the SDK member hash. Leave empty to boot the messenger anonymously."
 }
 
+variable "channel_talk_plugin_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Channel Talk plugin key (채널 설정 > 설치 관리), baked into the web image as NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY at Docker build time. Leave empty to disable the messenger widget entirely."
+}
+
 variable "captcha_secret_key" {
   type        = string
   sensitive   = true
   default     = ""
   description = "Captcha secret key (currently Google reCAPTCHA v3), used server-side to verify registration tokens. Leave empty to skip captcha verification."
+}
+
+variable "captcha_site_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Captcha site key (currently Google reCAPTCHA v3), baked into the web image as NEXT_PUBLIC_CAPTCHA_SITE_KEY at Docker build time. Must be set whenever captcha_secret_key is set, or every registration request fails server-side verification (the server requires a token once its secret key is non-blank, but the client only executes captcha when this site key is present)."
 }
 
 variable "admin_email" {

@@ -51,3 +51,23 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     ADMIN_PASSWORD                                  = var.admin_password
   })
 }
+
+resource "aws_secretsmanager_secret" "web_app" {
+  name                    = "${var.project_name}/${var.environment}/web/app"
+  description             = "Web application build-time secrets, baked into the Next.js image as NEXT_PUBLIC_* env vars by scripts/cd/prod-deploy.sh."
+  kms_key_id              = var.kms_key_arn
+  recovery_window_in_days = var.recovery_window_in_days
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "web_app" {
+  secret_id = aws_secretsmanager_secret.web_app.id
+  secret_string = jsonencode({
+    CHANNEL_TALK_PLUGIN_KEY = var.channel_talk_plugin_key
+    CAPTCHA_SITE_KEY        = var.captcha_site_key
+  })
+}

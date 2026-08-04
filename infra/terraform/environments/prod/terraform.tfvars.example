@@ -23,6 +23,21 @@ slack_webhook_url = ""
 # boots anonymously — conversations will not attach to user accounts.
 channel_talk_secret_key = ""
 
+# Channel Talk plugin key (채널 설정 > 설치 관리). Baked into the web image at
+# build time as NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY. Empty means the widget
+# never loads at all, regardless of channel_talk_secret_key above.
+channel_talk_plugin_key = ""
+
+# Captcha keys (currently Google reCAPTCHA v3). secret_key verifies tokens
+# server-side; site_key is baked into the web image at build time as
+# NEXT_PUBLIC_CAPTCHA_SITE_KEY. They must be set together — the server
+# requires a token once its secret key is non-blank, but the client only
+# executes captcha when the site key is present. Setting one without the
+# other breaks every registration request. Leave both empty to skip captcha
+# entirely.
+captcha_secret_key = ""
+captcha_site_key   = ""
+
 # Platform ADMIN account, seeded by AdminSeeder on server boot. Leave both empty
 # to run with no platform admin at all.
 #

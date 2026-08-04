@@ -13,7 +13,7 @@
 # --build and --tag can be combined: --build --tag abc123 builds and pushes
 # under that tag instead of the current commit's.
 #
-# Requires: docker, aws CLI (authenticated), git, and (with --build) a JDK
+# Requires: docker, aws CLI (authenticated), git, jq, and (with --build) a JDK
 # capable of running ./gradlew.
 
 export STAGE=prod
@@ -30,8 +30,6 @@ AWS_REGION="${AWS_REGION:-ap-northeast-2}"
 PROJECT_NAME="${PROJECT_NAME:-sync}"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 APP_DOMAIN="${APP_DOMAIN:-sync.skkil.org}"
-CHANNEL_TALK_PLUGIN_KEY="${CHANNEL_TALK_PLUGIN_KEY:-}"
-CAPTCHA_SITE_KEY="${CAPTCHA_SITE_KEY:-}"
 
 DO_BUILD=false
 IMAGE_TAG=""
@@ -59,6 +57,11 @@ NGINX_IMAGE="${ECR_REGISTRY}/${PROJECT_NAME}-nginx:${IMAGE_TAG}"
 if [[ "$DO_BUILD" == true ]]; then
   info "Logging in to ECR ($ECR_REGISTRY)..."
   aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+  info "Fetching web secrets from Secrets Manager..."
+  WEB_SECRET="$(aws secretsmanager get-secret-value --region "$AWS_REGION" --secret-id "${PROJECT_NAME}/${ENVIRONMENT}/web/app" --query SecretString --output text)"
+  CHANNEL_TALK_PLUGIN_KEY="$(echo "$WEB_SECRET" | jq -r '.CHANNEL_TALK_PLUGIN_KEY // empty')"
+  CAPTCHA_SITE_KEY="$(echo "$WEB_SECRET" | jq -r '.CAPTCHA_SITE_KEY // empty')"
 
   info "Building the server application..."
   cd "$PROJECT_ROOT_DIR/apps/server"

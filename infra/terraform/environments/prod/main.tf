@@ -133,7 +133,9 @@ module "secrets" {
   slack_webhook_url    = var.slack_webhook_url
 
   channel_talk_secret_key = var.channel_talk_secret_key
+  channel_talk_plugin_key = var.channel_talk_plugin_key
   captcha_secret_key      = var.captcha_secret_key
+  captcha_site_key        = var.captcha_site_key
   admin_email             = var.admin_email
   admin_password          = var.admin_password
 }
