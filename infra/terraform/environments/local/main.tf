@@ -59,4 +59,5 @@ module "secrets" {
   mail_password        = var.mail_password
   slack_webhook_url    = var.slack_webhook_url
   captcha_secret_key   = var.captcha_secret_key
+  openai_api_key       = var.openai_api_key
 }

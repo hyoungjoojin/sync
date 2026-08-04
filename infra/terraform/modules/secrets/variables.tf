@@ -110,6 +110,13 @@ variable "captcha_secret_key" {
   description = "Captcha secret key (currently Google reCAPTCHA v3), used server-side to verify registration tokens. Leave empty to skip captcha verification."
 }
 
+variable "openai_api_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "OpenAI API key, used for post embeddings. Leave empty to keep AI_EMBEDDING_PROVIDER unset."
+}
+
 variable "captcha_site_key" {
   type        = string
   sensitive   = true

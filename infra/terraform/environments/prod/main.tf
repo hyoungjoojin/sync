@@ -138,4 +138,5 @@ module "secrets" {
   captcha_site_key        = var.captcha_site_key
   admin_email             = var.admin_email
   admin_password          = var.admin_password
+  openai_api_key          = var.openai_api_key
 }

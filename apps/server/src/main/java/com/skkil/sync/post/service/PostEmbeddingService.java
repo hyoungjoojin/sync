@@ -52,10 +52,19 @@ public class PostEmbeddingService {
       return;
     }
 
+    EmbeddingModel embeddingModel = embeddingModelProvider.getIfAvailable();
+    if (embeddingModel == null) {
+      log.debug(
+          "No embedding model configured (AI_EMBEDDING_PROVIDER=none), skipping embedding refresh"
+              + " for post {}",
+          event.getPostId());
+      return;
+    }
+
     Post post = postRepository.getReferenceById(event.getPostId());
 
     Document document = Document.builder().text(event.getContent()).build();
-    float[] embedding = requireEmbeddingModel().embed(document);
+    float[] embedding = embeddingModel.embed(document);
 
     PostEmbedding postEmbedding =
         embeddingRepository

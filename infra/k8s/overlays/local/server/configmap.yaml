@@ -4,10 +4,11 @@ metadata:
   name: server-config
   namespace: sync
 data:
-  AI_PROVIDER: "ollama"
+  AI_CHAT_PROVIDER: "ollama"
+  AI_EMBEDDING_PROVIDER: "openai"
   OLLAMA_URL: "http://host.minikube.internal:11435"
   OLLAMA_MODEL: "gemma3:270m"
-  OLLAMA_EMBEDDING_MODEL: "nomic-embed-text"
+  OPENAI_EMBEDDING_MODEL: "text-embedding-3-small"
 
   APP_CORS_ALLOWED_ORIGINS: "http://localhost:3000"
   APP_OAUTH2_FRONTEND_REDIRECT_URI: "http://localhost:3000"

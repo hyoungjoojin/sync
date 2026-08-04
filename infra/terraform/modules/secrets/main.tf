@@ -47,6 +47,7 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     SLACK_WEBHOOK_URL                               = var.slack_webhook_url
     CHANNEL_TALK_SECRET_KEY                         = var.channel_talk_secret_key
     CAPTCHA_SECRET_KEY                              = var.captcha_secret_key
+    OPENAI_API_KEY                                  = var.openai_api_key
     ADMIN_EMAIL                                     = var.admin_email
     ADMIN_PASSWORD                                  = var.admin_password
   })

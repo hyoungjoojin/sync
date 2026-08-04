@@ -46,3 +46,7 @@ captcha_site_key   = ""
 # and sign up first instead of shipping a password in Terraform state.
 admin_email    = ""
 admin_password = ""
+
+# OpenAI API key, used for post embeddings (AI_EMBEDDING_PROVIDER). Leave
+# empty until AI is deliberately enabled in prod — see infra/ops/deploy.sh.
+openai_api_key = ""

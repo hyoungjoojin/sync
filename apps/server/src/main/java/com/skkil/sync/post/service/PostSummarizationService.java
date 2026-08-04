@@ -41,16 +41,6 @@ public class PostSummarizationService {
     this.postRepository = postRepository;
   }
 
-  private ChatModel requireChatModel() {
-    ChatModel chatModel = chatModelProvider.getIfAvailable();
-    if (chatModel == null) {
-      throw new IllegalStateException(
-          "AI features are enabled but no ChatModel bean is available"
-              + " (check AI_PROVIDER configuration)");
-    }
-    return chatModel;
-  }
-
   @Async
   @TransactionalEventListener
   public void refreshPostSummary(PostContentChangedEvent event) {
@@ -58,6 +48,14 @@ public class PostSummarizationService {
 
     if (!aiEnabled) {
       log.debug("AI features disabled, skipping summary for post {}", event.getPostId());
+      return;
+    }
+
+    ChatModel chatModel = chatModelProvider.getIfAvailable();
+    if (chatModel == null) {
+      log.debug(
+          "No chat model configured (AI_CHAT_PROVIDER=none), skipping summary for post {}",
+          event.getPostId());
       return;
     }
 
@@ -75,7 +73,7 @@ public class PostSummarizationService {
 
     log.debug("Summarizing post {}", event.getPostId());
     PostSummaryDto response =
-        ChatClient.create(requireChatModel()).prompt(prompt).call().entity(PostSummaryDto.class);
+        ChatClient.create(chatModel).prompt(prompt).call().entity(PostSummaryDto.class);
     log.debug("Summarized post {}", event.getPostId());
 
     updateGeneratedSummary(event.getPostId(), response.summary());

@@ -8,8 +8,6 @@ services:
     post_start:
       - command: ollama pull $OLLAMA_MODEL
         user: root
-      - command: ollama pull $OLLAMA_EMBEDDING_MODEL
-        user: root
 
 volumes:
   ollama_data:

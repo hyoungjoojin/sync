@@ -66,8 +66,8 @@ spring:
     vectorstore:
       type: none
     model:
-      chat: ${AI_PROVIDER:none}
-      embedding: ${AI_PROVIDER:none}
+      chat: ${AI_CHAT_PROVIDER:none}
+      embedding: ${AI_EMBEDDING_PROVIDER:none}
     ollama:
       base-url: ${OLLAMA_URL:http://localhost:11434}
       chat:
@@ -75,8 +75,11 @@ spring:
           model: ${OLLAMA_MODEL}
           format: json
           temperature: 0
+    openai:
+      api-key: ${OPENAI_API_KEY:}
       embedding:
-        model: ${OLLAMA_EMBEDDING_MODEL}
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}

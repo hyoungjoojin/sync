@@ -103,7 +103,7 @@ nearest-neighbour over `post_embeddings`, not user-curated. It needs AI enabled;
 see _Runtime flags_ below.
 
 Every one of these is a post-listing surface, so per the permission rules below
-they must resolve visibility through the shared `PostQueryRepository.Conditions`
+they must resolve visibility through the shared `PostVisibilityConditions`
 helpers rather than an ad hoc condition.
 
 ### Social is secondary
@@ -322,27 +322,28 @@ Permission evaluators (`TagPermissionEvaluator`, `PostPermissionEvaluator`,
   visible. Workspace posts are visible to non-teammates **iff** their project
   is public (`Project.isPublic`); private-project posts are visible only to
   the author or a project teammate, regardless of caller. This condition must
-  stay consistent across every read path — `PostQueryRepository.Conditions`
+  stay consistent across every read path — `PostVisibilityConditions`
   (`feedVisibleCondition`/`readableCondition`/`readablePublishedCondition`/
   `getPostsByProject`/`getPostsByIdsInProject`) and
   `PostPermissionEvaluator.canRead` all encode the same rule; when adding a
   new post-listing query, reuse or mirror these instead of writing an ad hoc
-  condition. `Conditions` is package-private (not `private`) precisely so
-  sibling repositories in `com.skkil.sync.post.repository` — e.g.
+  condition. `PostVisibilityConditions` is a package-private top-level class in
+  `com.skkil.sync.post.repository` (not `PostQueryRepository`-private)
+  precisely so sibling repositories in that package — e.g.
   `PostRecommendationQueryRepository` — can reuse it rather than copy it.
 - Post recommendations (`GET /posts/recommendations`) cover **both** scopes.
-  Candidates are gated by `Conditions.readablePublishedCondition`, so a
-  workspace post surfaces when its project is public or the caller is a
+  Candidates are gated by `PostVisibilityConditions.readablePublishedCondition`,
+  so a workspace post surfaces when its project is public or the caller is a
   teammate, and drafts never surface. The optional `scope` query parameter
-  (`PUBLIC`/`WORKSPACE`, applied via `Conditions.scopeCondition`) narrows the
-  feed to personal-only or project-only; omitting it returns both.
+  (`PUBLIC`/`WORKSPACE`, applied via `PostVisibilityConditions.scopeCondition`)
+  narrows the feed to personal-only or project-only; omitting it returns both.
 
 **Known holes in this model** — do not treat the current code as the target:
 
 - **Commenting is now scope-aware — reading and writing are gated separately.**
   `CommentService` resolves posts through
   `PostDomainService.getReadablePostBySlug`, i.e. the shared
-  `PostQueryRepository.Conditions.readableCondition`, so comments follow the post's
+  `PostVisibilityConditions.readableCondition`, so comments follow the post's
   own visibility (public project posts are world-readable, private ones
   teammate-only). Writing is narrower: `PostCommentPolicy` requires **project
   membership** to comment on a project post (any logged-in user may comment on a
@@ -371,9 +372,18 @@ guarded by them **does not run in production**, however well it works locally:
 
 | Flag | Prod value | Consequence |
 | --- | --- | --- |
-| `AI_PROVIDER` / `AI_FEATURES_ENABLED` | `none` / `false` | No embeddings, no summaries. Hybrid search silently degrades to `pg_trgm` only, and **related posts returns nothing**. |
+| `AI_CHAT_PROVIDER` / `AI_EMBEDDING_PROVIDER` / `AI_FEATURES_ENABLED` | `none` / `none` / `false` | No embeddings, no summaries. Hybrid search silently degrades to `pg_trgm` only, and **related posts returns nothing**. |
 | `WEBSOCKET_ENABLED` | `false` | No STOMP. nginx also lacks `Upgrade`/`Connection` headers, so `/ws` cannot work even if flipped. |
 | `ENABLE_TELEMETRY` | `false` | No traces, metrics or log export. |
+
+Chat/summarization and embeddings are configured as two independent Spring AI
+model providers (`spring.ai.model.chat` / `spring.ai.model.embedding`), each
+driven by its own env var. Locally, chat stays on Ollama
+(`AI_CHAT_PROVIDER=ollama`) while embeddings go to OpenAI's API
+(`AI_EMBEDDING_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_EMBEDDING_MODEL`
+default `text-embedding-3-small`) — set via `.env`. `post_embeddings.embedding`
+is `VECTOR(1536)`, matching `text-embedding-3-small`'s output size; a
+different OpenAI embedding model needs a schema migration to match.
 
 Anything depending on embeddings needs a backfill when AI is re-enabled — every
 post written while it was off has no vector.
@@ -394,7 +404,8 @@ Environment variables (set by direnv via `.envrc`):
 
 - `DATABASE_URL`, `DATABASE_USERNAME=skkil`, `DATABASE_PASSWORD=password` →
   `localhost:5432/sync`
-- `AI_PROVIDER=ollama`, `OLLAMA_PORT=11435`, `OLLAMA_MODEL=gemma3:270m`
+- `AI_CHAT_PROVIDER=ollama`, `OLLAMA_PORT=11435`, `OLLAMA_MODEL=gemma3:270m`
+- `AI_EMBEDDING_PROVIDER=openai` (requires `OPENAI_API_KEY` in `.env`)
 
 Run `direnv allow` once after cloning to activate `.envrc`.
 

@@ -172,3 +172,10 @@ variable "admin_password" {
   default     = ""
   description = "Password for admin_email, used only when the account does not exist yet. Leave empty to register through the normal signup flow and let the next boot promote that account."
 }
+
+variable "openai_api_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "OpenAI API key, used for post embeddings. Leave empty to keep AI_EMBEDDING_PROVIDER unset."
+}
