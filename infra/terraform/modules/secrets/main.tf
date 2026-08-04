@@ -42,6 +42,8 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET = var.google_client_secret
     OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_ID      = var.naver_client_id
     OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_SECRET  = var.naver_client_secret
+    OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_ID     = var.github_client_id
+    OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_SECRET = var.github_client_secret
     MAIL_USERNAME                                   = var.mail_username
     MAIL_PASSWORD                                   = var.mail_password
     SLACK_WEBHOOK_URL                               = var.slack_webhook_url

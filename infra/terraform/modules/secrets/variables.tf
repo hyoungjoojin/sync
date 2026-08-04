@@ -70,6 +70,18 @@ variable "naver_client_secret" {
   description = "Naver OAuth2 client secret for social login."
 }
 
+variable "github_client_id" {
+  type        = string
+  sensitive   = true
+  description = "GitHub OAuth2 client ID for social login."
+}
+
+variable "github_client_secret" {
+  type        = string
+  sensitive   = true
+  description = "GitHub OAuth2 client secret for social login."
+}
+
 variable "mail_username" {
   type        = string
   sensitive   = true

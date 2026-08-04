@@ -10,6 +10,9 @@ google_client_secret = "changeme"
 naver_client_id     = "changeme"
 naver_client_secret = "changeme"
 
+github_client_id     = "changeme"
+github_client_secret = "changeme"
+
 # Gmail SMTP: mail_username is the sending Gmail address, mail_password is a
 # 16-character App Password (Google Account > Security > App passwords —
 # requires 2-Step Verification), not the account login password.
