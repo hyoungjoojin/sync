@@ -209,13 +209,11 @@ function filterCommands(query: string, searchTerms: CommandSearchTerms) {
     normalize(convertHangulToQwerty(normalizedQuery)),
   ];
 
-  return commands
-    .filter((item) =>
-      [item.name, ...(searchTerms[item.name] ?? [])]
-        .flatMap(toSearchable)
-        .some((term) => queries.some((candidate) => term.includes(candidate))),
-    )
-    .slice(0, 10);
+  return commands.filter((item) =>
+    [item.name, ...(searchTerms[item.name] ?? [])]
+      .flatMap(toSearchable)
+      .some((term) => queries.some((candidate) => term.includes(candidate))),
+  );
 }
 
 interface CommandsExtensionOptions {

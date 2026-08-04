@@ -4,16 +4,28 @@ import {
   CheckCircleIcon,
   HeartIcon,
   PaperPlaneRightIcon,
+  TrashIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useGetPostCommentsInfinite } from '@/api/__generated__/comment/comment';
 import type { GetCommentsResponseCommentsNodesItemContent } from '@/api/__generated__/types';
 import { useCommentAcceptance } from '@/components/feature/post/hooks/useCommentAcceptance';
+import { useCommentDelete } from '@/components/feature/post/hooks/useCommentDelete';
 import { useCommentLike } from '@/components/feature/post/hooks/useCommentLike';
 import { useCreateComment } from '@/components/feature/post/hooks/useCreateComment';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,11 +59,13 @@ interface PostCommentsProps {
 
 function PostCommentItem({
   slug,
+  postId,
   comment,
   showAcceptance,
   canManageAcceptance,
 }: {
   slug: string;
+  postId: number;
   comment: GetCommentsResponseCommentsNodesItemContent;
   // 질문 게시글에서만: 채택 상태 배지를 표시할지 여부.
   showAcceptance: boolean;
@@ -59,11 +73,17 @@ function PostCommentItem({
   canManageAcceptance: boolean;
 }) {
   const t = useTranslations('pages.posts.comments');
+  const tDelete = useTranslations('pages.posts.comments.delete');
   const author = comment.author;
   const { acceptComment, unacceptComment, isPending } =
     useCommentAcceptance(slug);
   const { toggleLike } = useCommentLike(slug);
+  const { deleteComment, isPending: isDeleting } = useCommentDelete(
+    slug,
+    postId,
+  );
   const { requireAuth } = useRequireAuth();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
     <div className="flex items-start gap-3 py-4">
@@ -143,9 +163,53 @@ function PostCommentItem({
                 {comment.isAccepted ? t('unaccept-button') : t('accept-button')}
               </Button>
             )}
+
+            {comment.canDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-destructive h-6 px-2 text-[11px]"
+                aria-label={tDelete('button')}
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <TrashIcon />
+              </Button>
+            )}
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tDelete('title')}</AlertDialogTitle>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tDelete('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={() => {
+                deleteComment(comment.id, {
+                  onSuccess: () => {
+                    toast.success(tDelete('messages.success'));
+                    setIsDeleteDialogOpen(false);
+                  },
+                  onError: () => {
+                    toast.error(tDelete('messages.error'));
+                  },
+                });
+              }}
+            >
+              {tDelete('actions.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -308,6 +372,7 @@ export default function PostComments({
           <PostCommentItem
             key={comment.id}
             slug={slug}
+            postId={postId}
             comment={comment}
             showAcceptance={showAcceptance}
             canManageAcceptance={canManageAcceptance}

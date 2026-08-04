@@ -235,7 +235,19 @@
         "accepted-badge": "채택된 댓글",
         "accept-button": "채택하기",
         "unaccept-button": "채택 취소",
-        "like-button": "댓글 좋아요"
+        "like-button": "댓글 좋아요",
+        "delete": {
+          "button": "댓글 삭제",
+          "title": "이 댓글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+          "actions": {
+            "cancel": "취소",
+            "confirm": "삭제"
+          },
+          "messages": {
+            "success": "댓글이 삭제되었습니다.",
+            "error": "댓글 삭제에 실패했습니다."
+          }
+        }
       },
       "not-found": {
         "title": "포스트를 찾을 수 없습니다",

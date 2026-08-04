@@ -14,5 +14,6 @@ public record CommentSummary(
     boolean isAccepted,
     Long likeCount,
     boolean liked,
+    boolean canDelete,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}

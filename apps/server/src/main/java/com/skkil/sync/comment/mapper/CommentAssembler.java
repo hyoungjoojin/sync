@@ -19,7 +19,7 @@ public class CommentAssembler {
   }
 
   public GetCommentsResponse toGetCommentsResponse(
-      CursorPaginationResponse<CommentDto> comments, Long postAuthorId) {
+      CursorPaginationResponse<CommentDto> comments, Long postAuthorId, Long requesterId) {
     return new GetCommentsResponse(
         comments.mapWithLookup(
             CommentDto::authorId,
@@ -28,6 +28,9 @@ public class CommentAssembler {
                 commentMapper.toCommentSummary(
                     comment,
                     authorSummaries.get(comment.authorId()),
-                    comment.authorId().equals(postAuthorId))));
+                    comment.authorId().equals(postAuthorId),
+                    requesterId != null
+                        && comment.authorId().equals(requesterId)
+                        && !Boolean.TRUE.equals(comment.deleted()))));
   }
 }

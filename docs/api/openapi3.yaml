@@ -1552,8 +1552,8 @@ paths:
                     name\":\"John Doe\",\"profileImageUrl\":\"https://example.com/john.png\"\
                     },\"isPostAuthor\":false,\"content\":\"Comment content\",\"isDeleted\"\
                     :false,\"isAccepted\":false,\"likeCount\":0,\"liked\":false,\"\
-                    createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\":\"2026-01-01T00:00:00Z\"\
-                    }}]}}"
+                    canDelete\":false,\"createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\"\
+                    :\"2026-01-01T00:00:00Z\"}}]}}"
     post:
       tags:
       - comment
@@ -4388,6 +4388,28 @@ components:
               followerCount:
                 type: number
                 description: 프로젝트 팔로워 수
+    LoginRequest:
+      title: LoginRequest
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        password:
+          type: string
+          description: Password
+        email:
+          type: string
+          description: Email
+    ReorderPostSeriesPostRequest:
+      title: ReorderPostSeriesPostRequest
+      required:
+      - position
+      type: object
+      properties:
+        position:
+          type: number
+          description: 이동할 새 위치 (1부터 시작)
     GetCommentsResponse:
       title: GetCommentsResponse
       required:
@@ -4415,6 +4437,7 @@ components:
                   content:
                     required:
                     - author
+                    - canDelete
                     - createdAt
                     - id
                     - isAccepted
@@ -4454,6 +4477,9 @@ components:
                       isAccepted:
                         type: boolean
                         description: Is accepted
+                      canDelete:
+                        type: boolean
+                        description: Whether the requester can delete this comment
                       likeCount:
                         type: number
                         description: Like count
@@ -4497,28 +4523,6 @@ components:
                   nullable: true
               description: Page Info
           description: Comments
-    LoginRequest:
-      title: LoginRequest
-      required:
-      - email
-      - password
-      type: object
-      properties:
-        password:
-          type: string
-          description: Password
-        email:
-          type: string
-          description: Email
-    ReorderPostSeriesPostRequest:
-      title: ReorderPostSeriesPostRequest
-      required:
-      - position
-      type: object
-      properties:
-        position:
-          type: number
-          description: 이동할 새 위치 (1부터 시작)
     GetMyProjectJoinRequestsResponse:
       title: GetMyProjectJoinRequestsResponse
       required:

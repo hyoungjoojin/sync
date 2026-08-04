@@ -9,7 +9,7 @@ import org.mapstruct.Mapper;
 public interface CommentMapper {
 
   default CommentSummary toCommentSummary(
-      CommentDto comment, UserSummary author, boolean isPostAuthor) {
+      CommentDto comment, UserSummary author, boolean isPostAuthor, boolean canDelete) {
     return CommentSummary.builder()
         .id(comment.id())
         .author(author)
@@ -19,6 +19,7 @@ public interface CommentMapper {
         .isAccepted(Boolean.TRUE.equals(comment.accepted()))
         .likeCount(comment.likeCount())
         .liked(Boolean.TRUE.equals(comment.liked()))
+        .canDelete(canDelete)
         .createdAt(comment.createdAt())
         .updatedAt(comment.updatedAt())
         .build();

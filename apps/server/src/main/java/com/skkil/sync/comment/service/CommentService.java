@@ -72,7 +72,7 @@ public class CommentService {
             paginationProvider,
             pagination);
 
-    return commentAssembler.toGetCommentsResponse(comments, post.authorId());
+    return commentAssembler.toGetCommentsResponse(comments, post.authorId(), requesterId);
   }
 
   @Transactional

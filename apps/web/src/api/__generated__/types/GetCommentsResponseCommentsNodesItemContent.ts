@@ -20,6 +20,8 @@ export type GetCommentsResponseCommentsNodesItemContent = {
   author: GetCommentsResponseCommentsNodesItemContentAuthor;
   /** Is accepted */
   isAccepted: boolean;
+  /** Whether the requester can delete this comment */
+  canDelete: boolean;
   /** Like count */
   likeCount: number;
   /** Comment ID */
