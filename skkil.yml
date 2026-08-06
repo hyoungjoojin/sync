@@ -1,0 +1,11 @@
+version: 1
+
+dev:
+  run:
+    - name: server
+      run: ./gradlew bootRun --args='--spring.profiles.active=dev'
+      dir: apps/server
+
+    - name: web
+      run: pn run dev
+      dir: apps/web
