@@ -1,6 +1,6 @@
 output "app_public_ip" {
   value       = module.ec2.public_ip
-  description = "Elastic IP of the EC2 instance. Route 53 already points app_domain at this."
+  description = "Elastic IP of the EC2 instance. Terraform no longer manages any DNS, so app_domain must be pointed here by hand wherever the zone is hosted."
 }
 
 output "ecr_repository_urls" {

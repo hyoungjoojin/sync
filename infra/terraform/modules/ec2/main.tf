@@ -1,10 +1,22 @@
+# `most_recent` re-resolves on every plan, and `ami` forces replacement on
+# aws_instance — so this data source will silently propose destroying the box
+# whenever Amazon publishes a new AL2023 image, on an apply that changed nothing.
+# The `ignore_changes = [ami]` on aws_instance below is what makes that safe;
+# do not remove one without the other.
+#
+# The old pattern here was `al2023-ami-*-x86_64`, which matches every AL2023
+# flavour Amazon ships (minimal, ecs, ecs-gpu, ecs-neuron, ...) and lets
+# `most_recent` pick whichever variant was published last. It had already landed
+# on `al2023-ami-ecs-neuron-*`, the ECS build for Inferentia/Trainium
+# accelerators. This pattern pins the flavour to the plain base image; only the
+# date still floats.
 data "aws_ami" "al2023" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
   }
 
   filter {
@@ -149,6 +161,20 @@ resource "aws_instance" "app" {
     Name        = "${var.project_name}-${var.environment}"
     Project     = var.project_name
     Environment = var.environment
+  }
+
+  # This box is a pet, not cattle: there is no autoscaling, no load balancer, and
+  # the Let's Encrypt cert lineage lives on the root volume under /opt/sync,
+  # which `delete_on_termination = true` destroys with the instance. An
+  # unattended replacement therefore means downtime plus a cert re-issue, against
+  # a Let's Encrypt limit of 5 duplicate certs per hostname per 168 hours.
+  #
+  # So AMI upgrades are a deliberate, scheduled rebuild, never a side effect of
+  # an unrelated apply. To actually take a new AMI: remove this line (or run
+  # `terraform apply -replace=module.ec2.aws_instance.app`) at a time you have
+  # chosen, and re-run infra/ops/deploy.sh + certbot.sh straight after.
+  lifecycle {
+    ignore_changes = [ami]
   }
 }
 

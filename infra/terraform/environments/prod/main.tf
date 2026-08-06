@@ -104,13 +104,6 @@ module "rds" {
   master_password            = var.postgres_password
 }
 
-module "route53" {
-  source      = "../../modules/route53"
-  root_domain = var.root_domain
-  record_name = var.app_domain
-  target_ip   = module.ec2.public_ip
-}
-
 module "secrets" {
   source                  = "../../modules/secrets"
   project_name            = var.project_name

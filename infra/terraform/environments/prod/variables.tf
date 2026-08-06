@@ -22,16 +22,14 @@ variable "availability_zones" {
   description = "Availability zones the VPC's subnets are spread across."
 }
 
-variable "root_domain" {
-  type        = string
-  default     = "skkil.org"
-  description = "Root domain purchased for the project. Registered and hosted in Route 53."
-}
-
+# DNS for skkil.org is not managed by Terraform. The registrar delegates the
+# domain away from Route 53, so this stack owns no DNS records and there is no
+# root_domain variable — app_domain is consumed only as a string, for the S3 CORS
+# origin below and for operator-facing output.
 variable "app_domain" {
   type        = string
   default     = "sync.skkil.org"
-  description = "Subdomain the application is served from."
+  description = "Subdomain the application is served from. Terraform does not create or point this record; whoever hosts DNS for the zone must resolve it to app_public_ip."
 }
 
 variable "instance_type" {
