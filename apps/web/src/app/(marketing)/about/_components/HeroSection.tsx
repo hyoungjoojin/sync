@@ -11,7 +11,10 @@ export default async function HeroSection() {
   const t = await getTranslations('pages.about.hero');
 
   return (
-    <section className="dark relative flex min-h-screen w-full flex-col justify-end overflow-hidden bg-background text-foreground">
+    <section
+      id="landing-hero"
+      className="dark relative flex min-h-screen w-full flex-col justify-end overflow-hidden bg-background text-foreground"
+    >
       <HeroFlow />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-[16vh] pt-32">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 import { LinkButton } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
@@ -11,24 +11,26 @@ import ROUTES from '@/util/routes';
 /**
  * 랜딩 상단 내비게이션.
  *
- * 전체 화면 다크 히어로 위에 겹쳐지므로 최상단에서는 배경 없이 다크 모드로 두고,
- * 스크롤이 시작되면 밝은 바로 전환된다.
+ * 전체 화면 다크 히어로 위에 겹쳐지므로 히어로가 보이는 동안은 배경 없이 다크
+ * 모드로 두고, 히어로를 완전히 지나야 밝은 바로 전환된다. 스크롤량(예: 8px)이
+ * 아니라 히어로 노출 여부로 판단해야 히어로가 화면 대부분을 채운 상태에서
+ * 너무 일찍 밝은 배경이 겹쳐 보이는 것을 막을 수 있다.
  */
 export default function MarketingNav() {
   const t = useTranslations('pages.about.nav');
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
-  useEffect(() => {
-    const onScroll = (): void => {
-      setIsScrolled(window.scrollY > 8);
-    };
+  React.useEffect(() => {
+    const hero = document.getElementById('landing-hero');
+    if (!hero) return;
 
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsScrolled(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(hero);
 
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (

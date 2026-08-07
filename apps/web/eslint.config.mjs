@@ -89,6 +89,7 @@ const eslintConfig = defineConfig([
           'data-state',
           'attribute', // next-themes <ThemeProvider attribute="class">
           'defaultTheme', // next-themes <ThemeProvider defaultTheme="system">
+          'storageKey', // next-themes <ThemeProvider storageKey="sync-theme">
           'autoComplete',
           'inputMode',
           'color', // badge/icon color variants (e.g. Phosphor icon color)

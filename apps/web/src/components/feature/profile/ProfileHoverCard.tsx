@@ -13,6 +13,8 @@ import {
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
+const MAXIMUM_DISPLAYED_HANDLE_LENGTH = 20;
+
 interface ProfileHoverCardProps {
   handle: string;
   name: string;
@@ -67,30 +69,41 @@ export function ProfileHoverCard({
         onMouseLeave={handleMouseLeave}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex flex-col gap-3">
-          <Link href={ROUTES.PROFILE(handle)}>
-            <Avatar size="lg">
-              <AvatarImage
-                src={
-                  isLoading ? imageUrl : (profile?.profileImageUrl ?? imageUrl)
-                }
-                alt={name}
-              />
-              <AvatarFallback>{name[0]}</AvatarFallback>
-            </Avatar>
+        <Link href={ROUTES.PROFILE(handle)}>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <Avatar size="lg">
+                <AvatarImage
+                  src={
+                    isLoading
+                      ? imageUrl
+                      : (profile?.profileImageUrl ?? imageUrl)
+                  }
+                  alt={name}
+                />
+                <AvatarFallback>{name[0]}</AvatarFallback>
+              </Avatar>
 
-            <div className="flex flex-col gap-0.5">
-              <span className="font-medium">
-                {isLoading ? name : (profile?.name ?? name)}
-              </span>
-              <span className="text-muted-foreground">@{handle}</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-medium">
+                  {isLoading ? name : (profile?.name ?? name)}
+                </span>
+                <span className="text-muted-foreground">
+                  @
+                  {handle.length < MAXIMUM_DISPLAYED_HANDLE_LENGTH
+                    ? handle
+                    : `${handle.slice(0, MAXIMUM_DISPLAYED_HANDLE_LENGTH)}...`}
+                </span>
+              </div>
             </div>
-          </Link>
 
-          {!isLoading && profile?.bio && (
-            <p className="text-muted-foreground line-clamp-3">{profile.bio}</p>
-          )}
-        </div>
+            {!isLoading && profile?.bio && (
+              <p className="text-muted-foreground line-clamp-3">
+                {profile.bio}
+              </p>
+            )}
+          </div>
+        </Link>
       </PopoverContent>
     </Popover>
   );

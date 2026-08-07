@@ -13,7 +13,11 @@ export default async function ThemeProvider({ children }: ThemeProviderProps) {
   }));
 
   return (
-    <NextThemeProvider attribute="class" defaultTheme={data.theme || 'system'}>
+    <NextThemeProvider
+      attribute="class"
+      defaultTheme={data.theme || 'system'}
+      storageKey="sync-theme"
+    >
       {children}
     </NextThemeProvider>
   );

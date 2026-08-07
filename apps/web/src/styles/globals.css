@@ -100,6 +100,8 @@
 
 :root,
 .light {
+  color-scheme: light;
+
   /* ── Brand · Evergreen ─────────────────────────────── */
   --evergreen-50: #e9f7f1;
   --evergreen-100: #c6ecdd;
@@ -208,6 +210,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   /* ── Surfaces (dark) ───────────────────────────────── */
   --surface-canvas: #0b0c0e;
   --surface-raised: #16181c;
@@ -277,6 +281,54 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: var(--radius-full);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+  }
+}
+
+/*
+ * 랜딩 페이지(`/about`)는 스크롤바를 항상 완전히 숨긴다.
+ * 히어로(`HeroSection`)가 평평한 단색이 아니라 애니메이션 그라데이션(`HeroFlow`)이라
+ * 색을 맞추는 접근이 근본적으로 불가능하다: 네이티브 스크롤바 거터는 페이지에 실제
+ * 렌더링된 내용을 비쳐 보여줄 수 없는 브라우저 크롬 영역이라, 아무리 정확한 단색을
+ * 채워도 움직이는 그라데이션과는 계속 어긋나 보인다. 그래서 트랙/엄지 색상을 맞추는
+ * 대신 스크롤바 자체를 없앤다.
+ *
+ * `(marketing)/about`은 자체 `layout.tsx`가 없어 `<html>`을 렌더링하는 루트
+ * 레이아웃(`src/app/layout.tsx`)과 분리돼 있고, 중첩 레이아웃은 조상 `<html>`에
+ * 속성을 얹을 방법이 없다. 대신 `:has()`로 히어로(`#landing-hero`, `HeroSection.tsx`)가
+ * 문서 안에 있는지로 라우트를 구분한다 — 이 id는 `/about`에서만 렌더링된다.
+ */
+html:has(#landing-hero) {
+  scrollbar-width: none;
+}
+
+html:has(#landing-hero)::-webkit-scrollbar {
+  display: none;
 }
 
 /*
