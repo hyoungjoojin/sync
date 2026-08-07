@@ -91,8 +91,6 @@ export default function DiscoverCard() {
                   <p className="truncate text-sm font-medium">
                     {user.summary.name}
                   </p>
-                  {/* TODO: 사용자 추천 응답에 소개/역할 필드가 추가되기 전까지
-                    핸들을 보조 문구로 사용한다. */}
                   <p className="text-muted-foreground truncate text-xs">
                     @{user.summary.handle}
                   </p>

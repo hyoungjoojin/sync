@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { getPostBySlug } from '@/api/__generated__/post/post';
 import { downloadBlob } from '@/lib/download';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 import {
   PostContentUnavailableError,
@@ -51,11 +52,16 @@ export function useExportPostMarkdown({
         toast.success(t('messages.success'));
       }
     } catch (error) {
-      toast.error(
-        error instanceof PostContentUnavailableError
-          ? t('messages.unavailable')
-          : t('messages.error'),
-      );
+      if (error instanceof PostContentUnavailableError) {
+        toast.error(t('messages.unavailable'));
+      } else if (
+        error instanceof SyncError &&
+        error.code === ErrorCode.POST_NOT_FOUND
+      ) {
+        toast.error(t('messages.not-found'));
+      } else {
+        toast.error(t('messages.error'));
+      }
     } finally {
       setIsExporting(false);
     }

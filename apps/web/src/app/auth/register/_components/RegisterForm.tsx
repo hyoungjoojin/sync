@@ -103,14 +103,20 @@ export default function RegisterForm() {
         },
         onError: (error) => {
           if (error instanceof SyncError) {
-            const { code } = error;
-
-            if (code === ErrorCode.USER_ALREADY_EXISTS) {
-              toast.error(t('errors.user-already-exists'));
-            } else if (code === ErrorCode.CAPTCHA_VERIFICATION_FAILED) {
-              toast.error(t('errors.captcha_failed'));
+            switch (error.code) {
+              case ErrorCode.USER_ALREADY_EXISTS:
+                toast.error(t('errors.user-already-exists'));
+                return;
+              case ErrorCode.CAPTCHA_VERIFICATION_FAILED:
+                toast.error(t('errors.captcha_failed'));
+                return;
+              case ErrorCode.NETWORK_ERROR:
+                toast.error(t('errors.network'));
+                return;
             }
           }
+
+          toast.error(t('errors.registration_failed'));
         },
       },
     );

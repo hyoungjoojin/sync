@@ -13,7 +13,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { useLogout } from '@/api/__generated__/auth/auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -123,10 +124,10 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar>
-            <AvatarImage src={session.user.image ?? undefined} />
-            <AvatarFallback>{session.user.name[0]}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            name={session.user.name}
+            imageUrl={session.user.image}
+          />
         </Button>
       </DropdownMenuTrigger>
 

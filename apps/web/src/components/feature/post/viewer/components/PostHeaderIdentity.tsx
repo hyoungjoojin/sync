@@ -91,7 +91,12 @@ function AuthorIdentity({
   return (
     <IdentityLayout
       avatar={
-        <ProfileHoverCard handle={author.handle} name={author.name} size="sm" />
+        <ProfileHoverCard
+          handle={author.handle}
+          name={author.name}
+          imageUrl={author.profileImageUrl ?? undefined}
+          size="sm"
+        />
       }
       name={author.name}
       handle={author.handle}

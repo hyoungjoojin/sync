@@ -7,7 +7,7 @@ import {
 
 interface UseSubmitPromotionSignupOptions {
   onSuccess?: () => void;
-  onError?: () => void;
+  onError?: (error: unknown) => void;
 }
 
 export function useSubmitPromotionSignup(

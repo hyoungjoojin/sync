@@ -57,6 +57,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 const PAGE_SIZE = '20';
@@ -88,6 +89,22 @@ export default function AdminPostReportsPage() {
     });
   };
 
+  const handleReviewError = async (error: unknown) => {
+    if (error instanceof SyncError) {
+      switch (error.code) {
+        case ErrorCode.POST_REPORT_NOT_FOUND:
+          toast.error(t('messages.not-found-error'));
+          await invalidateReports();
+          return;
+        case ErrorCode.POST_REPORT_ALREADY_REVIEWED:
+          toast.error(t('messages.already-reviewed-error'));
+          await invalidateReports();
+          return;
+      }
+    }
+    toast.error(t('messages.review-error'));
+  };
+
   const dismissReport = (report: GetPostReportsResponseReportsContentItem) => {
     reviewPostReport(
       {
@@ -103,9 +120,7 @@ export default function AdminPostReportsPage() {
           toast.success(t('messages.dismiss-success'));
           await invalidateReports();
         },
-        onError: () => {
-          toast.error(t('messages.review-error'));
-        },
+        onError: handleReviewError,
       },
     );
   };
@@ -132,9 +147,7 @@ export default function AdminPostReportsPage() {
           setHiddenReason('');
           await invalidateReports();
         },
-        onError: () => {
-          toast.error(t('messages.review-error'));
-        },
+        onError: handleReviewError,
       },
     );
   };

@@ -9,6 +9,7 @@ import z from 'zod';
 
 import { useGetAuthenticatedUser } from '@/api/__generated__/profile/profile';
 import { GetProfileResponse } from '@/api/__generated__/types';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import {
   PROFILE_IMAGE_ALLOWED_TYPES,
   PROFILE_IMAGE_MAX_SIZE_BYTES,
@@ -16,7 +17,6 @@ import {
 import { ContactFields } from '@/components/feature/profile/contacts';
 import { useProfileImageUpload } from '@/components/feature/profile/hooks/useProfileImageUpload';
 import { useUpdateProfile } from '@/components/feature/profile/hooks/useUpdateProfile';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Field,
@@ -276,16 +276,13 @@ function ProfileImageField() {
       <FieldLabel>{t('label')}</FieldLabel>
 
       <div className="flex gap-4">
-        <Avatar className="h-20 w-20">
-          <AvatarImage
-            src={
-              selectedImage
-                ? selectedImage.src
-                : profile.data.profileImageUrl || undefined
-            }
-          />
-          <AvatarFallback />
-        </Avatar>
+        <ProfileAvatar
+          name={profile.data.name}
+          imageUrl={
+            selectedImage ? selectedImage.src : profile.data.profileImageUrl
+          }
+          className="h-20 w-20"
+        />
 
         <div className="flex flex-col gap-2">
           <div className="flex">

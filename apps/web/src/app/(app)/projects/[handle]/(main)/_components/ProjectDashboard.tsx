@@ -25,6 +25,7 @@ import { Button, LinkButton } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRequireAuth } from '@/hooks/use-require-auth';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 import AddTeammatePopover from '../../posts/_components/AddTeammatePopover';
@@ -87,7 +88,23 @@ function FeedHeader({ handle }: { handle: string }) {
               : t('join.requested'),
           );
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROJECT_ALREADY_TEAMMATE:
+                toast.error(t('join.already-member'));
+                return;
+              case ErrorCode.PROJECT_JOIN_REQUEST_ALREADY_EXISTS:
+                toast.error(t('join.already-requested'));
+                return;
+              case ErrorCode.PROJECT_NOT_FOUND:
+                toast.error(t('join.not-found'));
+                return;
+              case ErrorCode.PROJECT_JOIN_NOT_ALLOWED:
+                toast.error(t('join.not-allowed'));
+                return;
+            }
+          }
           toast.error(t('join.error'));
         },
       },

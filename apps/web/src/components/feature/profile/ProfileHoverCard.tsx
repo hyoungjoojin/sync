@@ -4,7 +4,7 @@ import Link from 'next/link';
 import * as React from 'react';
 
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import {
   Popover,
   PopoverContent,
@@ -51,15 +51,14 @@ export function ProfileHoverCard({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Avatar
+        <ProfileAvatar
+          name={name}
+          imageUrl={imageUrl}
           size={size}
           className={cn('cursor-pointer', className)}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-        >
-          <AvatarImage src={imageUrl} alt={name} />
-          <AvatarFallback>{name[0]}</AvatarFallback>
-        </Avatar>
+        />
       </PopoverTrigger>
 
       <PopoverContent
@@ -72,17 +71,13 @@ export function ProfileHoverCard({
         <Link href={ROUTES.PROFILE(handle)}>
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <Avatar size="lg">
-                <AvatarImage
-                  src={
-                    isLoading
-                      ? imageUrl
-                      : (profile?.profileImageUrl ?? imageUrl)
-                  }
-                  alt={name}
-                />
-                <AvatarFallback>{name[0]}</AvatarFallback>
-              </Avatar>
+              <ProfileAvatar
+                name={isLoading ? name : (profile?.name ?? name)}
+                imageUrl={
+                  isLoading ? imageUrl : (profile?.profileImageUrl ?? imageUrl)
+                }
+                size="lg"
+              />
 
               <div className="flex flex-col gap-0.5">
                 <span className="font-medium">

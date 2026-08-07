@@ -125,6 +125,10 @@ app:
   # 0 이면 헤더를 무시하고 TCP peer 주소를 그대로 쓴다.
   rate-limit:
     trusted-proxy-count: ${APP_RATE_LIMIT_TRUSTED_PROXY_COUNT:1}
+  session:
+    # idle timeout(위 server.servlet.session.timeout)과 별개로,
+    # 활동 여부와 무관하게 세션을 강제 만료시키는 절대 상한.
+    absolute-timeout: ${APP_SESSION_ABSOLUTE_TIMEOUT:90d}
   oauth2:
     frontend-redirect-uri: ${APP_OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:3000}
   frontend:
@@ -184,9 +188,13 @@ server:
   forward-headers-strategy: framework
   servlet:
     session:
+      # 활동이 있을 때마다 갱신되는 idle timeout (sliding).
+      # 절대 상한은 AbsoluteSessionTimeoutFilter 가 app.session.absolute-timeout 값으로 별도 적용한다.
+      timeout: ${APP_SESSION_TIMEOUT:30d}
       cookie:
         path: /
         name: session
         http-only: true
         secure: true
         same-site: lax
+        max-age: ${APP_SESSION_TIMEOUT:30d}

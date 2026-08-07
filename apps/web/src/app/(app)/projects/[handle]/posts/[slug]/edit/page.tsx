@@ -17,6 +17,7 @@ import { PostStatus } from '@/components/feature/post/types/post';
 import { toPostSummary } from '@/components/feature/post/viewer/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 export default function EditProjectPostPage() {
@@ -126,7 +127,31 @@ export default function EditProjectPostPage() {
                 router.refresh();
               }
             },
-            onError: () => {
+            onError: (error) => {
+              if (error instanceof SyncError) {
+                switch (error.code) {
+                  case ErrorCode.POST_NOT_FOUND:
+                    toast.error(t('messages.update-error-post-not-found'));
+                    return;
+                  case ErrorCode.MEDIA_NOT_FOUND:
+                    toast.error(t('messages.update-error-media-not-found'));
+                    return;
+                  case ErrorCode.MEDIA_NOT_UPLOADED:
+                    toast.error(t('messages.update-error-media-not-uploaded'));
+                    return;
+                  case ErrorCode.MEDIA_TOO_LARGE:
+                    toast.error(t('messages.update-error-media-too-large'));
+                    return;
+                  case ErrorCode.UNSUPPORTED_MEDIA_TYPE:
+                    toast.error(
+                      t('messages.update-error-unsupported-media-type'),
+                    );
+                    return;
+                  case ErrorCode.TAG_LIMIT_EXCEEDED:
+                    toast.error(t('messages.update-error-tag-limit-exceeded'));
+                    return;
+                }
+              }
               toast.error(t('messages.update-error'));
             },
           },

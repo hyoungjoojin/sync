@@ -24,6 +24,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 const AddTeammateFormSchema = z.object({
   handle: z
@@ -70,7 +71,20 @@ export default function AddTeammatePopover({
           form.reset();
           setOpen(false);
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROJECT_INVITATION_ALREADY_EXISTS:
+                toast.error(t('messages.already-exists'));
+                return;
+              case ErrorCode.USER_NOT_FOUND:
+                toast.error(t('messages.user-not-found'));
+                return;
+              case ErrorCode.PROJECT_NOT_FOUND:
+                toast.error(t('messages.project-not-found'));
+                return;
+            }
+          }
           toast.error(t('messages.error'));
         },
       },

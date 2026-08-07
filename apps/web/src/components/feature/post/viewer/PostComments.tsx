@@ -16,6 +16,7 @@ import { useCommentAcceptance } from '@/components/feature/post/hooks/useComment
 import { useCommentDelete } from '@/components/feature/post/hooks/useCommentDelete';
 import { useCommentLike } from '@/components/feature/post/hooks/useCommentLike';
 import { useCreateComment } from '@/components/feature/post/hooks/useCreateComment';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import {
   AlertDialog,
@@ -26,7 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -36,6 +36,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 import { cn } from '@/lib/utils';
 
 import { COMMENT_PAGE_SIZE } from '../constants';
@@ -199,7 +200,15 @@ function PostCommentItem({
                     toast.success(tDelete('messages.success'));
                     setIsDeleteDialogOpen(false);
                   },
-                  onError: () => {
+                  onError: (error) => {
+                    if (
+                      error instanceof SyncError &&
+                      error.code === ErrorCode.COMMENT_NOT_FOUND
+                    ) {
+                      toast.error(tDelete('messages.not-found'));
+                      return;
+                    }
+
                     toast.error(tDelete('messages.error'));
                   },
                 });
@@ -269,7 +278,22 @@ export default function PostComments({
 
     createComment(
       { slug, data: { content } },
-      { onSuccess: () => setDraft('') },
+      {
+        onSuccess: () => setDraft(''),
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.POST_NOT_FOUND:
+                toast.error(t('composer.messages.not-found'));
+                return;
+              case ErrorCode.COMMENT_NOT_ALLOWED:
+                toast.error(t('composer.messages.not-allowed'));
+                return;
+            }
+          }
+          toast.error(t('composer.messages.error'));
+        },
+      },
     );
   }
 
@@ -286,13 +310,11 @@ export default function PostComments({
       {!isSessionPending && session?.user && canComment && (
         <>
           <div className="flex items-start gap-3 px-5 py-4">
-            <Avatar size="sm">
-              <AvatarImage
-                src={session.user.image ?? undefined}
-                alt={session.user.name}
-              />
-              <AvatarFallback>{session.user.name?.[0]}</AvatarFallback>
-            </Avatar>
+            <ProfileAvatar
+              name={session.user.name}
+              imageUrl={session.user.image}
+              size="sm"
+            />
 
             <div className="flex flex-1 flex-col gap-2">
               <Textarea

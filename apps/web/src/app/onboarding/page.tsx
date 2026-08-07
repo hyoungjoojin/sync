@@ -10,6 +10,7 @@ import { useOnboardProfile } from '@/components/feature/profile/hooks/useOnboard
 import { Button } from '@/components/ui/button';
 import { ModalType } from '@/constants/modal';
 import { useModal } from '@/hooks/store';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 import { EmailVerificationStep } from './_components/EmailVerificationStep';
@@ -89,7 +90,18 @@ export default function Onboarding() {
       openModal(ModalType.PROMOTIONS);
       router.replace(ROUTES.HOME());
     },
-    onError: () => {
+    onError: (error) => {
+      if (error instanceof SyncError) {
+        switch (error.code) {
+          case ErrorCode.HANDLE_NOT_SET:
+            toast.error(t('errors.handle_not_set'));
+            return;
+          case ErrorCode.EMAIL_NOT_VERIFIED:
+            toast.error(t('errors.email_not_verified'));
+            return;
+        }
+      }
+
       toast.error(t('errors.finish'));
     },
   });

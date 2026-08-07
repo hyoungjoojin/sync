@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/field';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 import PhoneNumberInput from './PhoneNumberInput';
 import PromotionPostPreview from './PromotionPostPreview';
@@ -91,7 +92,17 @@ export default function PromotionCard({ promotion }: PromotionCardProps) {
       onSuccess: () => {
         toast.success(t('messages.success'));
       },
-      onError: () => {
+      onError: (error) => {
+        if (error instanceof SyncError) {
+          switch (error.code) {
+            case ErrorCode.PROMOTION_NOT_FOUND:
+              toast.error(t('messages.not-found-error'));
+              return;
+            case ErrorCode.PROMOTION_SIGNUP_ATTACHMENT_INVALID:
+              toast.error(t('messages.invalid-attachment-error'));
+              return;
+          }
+        }
         toast.error(t('messages.error'));
       },
     },

@@ -27,8 +27,8 @@ import ROUTES from '@/util/routes';
 import { CollectionFormDialog } from './CollectionFormDialog';
 
 interface CollectionGridProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   collections: GetCollectionsResponseCollectionsItem[];
   isPending: boolean;
   /** 생성 버튼 노출 여부 (개인은 항상 true, 프로젝트는 관리자만). */
@@ -54,19 +54,25 @@ export function CollectionGrid({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-muted-foreground text-sm">{description}</p>
-        </div>
+      {(title || description || canCreate) && (
+        <div className="flex items-start justify-between">
+          {(title || description) && (
+            <div className="space-y-1">
+              {title && <h1 className="text-2xl font-semibold">{title}</h1>}
+              {description && (
+                <p className="text-muted-foreground text-sm">{description}</p>
+              )}
+            </div>
+          )}
 
-        {canCreate && (
-          <Button onClick={() => setCreateOpen(true)}>
-            <PlusIcon />
-            {t('actions.create')}
-          </Button>
-        )}
-      </div>
+          {canCreate && (
+            <Button onClick={() => setCreateOpen(true)}>
+              <PlusIcon />
+              {t('actions.create')}
+            </Button>
+          )}
+        </div>
+      )}
 
       {isPending ? (
         <div className="grid gap-4 sm:grid-cols-2">

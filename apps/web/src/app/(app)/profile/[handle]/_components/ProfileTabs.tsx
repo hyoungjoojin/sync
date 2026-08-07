@@ -6,6 +6,7 @@ import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSession } from '@/lib/auth/client';
 
+import ProfileCollections from './ProfileCollections';
 import ProfileLikes from './ProfileLikes';
 import ProfilePosts from './ProfilePosts';
 import ProfileQuestions from './ProfileQuestions';
@@ -30,6 +31,9 @@ export default function ProfileTabs({ handle }: ProfileTabsProps) {
       <TabsList variant="line">
         <TabsTrigger value="posts">{t('posts.label')}</TabsTrigger>
         <TabsTrigger value="questions">{t('tabs.questions.label')}</TabsTrigger>
+        <TabsTrigger value="collections">
+          {t('tabs.collections.label')}
+        </TabsTrigger>
         {isOwnProfile && (
           <TabsTrigger value="likes">{t('tabs.likes.label')}</TabsTrigger>
         )}
@@ -41,6 +45,10 @@ export default function ProfileTabs({ handle }: ProfileTabsProps) {
 
       <TabsContent value="questions">
         <ProfileQuestions handle={handle} />
+      </TabsContent>
+
+      <TabsContent value="collections">
+        <ProfileCollections handle={handle} />
       </TabsContent>
 
       {isOwnProfile && (

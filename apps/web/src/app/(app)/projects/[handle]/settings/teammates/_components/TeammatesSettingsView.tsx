@@ -18,6 +18,7 @@ import {
   GetProjectTeammatesResponseTeammatesItemRole,
   UpdateTeammateRequestRole,
 } from '@/api/__generated__/types';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { useCancelProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
 import {
@@ -40,7 +41,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -60,6 +60,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 import AddTeammateDropdown from './AddTeammateDropdown';
@@ -187,6 +188,15 @@ function TeammateRow({
   const handleError = (error: unknown, fallbackMessage: string) => {
     if (error instanceof ProjectOwnerCannotBeModifiedError) {
       toast.error(t('messages.owner-protected'));
+      return;
+    }
+
+    if (
+      error instanceof SyncError &&
+      (error.code === ErrorCode.TEAMMATE_NOT_FOUND ||
+        error.code === ErrorCode.PROJECT_NOT_FOUND)
+    ) {
+      toast.error(t('messages.not-found'));
       return;
     }
 
@@ -335,7 +345,15 @@ function PendingInvitationRow({
         onSuccess: () => {
           toast.success(t('messages.cancel-success'));
         },
-        onError: () => {
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            (error.code === ErrorCode.PROJECT_INVITATION_NOT_FOUND ||
+              error.code === ErrorCode.PROJECT_NOT_FOUND)
+          ) {
+            toast.error(t('messages.cancel-not-found'));
+            return;
+          }
           toast.error(t('messages.cancel-error'));
         },
       },
@@ -346,9 +364,7 @@ function PendingInvitationRow({
     <TableRow className="border-0">
       <TableCell className="border-l-0">
         <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar name={name} imageUrl={undefined} />
           <div>
             <p className="text-sm font-medium">{name}</p>
             <p className="text-xs text-muted-foreground">@{handle}</p>
@@ -401,7 +417,17 @@ function JoinRequestRow({
       { handle: projectHandle, requestId: requestId.toString() },
       {
         onSuccess: () => toast.success(t('messages.approve-success')),
-        onError: () => toast.error(t('messages.approve-error')),
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            (error.code === ErrorCode.PROJECT_JOIN_REQUEST_NOT_FOUND ||
+              error.code === ErrorCode.PROJECT_NOT_FOUND)
+          ) {
+            toast.error(t('messages.approve-not-found'));
+            return;
+          }
+          toast.error(t('messages.approve-error'));
+        },
       },
     );
   };
@@ -411,7 +437,17 @@ function JoinRequestRow({
       { handle: projectHandle, requestId: requestId.toString() },
       {
         onSuccess: () => toast.success(t('messages.decline-success')),
-        onError: () => toast.error(t('messages.decline-error')),
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            (error.code === ErrorCode.PROJECT_JOIN_REQUEST_NOT_FOUND ||
+              error.code === ErrorCode.PROJECT_NOT_FOUND)
+          ) {
+            toast.error(t('messages.decline-not-found'));
+            return;
+          }
+          toast.error(t('messages.decline-error'));
+        },
       },
     );
   };
@@ -420,10 +456,7 @@ function JoinRequestRow({
     <TableRow className="border-0">
       <TableCell className="border-l-0">
         <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={profileImageUrl ?? undefined} />
-            <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar name={name} imageUrl={profileImageUrl} />
           <div>
             <p className="text-sm font-medium">{name}</p>
             <p className="text-xs text-muted-foreground">@{handle}</p>

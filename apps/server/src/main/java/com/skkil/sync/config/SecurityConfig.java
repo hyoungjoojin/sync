@@ -1,5 +1,6 @@
 package com.skkil.sync.config;
 
+import com.skkil.sync.auth.session.AbsoluteSessionTimeoutFilter;
 import com.skkil.sync.common.security.GlobalPermissionEvaluator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -38,8 +40,11 @@ public class SecurityConfig {
 
   @Bean
   @Order(2)
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http, AbsoluteSessionTimeoutFilter absoluteSessionTimeoutFilter)
+      throws Exception {
     http.securityMatcher("/**")
+        .addFilterBefore(absoluteSessionTimeoutFilter, SecurityContextHolderFilter.class)
         .csrf(csrf -> csrf.spa())
         .formLogin(formLogin -> formLogin.disable())
         .logout(

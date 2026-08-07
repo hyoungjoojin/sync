@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 import { useCreateCollection } from './hooks/useCreateCollection';
 import { useCreateProjectCollection } from './hooks/useCreateProjectCollection';
@@ -122,7 +123,16 @@ function CollectionForm({
             toast.success(t('messages.update-success'));
             onClose();
           },
-          onError: () => toast.error(t('messages.error')),
+          onError: (error) => {
+            if (
+              error instanceof SyncError &&
+              error.code === ErrorCode.COLLECTION_NOT_FOUND
+            ) {
+              toast.error(t('messages.update-error-not-found'));
+              return;
+            }
+            toast.error(t('messages.error'));
+          },
         },
       );
       return;

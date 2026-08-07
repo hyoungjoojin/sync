@@ -17,6 +17,7 @@ import type {
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button, LinkButton } from '@/components/ui/button';
+import { ErrorCode } from '@/lib/error';
 import { isContentPlaceholderVisible } from '@/lib/tiptap-utils';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
@@ -299,15 +300,16 @@ export default function PostEditor({
   /**
    * Resolve the cover fields for submission. A gallery-picked cover is only
    * rendered and uploaded here — at save time — never when it was selected.
-   * Returns `null` if a required cover upload failed (caller should abort).
+   * `ok: false` means a required cover upload failed (caller should abort);
+   * `code` carries the reason when the failure was a `SyncError`.
    */
-  const resolveCoverSubmit = async (): Promise<{
-    coverMediaId?: string;
-    removeCover?: boolean;
-  } | null> => {
+  const resolveCoverSubmit = async (): Promise<
+    | { ok: true; coverMediaId?: string; removeCover?: boolean }
+    | { ok: false; code?: ErrorCode }
+  > => {
     // Covers belong to blog (LONG) posts only; anything else drops its cover.
     if (type !== PostType.LONG) {
-      return hadInitialCover ? { removeCover: true } : {};
+      return hadInitialCover ? { ok: true, removeCover: true } : { ok: true };
     }
 
     if (cover.kind === 'generated' || cover.kind === 'uploaded') {
@@ -316,13 +318,13 @@ export default function PostEditor({
           ? await renderCoverToFile(cover.params)
           : cover.file;
       const result = await uploadCover(file);
-      if (!result.ok) return null;
-      return { coverMediaId: result.mediaId };
+      if (!result.ok) return { ok: false, code: result.code };
+      return { ok: true, coverMediaId: result.mediaId };
     }
     if (cover.kind === 'none' && hadInitialCover) {
-      return { removeCover: true };
+      return { ok: true, removeCover: true };
     }
-    return {};
+    return { ok: true };
   };
 
   const handleSubmit = async (status: PostStatus) => {
@@ -347,19 +349,30 @@ export default function PostEditor({
     setValidationMessage(null);
 
     setIsPreparingCover(true);
-    let coverFields: { coverMediaId?: string; removeCover?: boolean } | null;
+    let coverResult: Awaited<ReturnType<typeof resolveCoverSubmit>>;
     try {
-      coverFields = await resolveCoverSubmit();
+      coverResult = await resolveCoverSubmit();
     } catch {
-      coverFields = null;
+      coverResult = { ok: false };
     } finally {
       setIsPreparingCover(false);
     }
 
-    if (coverFields === null) {
-      toast.error(t('cover.errors.upload-failed'));
+    if (!coverResult.ok) {
+      switch (coverResult.code) {
+        case ErrorCode.MEDIA_TOO_LARGE:
+          toast.error(t('cover.errors.max-size'));
+          break;
+        case ErrorCode.UNSUPPORTED_MEDIA_TYPE:
+          toast.error(t('cover.errors.unsupported-type'));
+          break;
+        default:
+          toast.error(t('cover.errors.upload-failed'));
+      }
       return;
     }
+
+    const { coverMediaId, removeCover } = coverResult;
 
     onSubmit({
       title,
@@ -370,7 +383,8 @@ export default function PostEditor({
         .filter((tag) => tag.isProjectTag)
         .map((tag) => tag.name),
       series,
-      ...coverFields,
+      coverMediaId,
+      removeCover,
       content: serialize(editor),
     });
   };

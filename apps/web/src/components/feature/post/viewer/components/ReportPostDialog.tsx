@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 interface ReportPostDialogProps {
   postId: number;
@@ -65,7 +66,18 @@ export function ReportPostDialog({
           setReason(ReportPostRequestReason.Spam);
           onOpenChange(false);
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.POST_REPORT_ALREADY_EXISTS:
+                toast.error(t('messages.already-reported'));
+                return;
+              case ErrorCode.POST_NOT_FOUND:
+                toast.error(t('messages.not-found'));
+                return;
+            }
+          }
+
           toast.error(t('messages.error'));
         },
       },

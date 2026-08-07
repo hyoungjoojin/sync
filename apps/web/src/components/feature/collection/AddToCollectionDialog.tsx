@@ -25,6 +25,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 import { cn } from '@/lib/utils';
 
 import { CollectionFormDialog } from './CollectionFormDialog';
@@ -79,6 +80,37 @@ export function AddToCollectionDialog({
   const { mutate: addPost } = useAddPostToCollection();
   const { mutate: removeItem } = useRemoveCollectionItem();
 
+  const handleAddError = (error: unknown) => {
+    if (error instanceof SyncError) {
+      switch (error.code) {
+        case ErrorCode.POST_NOT_FOUND:
+          toast.error(t('messages.post-not-found'));
+          return;
+        case ErrorCode.COLLECTION_POST_ALREADY_EXISTS:
+          toast.error(t('messages.already-added'));
+          return;
+        case ErrorCode.COLLECTION_NOT_FOUND:
+          toast.error(t('messages.collection-not-found'));
+          return;
+      }
+    }
+    toast.error(t('messages.error'));
+  };
+
+  const handleRemoveError = (error: unknown) => {
+    if (error instanceof SyncError) {
+      switch (error.code) {
+        case ErrorCode.COLLECTION_POST_NOT_FOUND:
+          toast.error(t('messages.item-not-found'));
+          return;
+        case ErrorCode.COLLECTION_NOT_FOUND:
+          toast.error(t('messages.collection-not-found'));
+          return;
+      }
+    }
+    toast.error(t('messages.remove-error'));
+  };
+
   const setPending = (externalId: string, pending: boolean) => {
     setPendingIds((prev) => {
       const next = new Set(prev);
@@ -100,8 +132,8 @@ export function AddToCollectionDialog({
         data: { postHandle, projectHandle: projectHandle ?? null },
       },
       {
-        onError: () => {
-          toast.error(t('messages.error'));
+        onError: (error) => {
+          handleAddError(error);
           setOverrides((prev) => ({ ...prev, [externalId]: false }));
         },
         onSettled: () => setPending(externalId, false),
@@ -121,8 +153,8 @@ export function AddToCollectionDialog({
       removeItem(
         { externalId, collectionPostId: String(collectionPostId) },
         {
-          onError: () => {
-            toast.error(t('messages.remove-error'));
+          onError: (error) => {
+            handleRemoveError(error);
             setOverrides((prev) => ({ ...prev, [externalId]: added }));
           },
           onSettled: () => setPending(externalId, false),
@@ -137,8 +169,8 @@ export function AddToCollectionDialog({
         data: { postHandle, projectHandle: projectHandle ?? null },
       },
       {
-        onError: () => {
-          toast.error(t('messages.error'));
+        onError: (error) => {
+          handleAddError(error);
           setOverrides((prev) => ({ ...prev, [externalId]: added }));
         },
         onSettled: () => setPending(externalId, false),

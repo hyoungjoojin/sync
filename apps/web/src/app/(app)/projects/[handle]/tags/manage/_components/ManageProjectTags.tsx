@@ -16,7 +16,7 @@ import {
   useCreateProjectTag,
   useGetProjectTags,
   useGetProjectUnverifiedTags,
-  useVerifyTag,
+  useVerifyProjectTag,
 } from '@/api/__generated__/tag/tag';
 import { GetTagsResponseTagsItem } from '@/api/__generated__/types';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 export default function ManageProjectTags() {
   return (
@@ -84,7 +85,14 @@ function CreateProjectTagPopover() {
           form.reset();
           setOpen(false);
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.TAG_ALREADY_EXISTS:
+                toast.error(t('messages.already-exists'));
+                return;
+            }
+          }
           toast.error(t('messages.error'));
         },
       },
@@ -151,11 +159,12 @@ function UnverifiedTagsSection() {
   const { data, isPending } = useGetProjectUnverifiedTags(handle);
   const tags = data?.data.tags ?? [];
 
-  const { mutate: verifyTag, isPending: isVerifyPending } = useVerifyTag();
+  const { mutate: verifyTag, isPending: isVerifyPending } =
+    useVerifyProjectTag();
 
   const onVerify = (tag: GetTagsResponseTagsItem) => {
     verifyTag(
-      { name: tag.name },
+      { handle, name: tag.name },
       {
         onSuccess: async () => {
           toast.success(t('unverified.messages.success', { name: tag.name }));
@@ -166,7 +175,14 @@ function UnverifiedTagsSection() {
             queryKey: getGetProjectTagsQueryKey(handle),
           });
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.TAG_NOT_FOUND:
+                toast.error(t('unverified.messages.not-found'));
+                return;
+            }
+          }
           toast.error(t('unverified.messages.error'));
         },
       },

@@ -4,7 +4,7 @@ import { CaretLeftIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import ROUTES from '@/util/routes';
@@ -30,13 +30,11 @@ export default function ProfileConnectionsHeader({
         <Skeleton className="h-6 w-32" />
       ) : (
         <div className="flex items-center gap-2">
-          <Avatar size="sm">
-            <AvatarImage
-              src={profile.data.profileImageUrl ?? undefined}
-              alt={profile.data.name}
-            />
-            <AvatarFallback>{profile.data.name[0]}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            name={profile.data.name}
+            imageUrl={profile.data.profileImageUrl}
+            size="sm"
+          />
 
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold">{profile.data.name}</span>

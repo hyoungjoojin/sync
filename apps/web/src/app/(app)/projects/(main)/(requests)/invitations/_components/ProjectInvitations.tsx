@@ -25,6 +25,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 function ProjectInvitationsSkeleton() {
   return (
@@ -115,7 +116,17 @@ export default function ProjectInvitations() {
           ]);
           toast.success(t('messages.accept-success'));
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROJECT_INVITATION_EXPIRED:
+                toast.error(t('messages.accept-expired'));
+                return;
+              case ErrorCode.PROJECT_INVITATION_NOT_FOUND:
+                toast.error(t('messages.accept-not-found'));
+                return;
+            }
+          }
           toast.error(t('messages.accept-error'));
         },
       },
@@ -130,7 +141,17 @@ export default function ProjectInvitations() {
           await invalidateInvitations();
           toast.success(t('messages.decline-success'));
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROJECT_INVITATION_EXPIRED:
+                toast.error(t('messages.decline-expired'));
+                return;
+              case ErrorCode.PROJECT_INVITATION_NOT_FOUND:
+                toast.error(t('messages.decline-not-found'));
+                return;
+            }
+          }
           toast.error(t('messages.decline-error'));
         },
       },

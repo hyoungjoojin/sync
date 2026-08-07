@@ -5,10 +5,11 @@ import {
   useOnboardProfile as useOnboardProfileMutation,
 } from '@/api/__generated__/profile/profile';
 import { getGetUserRecommendationsQueryKey } from '@/api/__generated__/user/user';
+import SyncError from '@/lib/error';
 
 interface UseOnboardProfileOptions {
   onSuccess?: () => void;
-  onError?: () => void;
+  onError?: (error: SyncError) => void;
 }
 
 export function useOnboardProfile(options?: UseOnboardProfileOptions) {

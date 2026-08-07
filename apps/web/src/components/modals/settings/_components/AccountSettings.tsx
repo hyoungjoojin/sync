@@ -86,15 +86,16 @@ const AccountSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
                 if (provider.connected) {
                   deleteOAuth2Account(provider.id, {
                     onError: (error) => {
-                      if (error instanceof SyncError) {
-                        const { code } = error;
-
-                        if (
-                          code === ErrorCode.OAUTH2_ACCOUNT_CANNOT_BE_DELETED
-                        ) {
-                          toast.error(t('oauth2.errors.cannot_be_deleted'));
-                        }
+                      if (
+                        error instanceof SyncError &&
+                        error.code ===
+                          ErrorCode.OAUTH2_ACCOUNT_CANNOT_BE_DELETED
+                      ) {
+                        toast.error(t('oauth2.errors.cannot_be_deleted'));
+                        return;
                       }
+
+                      toast.error(t('oauth2.errors.disconnect_failed'));
                     },
                   });
                 } else {

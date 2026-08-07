@@ -176,7 +176,18 @@ function ProjectDangerZone({
         router.replace(ROUTES.PROJECTS());
         router.refresh();
       },
-      onError: () => {
+      onError: (error) => {
+        if (error instanceof SyncError) {
+          switch (error.code) {
+            case ErrorCode.TEAMMATE_NOT_FOUND:
+            case ErrorCode.PROJECT_NOT_FOUND:
+              toast.error(t('leave.messages.not-found'));
+              return;
+            case ErrorCode.PROJECT_OWNER_CANNOT_LEAVE:
+              toast.error(t('leave.messages.owner-cannot-leave'));
+              return;
+          }
+        }
         toast.error(t('leave.messages.error'));
       },
     });
@@ -189,7 +200,14 @@ function ProjectDangerZone({
         router.replace(ROUTES.PROJECTS());
         router.refresh();
       },
-      onError: () => {
+      onError: (error) => {
+        if (
+          error instanceof SyncError &&
+          error.code === ErrorCode.PROJECT_NOT_FOUND
+        ) {
+          toast.error(t('delete.messages.not-found'));
+          return;
+        }
         toast.error(t('delete.messages.error'));
       },
     });
@@ -684,7 +702,14 @@ function ProjectJoinPolicyField({
         ]);
         toast.success(t('messages.success'));
       },
-      onError: () => {
+      onError: (error) => {
+        if (
+          error instanceof SyncError &&
+          error.code === ErrorCode.PROJECT_NOT_FOUND
+        ) {
+          toast.error(t('messages.not-found'));
+          return;
+        }
         toast.error(t('messages.error'));
       },
     },

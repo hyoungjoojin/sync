@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { downloadBlob } from '@/lib/download';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 import { fetchMediaBlob } from './postMediaSource';
 
@@ -28,8 +29,15 @@ export function useDownloadPostMedia(slug: string | null) {
       const blob = await fetchMediaBlob({ mediaId, url: null, slug });
 
       downloadBlob(blob, fileName ?? mediaId);
-    } catch {
-      toast.error(t('errors.download-failed'));
+    } catch (error) {
+      if (
+        error instanceof SyncError &&
+        error.code === ErrorCode.POST_NOT_FOUND
+      ) {
+        toast.error(t('errors.post-not-found'));
+      } else {
+        toast.error(t('errors.download-failed'));
+      }
     } finally {
       setDownloadingMediaId(null);
     }

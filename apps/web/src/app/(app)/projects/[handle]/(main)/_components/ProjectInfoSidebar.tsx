@@ -15,12 +15,8 @@ import {
   useGetProjectTeammates,
 } from '@/api/__generated__/project/project';
 import { GetProjectResponseSummaryJoinPolicy } from '@/api/__generated__/types';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarImage,
-} from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
+import { AvatarGroup } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -209,13 +205,11 @@ function ContributorsCard({ handle }: ProjectInfoSidebarProps) {
             {visibleTeammates.map(({ user }) => (
               <Tooltip key={user.handle}>
                 <TooltipTrigger asChild>
-                  <Avatar size="sm">
-                    <AvatarImage
-                      src={user.profileImageUrl ?? undefined}
-                      alt={user.name}
-                    />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
+                  <ProfileAvatar
+                    name={user.name}
+                    imageUrl={user.profileImageUrl}
+                    size="sm"
+                  />
                 </TooltipTrigger>
                 <TooltipContent>{user.name}</TooltipContent>
               </Tooltip>

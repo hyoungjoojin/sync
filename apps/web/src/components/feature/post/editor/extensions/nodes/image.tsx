@@ -16,6 +16,7 @@ import { uploadFileToS3 } from '@/api/s3';
 import { Button } from '@/components/ui/button';
 import { FileInput } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import SyncError, { ErrorCode } from '@/lib/error';
 import { MAX_FILE_SIZE, cn } from '@/lib/tiptap-utils';
 
 import { NodeType } from '.';
@@ -160,9 +161,24 @@ function ImageNodeComponent({
           toast.success(t('messages.upload-success'));
         })
         .catch((error) => {
-          toast.error(
-            error instanceof Error ? error.message : t('errors.upload-failed'),
-          );
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.MEDIA_TOO_LARGE:
+                toast.error(t('errors.max-size'));
+                break;
+              case ErrorCode.UNSUPPORTED_MEDIA_TYPE:
+                toast.error(t('errors.unsupported-type'));
+                break;
+              default:
+                toast.error(t('errors.upload-failed'));
+            }
+          } else {
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : t('errors.upload-failed'),
+            );
+          }
 
           updateAttributes({
             status: 'error',

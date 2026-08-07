@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
 import { FollowButton } from '@/components/feature/profile/FollowButton';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import { ContactFields } from '@/components/feature/profile/contacts';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ModalType } from '@/constants/modal';
@@ -46,10 +46,11 @@ export default function ProfileOverview({ handle }: ProfileOverviewProps) {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-        <Avatar className="h-28 w-28 border">
-          <AvatarImage src={profile.data.profileImageUrl ?? undefined} />
-          <AvatarFallback></AvatarFallback>
-        </Avatar>
+        <ProfileAvatar
+          name={profile.data.name}
+          imageUrl={profile.data.profileImageUrl}
+          className="h-28 w-28 border"
+        />
 
         <div className="flex flex-1 flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

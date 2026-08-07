@@ -74,12 +74,20 @@ export const server = ky.extend({
           return error;
         }
 
-        if (response.status === 403) {
-          return error;
+        // 403은 SyncException(도메인 규칙 위반)과 CSRF/AccessDenied 거부
+        // 둘 다에서 발생할 수 있다. 후자는 GlobalExceptionHandler를 거치지
+        // 않아 본문에 code 필드가 없으므로, 상태 코드가 아니라 code 필드의
+        // 유무로 둘을 구분한다.
+        const body = await response
+          .json<Partial<ErrorResponse>>()
+          .catch(() => null);
+        const code = body?.code;
+
+        if (code && (Object.values(ErrorCode) as string[]).includes(code)) {
+          throw new SyncError(body?.detail ?? '', code);
         }
 
-        const body = await response.json<ErrorResponse>();
-        throw new SyncError(body.detail, body.code);
+        return error;
       },
     ],
   },

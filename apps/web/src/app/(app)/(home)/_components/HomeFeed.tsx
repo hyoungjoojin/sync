@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useGetPostRecommendationsInfinite } from '@/api/__generated__/post/post';
 import PostList from '@/components/feature/post/viewer/PostList';
 import { toPostSummary } from '@/components/feature/post/viewer/types';
-import { Button } from '@/components/ui/button';
+import { Button, LinkButton } from '@/components/ui/button';
 import {
   Empty,
   EmptyContent,
@@ -17,11 +17,13 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ROUTES from '@/util/routes';
 
 import { type HomeFeedFilter, createHomeFeedParams } from './homeFeed';
 
 export default function HomeFeed() {
   const t = useTranslations('pages.home.feed');
+  const tEmpty = useTranslations('pages.home.feed.empty');
   const [filter, setFilter] = useState<HomeFeedFilter>('all');
 
   const {
@@ -48,13 +50,6 @@ export default function HomeFeed() {
   const posts =
     data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
   const hasInitialError = isError && !data;
-
-  const emptyState = (
-    <Empty className="min-h-80">
-      <EmptyTitle>{t('empty.title')}</EmptyTitle>
-      <EmptyDescription>{t('empty.description')}</EmptyDescription>
-    </Empty>
-  );
 
   const errorState = (
     <Empty className="min-h-80">
@@ -118,9 +113,21 @@ export default function HomeFeed() {
         isFetchingNextPage={isFetchingNextPage}
         isFetchNextPageError={isFetchNextPageError}
         fetchNextPage={fetchNextPage}
-        empty={emptyState}
         error={errorState}
         nextPageError={nextPageError}
+        empty={
+          <Empty className="min-h-80">
+            <EmptyHeader>
+              <EmptyTitle>{tEmpty('title')}</EmptyTitle>
+              <EmptyDescription>{tEmpty('description')}</EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <LinkButton href={ROUTES.EXPLORE_TRENDING()} size="sm">
+                {tEmpty('explore')}
+              </LinkButton>
+            </EmptyContent>
+          </Empty>
+        }
       />
     </div>
   );

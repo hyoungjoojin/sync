@@ -20,6 +20,7 @@ import PostEditor from '@/components/feature/post/editor/PostEditor';
 import { PostType } from '@/components/feature/post/types/post';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 import PromotionFieldsBuilder, {
@@ -130,7 +131,18 @@ export default function NewPromotionPage() {
                 });
                 router.push(ROUTES.ADMIN_PROMOTIONS());
               },
-              onError: () => {
+              onError: (error) => {
+                if (error instanceof SyncError) {
+                  switch (error.code) {
+                    case ErrorCode.POST_NOT_FOUND:
+                      toast.error(
+                        t('new.errors.promotion-post-not-found', {
+                          slug: post.slug,
+                        }),
+                      );
+                      return;
+                  }
+                }
                 toast.error(
                   t('new.errors.promotion-create-failed', { slug: post.slug }),
                 );
@@ -138,7 +150,26 @@ export default function NewPromotionPage() {
             },
           );
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROJECT_NOT_FOUND:
+                toast.error(t('new.errors.project-not-found'));
+                return;
+              case ErrorCode.MEDIA_NOT_FOUND:
+                toast.error(t('new.errors.media-not-found'));
+                return;
+              case ErrorCode.MEDIA_TOO_LARGE:
+                toast.error(t('new.errors.media-too-large'));
+                return;
+              case ErrorCode.UNSUPPORTED_MEDIA_TYPE:
+                toast.error(t('new.errors.unsupported-media-type'));
+                return;
+              case ErrorCode.TAG_LIMIT_EXCEEDED:
+                toast.error(t('new.errors.tag-limit-exceeded'));
+                return;
+            }
+          }
           toast.error(t('new.errors.post-create-failed'));
         },
       },

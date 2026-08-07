@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 interface LoginFormProps {
@@ -74,7 +75,15 @@ export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
 
           router.replace(redirectTo ?? ROUTES.HOME());
         },
-        onError: () => {
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.NETWORK_ERROR
+          ) {
+            toast.error(t('errors.network'));
+            return;
+          }
+
           toast.error(t('errors.invalid-credentials'));
         },
       },

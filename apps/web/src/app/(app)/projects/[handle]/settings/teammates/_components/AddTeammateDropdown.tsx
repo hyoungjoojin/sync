@@ -1,6 +1,6 @@
 'use client';
 
-import { PlusIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import { useDebounce } from '@uidotdev/usehooks';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -8,8 +8,8 @@ import { toast } from 'sonner';
 
 import { CreateProjectInvitationRequestRole } from '@/api/__generated__/types';
 import { useSearchUsers } from '@/api/__generated__/user/user';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import { useCreateProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -24,6 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 interface AddTeammateDropdownProps {
   projectHandle: string;
@@ -64,7 +65,20 @@ export default function AddTeammateDropdown({
           setQuery('');
           setOpen(false);
         },
-        onError: () => {
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROJECT_INVITATION_ALREADY_EXISTS:
+                toast.error(t('messages.already-exists'));
+                return;
+              case ErrorCode.USER_NOT_FOUND:
+                toast.error(t('messages.user-not-found'));
+                return;
+              case ErrorCode.PROJECT_NOT_FOUND:
+                toast.error(t('messages.project-not-found'));
+                return;
+            }
+          }
           toast.error(t('messages.error'));
         },
       },
@@ -111,12 +125,11 @@ export default function AddTeammateDropdown({
                     onSelect={() => onSelect(user.handle)}
                     className="gap-2"
                   >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={user.profileImageUrl ?? undefined} />
-                      <AvatarFallback>
-                        <UserCircleIcon className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <ProfileAvatar
+                      name={user.name}
+                      imageUrl={user.profileImageUrl}
+                      className="h-6 w-6"
+                    />
                     <div className="flex flex-col">
                       <span className="text-sm">{user.name}</span>
                       <span className="text-xs text-muted-foreground">

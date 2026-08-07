@@ -22,6 +22,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 function MyProjectJoinRequestsSkeleton() {
@@ -93,7 +94,16 @@ export default function MyProjectJoinRequests() {
           );
           toast.success(t('messages.cancel-success'));
         },
-        onError: () => toast.error(t('messages.cancel-error')),
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.PROJECT_JOIN_REQUEST_NOT_FOUND
+          ) {
+            toast.error(t('messages.cancel-not-found'));
+            return;
+          }
+          toast.error(t('messages.cancel-error'));
+        },
       },
     );
   };

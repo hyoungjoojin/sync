@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 export default function CollectionView({ externalId }: { externalId: string }) {
@@ -119,7 +120,16 @@ export default function CollectionView({ externalId }: { externalId: string }) {
           toast.success(t('messages.delete-success'));
           router.push(ROUTES.COLLECTIONS());
         },
-        onError: () => toast.error(t('messages.delete-error')),
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.COLLECTION_NOT_FOUND
+          ) {
+            toast.error(t('messages.delete-error-not-found'));
+            return;
+          }
+          toast.error(t('messages.delete-error'));
+        },
       },
     );
   };

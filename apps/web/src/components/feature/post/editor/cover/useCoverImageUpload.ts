@@ -2,8 +2,11 @@ import { useState } from 'react';
 
 import { useUploadMedia } from '@/api/__generated__/media/media';
 import { uploadFileToS3 } from '@/api/s3';
+import SyncError, { ErrorCode } from '@/lib/error';
 
-export type CoverUploadResult = { ok: true; mediaId: string } | { ok: false };
+export type CoverUploadResult =
+  | { ok: true; mediaId: string }
+  | { ok: false; code?: ErrorCode };
 
 /**
  * Uploads a generated cover image via the standard 2-step presigned-PUT flow
@@ -36,7 +39,10 @@ export function useCoverImageUpload() {
       });
       if (!success) return { ok: false };
       return { ok: true, mediaId };
-    } catch {
+    } catch (error) {
+      if (error instanceof SyncError) {
+        return { ok: false, code: error.code };
+      }
       return { ok: false };
     } finally {
       setIsUploading(false);

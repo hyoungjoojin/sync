@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 import PromotionFieldsBuilder, {
@@ -142,7 +143,19 @@ export default function AdminPromotionsPage() {
           setEditingPromotion(null);
           await invalidatePromotions();
         },
-        onError: () => {
+        onError: async (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROMOTION_NOT_FOUND:
+                toast.error(t('messages.not-found-error'));
+                setEditingPromotion(null);
+                await invalidatePromotions();
+                return;
+              case ErrorCode.POST_NOT_FOUND:
+                toast.error(t('messages.linked-post-not-found-error'));
+                return;
+            }
+          }
           toast.error(t('messages.save-error'));
         },
       },
@@ -163,7 +176,15 @@ export default function AdminPromotionsPage() {
           );
           await invalidatePromotions();
         },
-        onError: () => {
+        onError: async (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.PROMOTION_NOT_FOUND:
+                toast.error(t('messages.not-found-error'));
+                await invalidatePromotions();
+                return;
+            }
+          }
           toast.error(t('messages.toggle-error'));
         },
       },
