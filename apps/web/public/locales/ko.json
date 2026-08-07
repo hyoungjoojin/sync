@@ -1687,6 +1687,9 @@
           "label": "시리즈",
           "part": "{total}편 중 {position}번째",
           "hidden": "비공개 게시글"
+        },
+        "toc": {
+          "title": "목차"
         }
       }
     },

@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeftIcon, FolderIcon } from '@phosphor-icons/react';
+import { TableOfContents } from '@tiptap/extension-table-of-contents';
 import { CharacterCount, Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -22,7 +23,9 @@ import ROUTES from '@/util/routes';
 
 import { QUESTION_TITLE_PREFIX } from '../constants';
 import { PostScope, PostStatus, PostType } from '../types/post';
+import type { PostTocItem } from '../viewer/PostContext';
 import { PostDeleteButton } from '../viewer/components/PostDeleteButton';
+import { PostTableOfContentsList } from '../viewer/components/PostTableOfContentsList';
 import { PostSummary } from '../viewer/types';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTableControls } from './components/EditorTableControls';
@@ -171,6 +174,7 @@ export default function PostEditor({
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
   );
+  const [tocItems, setTocItems] = useState<PostTocItem[]>([]);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -230,6 +234,18 @@ export default function PostEditor({
       EmbedNode,
       TableNode,
       MediaDropPasteExtension,
+      TableOfContents.configure({
+        onUpdate: (items) =>
+          setTocItems(
+            items.map((item) => ({
+              id: item.id,
+              level: item.level,
+              itemIndex: item.itemIndex,
+              textContent: item.textContent,
+              isActive: item.isActive,
+            })),
+          ),
+      }),
     ],
     content: initialContent,
     immediatelyRender: false,
@@ -479,6 +495,8 @@ export default function PostEditor({
 
   const side = (
     <div className="flex flex-col gap-6">
+      <PostTableOfContentsList items={tocItems} />
+
       <Badge variant="secondary" className="w-fit">
         {scopeLabel}
       </Badge>

@@ -74,7 +74,7 @@ export function TwoColumnFullPageLayout({
   children,
 }: TwoColumnFullPageLayoutProps) {
   return (
-    <div className="w-full min-h-screen flex flex-col lg:flex-row">
+    <div className="light bg-background text-foreground w-full min-h-screen flex flex-col lg:flex-row">
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-10 pb-30 overflow-hidden bg-[#073b31] text-white">
         <Image
           src={artSrc}

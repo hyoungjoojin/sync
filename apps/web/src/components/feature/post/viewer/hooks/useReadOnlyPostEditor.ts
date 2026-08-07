@@ -1,3 +1,4 @@
+import { TableOfContents } from '@tiptap/extension-table-of-contents';
 import type { JSONContent } from '@tiptap/react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,6 +15,7 @@ import {
   TaskListNode,
 } from '../../editor/extensions/nodes/tasks';
 import { deserialize } from '../../editor/utils/serializer';
+import { usePostContext } from '../PostContext';
 
 const EMPTY_DOC: JSONContent = { type: 'doc', content: [] };
 
@@ -37,6 +39,8 @@ export function useReadOnlyPostEditor(
     }
   }
 
+  const { setToc } = usePostContext();
+
   return useEditor({
     extensions: [
       StarterKit.configure({ codeBlock: false }),
@@ -47,6 +51,18 @@ export function useReadOnlyPostEditor(
       ReadOnlyFileNode.configure({ slug }),
       ReadOnlyEmbedNode,
       ReadOnlyTableNode,
+      TableOfContents.configure({
+        onUpdate: (items) =>
+          setToc(
+            items.map((item) => ({
+              id: item.id,
+              level: item.level,
+              itemIndex: item.itemIndex,
+              textContent: item.textContent,
+              isActive: item.isActive,
+            })),
+          ),
+      }),
     ],
     content: doc,
     editable: false,
