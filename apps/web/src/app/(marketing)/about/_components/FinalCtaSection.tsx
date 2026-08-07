@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { LinkButton } from '@/components/ui/button';
 import ROUTES from '@/util/routes';
 
-/** 5. 최종 CTA. */
+/** 5. 최종 CTA — 베타 참여 안내 카드. */
 export default async function FinalCtaSection() {
   const t = await getTranslations('pages.about.finalCta');
 
@@ -23,6 +23,11 @@ export default async function FinalCtaSection() {
         <p className="mx-auto mt-4 max-w-md text-muted-foreground">
           {t('description')}
         </p>
+
+        <p className="mx-auto mt-4 max-w-md text-xs text-muted-foreground">
+          {t('note')}
+        </p>
+
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <LinkButton size="lg" href={ROUTES.REGISTER()}>
             {t('action')}

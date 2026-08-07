@@ -19,6 +19,7 @@ export interface AuthRequiredModalPayload {
 export type ModalPayload = {
   [ModalType.SETTINGS]: undefined;
   [ModalType.AUTH_REQUIRED]: AuthRequiredModalPayload;
+  [ModalType.PROMOTIONS]: undefined;
 };
 
 export interface ModalState {

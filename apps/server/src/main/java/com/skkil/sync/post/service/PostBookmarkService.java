@@ -41,6 +41,7 @@ public class PostBookmarkService {
   }
 
   @Transactional
+  @PreAuthorize("hasPermission(#postId, 'POST', 'READ')")
   public void unbookmarkPost(Long userId, Long postId) {
     postBookmarkRepository.deleteByUser_IdAndPost_Id(userId, postId);
   }

@@ -83,6 +83,8 @@ const ROUTES = {
   },
   ADMIN: () => '/admin',
   ADMIN_POST_REPORTS: () => '/admin/post-reports',
+  ADMIN_PROMOTIONS: () => '/admin/promotions',
+  ADMIN_NEW_PROMOTION: () => '/admin/promotions/new',
 };
 
 export default ROUTES;

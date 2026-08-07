@@ -16,6 +16,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   Optional<Post> findByIdAndVisibility(Long id, PostVisibility visibility);
 
+  @Query("SELECT p FROM Post p LEFT JOIN FETCH p.project WHERE p.id = :id")
+  Optional<Post> findByIdWithProject(Long id);
+
   long countByProjectAndPinnedAtIsNotNull(Project project);
 
   @Modifying

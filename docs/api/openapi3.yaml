@@ -53,6 +53,67 @@ paths:
                     :{\"handle\":\"john-doe\",\"name\":\"John Doe\",\"profileImageUrl\"\
                     :\"https://example.com/john.png\"},\"reviewedAt\":\"1970-01-01T00:00:00Z\"\
                     ,\"resolutionNote\":\"스팸으로 판단했습니다.\"}]}}"
+  /admin/promotions:
+    get:
+      tags:
+      - promotion
+      summary: Get Promotions
+      description: 모든 프로모션 목록을 조회합니다. 관리자만 접근할 수 있습니다.
+      operationId: GetPromotions
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionResponseList"
+              examples:
+                GetPromotions:
+                  value: "[{\"id\":1,\"active\":true,\"fields\":[{\"key\":\"phoneNumber\"\
+                    ,\"type\":\"PHONE_NUMBER\",\"label\":\"전화번호\",\"required\":true}],\"\
+                    projectHandle\":\"official-announcements\",\"postSlug\":\"beta-reward-program\"\
+                    ,\"postTitle\":\"베타 리워드 프로그램 안내\",\"createdAt\":\"1970-01-01T00:00:00Z\"\
+                    }]"
+    post:
+      tags:
+      - promotion
+      summary: Create Promotion
+      description: 새 프로모션을 생성합니다. 관리자만 접근할 수 있습니다. 생성 직후에는 비활성 상태입니다.
+      operationId: CreatePromotion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePromotionRequest"
+            examples:
+              CreatePromotion:
+                value: "{\"fields\":[{\"key\":\"phoneNumber\",\"type\":\"PHONE_NUMBER\"\
+                  ,\"label\":\"전화번호\",\"required\":true}],\"projectHandle\":\"official-announcements\"\
+                  ,\"postSlug\":\"beta-reward-program\"}"
+      responses:
+        "201":
+          description: "201"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionResponse"
+              examples:
+                CreatePromotion:
+                  value: |-
+                    {
+                      "id" : 1,
+                      "active" : true,
+                      "fields" : [ {
+                        "key" : "phoneNumber",
+                        "type" : "PHONE_NUMBER",
+                        "label" : "전화번호",
+                        "required" : true
+                      } ],
+                      "projectHandle" : "official-announcements",
+                      "postSlug" : "beta-reward-program",
+                      "postTitle" : "베타 리워드 프로그램 안내",
+                      "createdAt" : "1970-01-01T00:00:00Z"
+                    }
   /admin/post-reports/{reportId}:
     patch:
       tags:
@@ -79,6 +140,157 @@ paths:
       responses:
         "204":
           description: "204"
+  /admin/promotions/{id}:
+    patch:
+      tags:
+      - promotion
+      summary: Update Promotion
+      description: 프로모션의 연결된 게시글과 신청 필드를 수정합니다. 관리자만 접근할 수 있습니다.
+      operationId: UpdatePromotion
+      parameters:
+      - name: id
+        in: path
+        description: 프로모션 ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePromotionRequest"
+            examples:
+              UpdatePromotion:
+                value: "{\"fields\":[{\"key\":\"phoneNumber\",\"type\":\"PHONE_NUMBER\"\
+                  ,\"label\":\"전화번호\",\"required\":true}],\"projectHandle\":\"official-announcements\"\
+                  ,\"postSlug\":\"beta-reward-program\"}"
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionResponse"
+              examples:
+                UpdatePromotion:
+                  value: |-
+                    {
+                      "id" : 1,
+                      "active" : true,
+                      "fields" : [ {
+                        "key" : "phoneNumber",
+                        "type" : "PHONE_NUMBER",
+                        "label" : "전화번호",
+                        "required" : true
+                      } ],
+                      "projectHandle" : "official-announcements",
+                      "postSlug" : "beta-reward-program",
+                      "postTitle" : "베타 리워드 프로그램 안내",
+                      "createdAt" : "1970-01-01T00:00:00Z"
+                    }
+  /admin/promotions/{id}/activate:
+    patch:
+      tags:
+      - promotion
+      summary: Activate Promotion
+      description: 프로모션을 활성화합니다. 관리자만 접근할 수 있습니다.
+      operationId: ActivatePromotion
+      parameters:
+      - name: id
+        in: path
+        description: 프로모션 ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionResponse"
+              examples:
+                ActivatePromotion:
+                  value: |-
+                    {
+                      "id" : 1,
+                      "active" : true,
+                      "fields" : [ {
+                        "key" : "phoneNumber",
+                        "type" : "PHONE_NUMBER",
+                        "label" : "전화번호",
+                        "required" : true
+                      } ],
+                      "projectHandle" : "official-announcements",
+                      "postSlug" : "beta-reward-program",
+                      "postTitle" : "베타 리워드 프로그램 안내",
+                      "createdAt" : "1970-01-01T00:00:00Z"
+                    }
+  /admin/promotions/{id}/deactivate:
+    patch:
+      tags:
+      - promotion
+      summary: Deactivate Promotion
+      description: 프로모션을 비활성화합니다. 관리자만 접근할 수 있습니다.
+      operationId: DeactivatePromotion
+      parameters:
+      - name: id
+        in: path
+        description: 프로모션 ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionResponse"
+              examples:
+                DeactivatePromotion:
+                  value: |-
+                    {
+                      "id" : 1,
+                      "active" : true,
+                      "fields" : [ {
+                        "key" : "phoneNumber",
+                        "type" : "PHONE_NUMBER",
+                        "label" : "전화번호",
+                        "required" : true
+                      } ],
+                      "projectHandle" : "official-announcements",
+                      "postSlug" : "beta-reward-program",
+                      "postTitle" : "베타 리워드 프로그램 안내",
+                      "createdAt" : "1970-01-01T00:00:00Z"
+                    }
+  /admin/promotions/{id}/signups:
+    get:
+      tags:
+      - promotion
+      summary: Get Promotion Signups
+      description: 프로모션에 신청한 유저 목록을 조회합니다. 관리자만 접근할 수 있습니다.
+      operationId: GetPromotionSignups
+      parameters:
+      - name: id
+        in: path
+        description: 프로모션 ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPromotionSignupResponseList"
+              examples:
+                GetPromotionSignups:
+                  value: "[{\"id\":1,\"user\":{\"handle\":\"john-doe\",\"name\":\"\
+                    John Doe\",\"profileImageUrl\":\"https://example.com/john.png\"\
+                    },\"attachment\":{\"phoneNumber\":\"01012345678\"},\"createdAt\"\
+                    :\"1970-01-01T00:00:00Z\"}]"
   /admin/users/{handle}/promote:
     patch:
       tags:
@@ -3016,6 +3228,66 @@ paths:
       responses:
         "204":
           description: "204"
+  /promotions/active:
+    get:
+      tags:
+      - promotion
+      summary: Get Active Promotions
+      description: 현재 진행 중인 모든 프로모션과 내 신청 상태를 조회합니다.
+      operationId: GetActivePromotions
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivePromotionResponseList"
+              examples:
+                GetActivePromotions:
+                  value: "[{\"id\":1,\"fields\":[{\"key\":\"phoneNumber\",\"type\"\
+                    :\"PHONE_NUMBER\",\"label\":\"전화번호\",\"required\":true}],\"projectHandle\"\
+                    :\"official-announcements\",\"postSlug\":\"beta-reward-program\"\
+                    ,\"signup\":{\"attachment\":{\"phoneNumber\":\"01012345678\"},\"\
+                    createdAt\":\"1970-01-01T00:00:00Z\"}},{\"id\":2,\"fields\":[],\"\
+                    projectHandle\":null,\"postSlug\":null,\"signup\":null}]"
+  /promotions/{promotionId}/signups:
+    post:
+      tags:
+      - promotion
+      summary: Submit Promotion Signup
+      description: 활성 프로모션에 신청합니다. 이미 신청한 경우 제출한 데이터를 갱신합니다.
+      operationId: SubmitPromotionSignup
+      parameters:
+      - name: promotionId
+        in: path
+        description: 프로모션 ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePromotionSignupRequest"
+            examples:
+              SubmitPromotionSignup:
+                value: "{\"attachment\":{\"phoneNumber\":\"01012345678\"}}"
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionSignupResponse"
+              examples:
+                SubmitPromotionSignup:
+                  value: |-
+                    {
+                      "attachment" : {
+                        "phoneNumber" : "01012345678"
+                      },
+                      "createdAt" : "1970-01-01T00:00:00Z"
+                    }
   /search/posts:
     get:
       tags:
@@ -4583,6 +4855,20 @@ components:
                   nullable: true
               description: Page Info
           description: Comments
+    CreatePromotionSignupRequest:
+      title: CreatePromotionSignupRequest
+      required:
+      - attachment
+      type: object
+      properties:
+        attachment:
+          type: object
+          properties:
+            phoneNumber:
+              type: string
+              description: 전화번호 (숫자만)
+              nullable: true
+          description: 제출할 데이터. 키는 해당 프로모션에 등록된 필드의 key와 일치해야 합니다.
     GetMyProjectJoinRequestsResponse:
       title: GetMyProjectJoinRequestsResponse
       required:
@@ -4709,6 +4995,89 @@ components:
                 type: string
                 description: 게시글을 담고 있는 컬렉션의 외부 식별자
                 nullable: true
+    AdminPromotionSignupResponseList:
+      title: AdminPromotionSignupResponseList
+      type: array
+      items:
+        required:
+        - attachment
+        - createdAt
+        - id
+        - user
+        type: object
+        properties:
+          createdAt:
+            type: string
+            description: 신청 시각
+          attachment:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: 등록한 전화번호
+                nullable: true
+            description: 제출한 데이터
+          id:
+            type: number
+            description: 신청 ID
+          user:
+            required:
+            - handle
+            - name
+            type: object
+            properties:
+              name:
+                type: string
+                description: 유저 이름
+              handle:
+                type: string
+                description: 유저 핸들
+              profileImageUrl:
+                type: string
+                description: 유저 프로필 이미지 URL
+                nullable: true
+            description: 신청자 정보
+    UpdatePromotionRequest:
+      title: UpdatePromotionRequest
+      required:
+      - fields
+      - postSlug
+      - projectHandle
+      type: object
+      properties:
+        postSlug:
+          type: string
+          description: 연결된 게시글의 슬러그. 이미 생성된 게시글이어야 합니다.
+        fields:
+          type: array
+          description: 신청 시 수집할 필드 목록. 전체 교체됩니다.
+          items:
+            required:
+            - key
+            - label
+            - required
+            - type
+            type: object
+            properties:
+              label:
+                type: string
+                description: 필드 라벨
+              type:
+                type: string
+                description: 필드 입력 타입
+                enum:
+                - TEXT
+                - PHONE_NUMBER
+                - CHECKBOX
+              required:
+                type: boolean
+                description: 필수 여부
+              key:
+                type: string
+                description: 필드 키
+        projectHandle:
+          type: string
+          description: 연결된 게시글이 속한 프로젝트 핸들
     GetProjectHandleAvailabilityResponse:
       title: GetProjectHandleAvailabilityResponse
       required:
@@ -5256,6 +5625,47 @@ components:
         handle:
           type: string
           description: 생성된 프로젝트 핸들
+    CreatePromotionRequest:
+      title: CreatePromotionRequest
+      required:
+      - fields
+      - postSlug
+      - projectHandle
+      type: object
+      properties:
+        postSlug:
+          type: string
+          description: 연결된 게시글의 슬러그. 이미 생성된 게시글이어야 합니다.
+        fields:
+          type: array
+          description: 신청 시 수집할 필드 목록. 빈 배열이면 신청 없이 안내만 하는 프로모션입니다.
+          items:
+            required:
+            - key
+            - label
+            - required
+            - type
+            type: object
+            properties:
+              label:
+                type: string
+                description: 필드 라벨
+              type:
+                type: string
+                description: 필드 입력 타입
+                enum:
+                - TEXT
+                - PHONE_NUMBER
+                - CHECKBOX
+              required:
+                type: boolean
+                description: 필수 여부
+              key:
+                type: string
+                description: 필드 키
+        projectHandle:
+          type: string
+          description: 연결된 게시글이 속한 프로젝트 핸들
     GetCollectionPostsResponse:
       title: GetCollectionPostsResponse
       required:
@@ -5913,6 +6323,69 @@ components:
                     type: string
                     description: 프로젝트 태그인 경우 해당 프로젝트의 핸들 (전역 태그인 경우 없음)
                     nullable: true
+    ActivePromotionResponseList:
+      title: ActivePromotionResponseList
+      type: array
+      items:
+        required:
+        - fields
+        - id
+        type: object
+        properties:
+          postSlug:
+            type: string
+            description: 연결된 게시글의 슬러그
+            nullable: true
+          id:
+            type: number
+            description: 프로모션 ID
+          fields:
+            type: array
+            description: 신청 시 수집하는 필드 목록
+            items:
+              required:
+              - key
+              - label
+              - required
+              - type
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: 필드 라벨
+                type:
+                  type: string
+                  description: 필드 입력 타입
+                  enum:
+                  - TEXT
+                  - PHONE_NUMBER
+                  - CHECKBOX
+                required:
+                  type: boolean
+                  description: 필수 여부
+                key:
+                  type: string
+                  description: 필드 키
+          signup:
+            type: object
+            properties:
+              createdAt:
+                type: string
+                description: 신청 시각
+                nullable: true
+              attachment:
+                type: object
+                properties:
+                  phoneNumber:
+                    type: string
+                    description: 등록한 전화번호
+                    nullable: true
+                description: 제출한 데이터
+            description: 내 신청 정보
+          projectHandle:
+            type: string
+            description: 연결된 게시글이 속한 프로젝트 핸들
+            nullable: true
     MergeTagsRequest:
       title: MergeTagsRequest
       type: object
@@ -7063,6 +7536,65 @@ components:
         mediaType:
           type: string
           description: Media Type
+    PromotionResponseList:
+      title: PromotionResponseList
+      type: array
+      items:
+        required:
+        - active
+        - createdAt
+        - fields
+        - id
+        type: object
+        properties:
+          createdAt:
+            type: string
+            description: 생성 시각
+          postSlug:
+            type: string
+            description: 연결된 게시글의 슬러그
+            nullable: true
+          active:
+            type: boolean
+            description: 활성화 여부
+          postTitle:
+            type: string
+            description: 연결된 게시글의 제목
+            nullable: true
+          id:
+            type: number
+            description: 프로모션 ID
+          fields:
+            type: array
+            description: 신청 시 수집하는 필드 목록
+            items:
+              required:
+              - key
+              - label
+              - required
+              - type
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: 필드 라벨
+                type:
+                  type: string
+                  description: 필드 입력 타입
+                  enum:
+                  - TEXT
+                  - PHONE_NUMBER
+                  - CHECKBOX
+                required:
+                  type: boolean
+                  description: 필수 여부
+                key:
+                  type: string
+                  description: 필드 키
+          projectHandle:
+            type: string
+            description: 연결된 게시글이 속한 프로젝트 핸들
+            nullable: true
     CreateProjectRequest:
       title: CreateProjectRequest
       required:
@@ -7303,6 +7835,24 @@ components:
           - OPEN
           - REQUEST
           - INVITE
+    PromotionSignupResponse:
+      title: PromotionSignupResponse
+      required:
+      - attachment
+      - createdAt
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: 신청 시각
+        attachment:
+          type: object
+          properties:
+            phoneNumber:
+              type: string
+              description: 등록한 전화번호
+              nullable: true
+          description: 제출한 데이터
     GetUserPreferencesResponse:
       title: GetUserPreferencesResponse
       required:
@@ -7360,6 +7910,63 @@ components:
               count:
                 type: number
                 description: Number of Posts
+    PromotionResponse:
+      title: PromotionResponse
+      required:
+      - active
+      - createdAt
+      - fields
+      - id
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: 생성 시각
+        postSlug:
+          type: string
+          description: 연결된 게시글의 슬러그
+          nullable: true
+        active:
+          type: boolean
+          description: 활성화 여부
+        postTitle:
+          type: string
+          description: 연결된 게시글의 제목
+          nullable: true
+        id:
+          type: number
+          description: 프로모션 ID
+        fields:
+          type: array
+          description: 신청 시 수집하는 필드 목록
+          items:
+            required:
+            - key
+            - label
+            - required
+            - type
+            type: object
+            properties:
+              label:
+                type: string
+                description: 필드 라벨
+              type:
+                type: string
+                description: 필드 입력 타입
+                enum:
+                - TEXT
+                - PHONE_NUMBER
+                - CHECKBOX
+              required:
+                type: boolean
+                description: 필수 여부
+              key:
+                type: string
+                description: 필드 키
+        projectHandle:
+          type: string
+          description: 연결된 게시글이 속한 프로젝트 핸들
+          nullable: true
     GetMyProjectsResponse:
       title: GetMyProjectsResponse
       required:

@@ -9,6 +9,7 @@ import { useModal } from '@/hooks/store';
 const modals: Record<ModalType, ComponentType> = {
   [ModalType.SETTINGS]: dynamic(() => import('../modals/settings')),
   [ModalType.AUTH_REQUIRED]: dynamic(() => import('../modals/auth-required')),
+  [ModalType.PROMOTIONS]: dynamic(() => import('../modals/promotions')),
 };
 
 export default function ModalProvider() {

@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useGetAuthenticatedUser } from '@/api/__generated__/profile/profile';
 import { useOnboardProfile } from '@/components/feature/profile/hooks/useOnboardProfile';
 import { Button } from '@/components/ui/button';
+import { ModalType } from '@/constants/modal';
+import { useModal } from '@/hooks/store';
 import ROUTES from '@/util/routes';
 
 import { EmailVerificationStep } from './_components/EmailVerificationStep';
@@ -57,6 +59,7 @@ export default function Onboarding() {
   const t = useTranslations('pages.onboarding');
 
   const router = useRouter();
+  const { openModal } = useModal();
   const { data: profile, isPending: isProfilePending } =
     useGetAuthenticatedUser();
 
@@ -83,6 +86,7 @@ export default function Onboarding() {
 
   const { mutate: onboardProfile, isPending: isFinishing } = useOnboardProfile({
     onSuccess: async () => {
+      openModal(ModalType.PROMOTIONS);
       router.replace(ROUTES.HOME());
     },
     onError: () => {

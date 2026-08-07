@@ -1,5 +1,7 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
 import { Copyright } from '@/components/ui/copyright';
 import {
@@ -15,19 +17,24 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProjectContextHandle } from '@/hooks/use-project-context';
 
+import AdminSidebarContent from './AdminSidebarContent';
 import PersonalSidebarContent from './PersonalSidebarContent';
 import ProjectSidebarContent from './ProjectSidebarContent';
 
 export default function AppSidebar() {
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith('/admin');
   const handle = useProjectContextHandle();
 
   const { isPending, isError } = useGetProjectByHandle(handle ?? '', {
-    query: { enabled: !!handle },
+    query: { enabled: !!handle && !isAdmin },
   });
 
   return (
     <Sidebar>
-      {!handle || isError ? (
+      {isAdmin ? (
+        <AdminSidebarContent />
+      ) : !handle || isError ? (
         <PersonalSidebarContent />
       ) : isPending ? (
         <ProjectSidebarSkeleton />

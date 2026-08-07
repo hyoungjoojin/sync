@@ -38,7 +38,7 @@ class PostPermissionEvaluatorTests {
   @Test
   @DisplayName("[hasPermission] 플랫폼 관리자는 개인 게시글을 삭제할 수 있음")
   void hasPermission_personalPost_delete_platformAdmin_returnsTrue() {
-    when(postRepository.findById(POST_ID)).thenReturn(Optional.of(personalPost()));
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(personalPost()));
 
     assertThat(
             permissionEvaluator.hasPermission(
@@ -49,7 +49,7 @@ class PostPermissionEvaluatorTests {
   @Test
   @DisplayName("[hasPermission] 일반 사용자는 남의 개인 게시글을 삭제할 수 없음")
   void hasPermission_personalPost_delete_otherUser_returnsFalse() {
-    when(postRepository.findById(POST_ID)).thenReturn(Optional.of(personalPost()));
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(personalPost()));
 
     assertThat(
             permissionEvaluator.hasPermission(
@@ -60,7 +60,7 @@ class PostPermissionEvaluatorTests {
   @Test
   @DisplayName("[hasPermission] 플랫폼 관리자라도 개인 게시글을 수정할 수는 없음")
   void hasPermission_personalPost_edit_platformAdmin_returnsFalse() {
-    when(postRepository.findById(POST_ID)).thenReturn(Optional.of(personalPost()));
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(personalPost()));
 
     assertThat(
             permissionEvaluator.hasPermission(
@@ -72,7 +72,7 @@ class PostPermissionEvaluatorTests {
   @DisplayName("[hasPermission] 프로젝트 관리자는 해당 프로젝트의 게시글을 삭제할 수 있음")
   void hasPermission_projectPost_delete_projectManager_returnsTrue() {
     Project project = project();
-    when(postRepository.findById(POST_ID)).thenReturn(Optional.of(projectPost(project)));
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(projectPost(project)));
     when(teammateRepository.findByProjectIdAndUserId(PROJECT_ID, OTHER_USER_ID))
         .thenReturn(Optional.of(Teammate.owner(project, new User(OTHER_USER_ID))));
 
@@ -86,7 +86,7 @@ class PostPermissionEvaluatorTests {
   @DisplayName("[hasPermission] 프로젝트 일반 팀원은 남의 프로젝트 게시글을 삭제할 수 없음")
   void hasPermission_projectPost_delete_projectMember_returnsFalse() {
     Project project = project();
-    when(postRepository.findById(POST_ID)).thenReturn(Optional.of(projectPost(project)));
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(projectPost(project)));
     when(teammateRepository.findByProjectIdAndUserId(PROJECT_ID, OTHER_USER_ID))
         .thenReturn(Optional.of(Teammate.member(project, new User(OTHER_USER_ID))));
 
@@ -97,10 +97,41 @@ class PostPermissionEvaluatorTests {
   }
 
   @Test
+  @DisplayName("[hasPermission] 팀원이 아니어도 공개 프로젝트의 게시글은 읽을 수 있음")
+  void hasPermission_publicProjectPost_read_nonTeammate_returnsTrue() {
+    Project project = project();
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(projectPost(project)));
+    when(teammateRepository.findByProjectIdAndUserId(PROJECT_ID, OTHER_USER_ID))
+        .thenReturn(Optional.empty());
+
+    assertThat(
+            permissionEvaluator.hasPermission(
+                user(OTHER_USER_ID), POST_ID, PermissionOperation.READ))
+        .isTrue();
+  }
+
+  @Test
+  @DisplayName("[hasPermission] 팀원이 아니면 비공개 프로젝트의 게시글을 읽을 수 없음")
+  void hasPermission_privateProjectPost_read_nonTeammate_returnsFalse() {
+    Project privateProject =
+        Project.builder().handle("project-handle").name("Project").isPublic(false).build();
+    privateProject.setId(PROJECT_ID);
+    when(postRepository.findByIdWithProject(POST_ID))
+        .thenReturn(Optional.of(projectPost(privateProject)));
+    when(teammateRepository.findByProjectIdAndUserId(PROJECT_ID, OTHER_USER_ID))
+        .thenReturn(Optional.empty());
+
+    assertThat(
+            permissionEvaluator.hasPermission(
+                user(OTHER_USER_ID), POST_ID, PermissionOperation.READ))
+        .isFalse();
+  }
+
+  @Test
   @DisplayName("[hasPermission] 플랫폼 관리자는 다른 프로젝트의 게시글을 삭제할 수 없음")
   void hasPermission_projectPost_delete_platformAdmin_returnsFalse() {
     Project project = project();
-    when(postRepository.findById(POST_ID)).thenReturn(Optional.of(projectPost(project)));
+    when(postRepository.findByIdWithProject(POST_ID)).thenReturn(Optional.of(projectPost(project)));
     when(teammateRepository.findByProjectIdAndUserId(PROJECT_ID, OTHER_USER_ID))
         .thenReturn(Optional.empty());
 

@@ -180,9 +180,7 @@ export default function CollectionView({ externalId }: { externalId: string }) {
       </div>
 
       <CollectionItemList
-        externalId={externalId}
         items={items}
-        canManage={canManage}
         isPending={isPostsPending}
         hasNextPage={!!hasNextPage}
         isFetchingNextPage={isFetchingNextPage}

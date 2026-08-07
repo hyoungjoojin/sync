@@ -32,7 +32,7 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
   @Override
   public boolean hasPermission(
       AuthenticatedUser user, Long targetId, PermissionOperation permission) {
-    Post post = postRepository.findById(targetId).orElse(null);
+    Post post = postRepository.findByIdWithProject(targetId).orElse(null);
     if (post == null) {
       log.debug("Post with ID {} not found", targetId);
       return false;

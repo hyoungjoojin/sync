@@ -2,6 +2,7 @@
 
 import { CheckIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -17,6 +18,7 @@ import {
   GetProjectTeammatesResponseTeammatesItemRole,
   UpdateTeammateRequestRole,
 } from '@/api/__generated__/types';
+import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { useCancelProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
 import {
   useApproveJoinRequest,
@@ -58,6 +60,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useSession } from '@/lib/auth/client';
+import ROUTES from '@/util/routes';
 
 import AddTeammateDropdown from './AddTeammateDropdown';
 
@@ -226,18 +229,17 @@ function TeammateRow({
     <TableRow className="border-0">
       <TableCell className="border-l-0">
         <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={teammate.user.profileImageUrl ?? undefined} />
-            <AvatarFallback>
-              {teammate.user.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
+          <ProfileHoverCard
+            handle={teammate.user.handle}
+            name={teammate.user.name}
+            imageUrl={teammate.user.profileImageUrl ?? undefined}
+          />
+          <Link href={ROUTES.PROFILE(teammate.user.handle)}>
             <p className="text-sm font-medium">{teammate.user.name}</p>
             <p className="text-xs text-muted-foreground">
               @{teammate.user.handle}
             </p>
-          </div>
+          </Link>
         </div>
       </TableCell>
       <TableCell className="border-l-0">

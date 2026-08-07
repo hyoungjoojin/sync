@@ -1091,9 +1091,10 @@
         }
       },
       "finalCta": {
-        "title": "흩어진 글을 한곳으로.",
-        "description": "가장 먼저 sync를 써 볼 분들을 찾고 있어요. 함께 만들어 가요.",
-        "action": "무료로 시작하기"
+        "title": "가장 먼저 SYNC를 써 볼 분들을 찾고 있어요",
+        "description": "함께 만들어 가는 베타 테스터에게는 무료 이용 혜택과 소정의 리워드를 드릴 예정이에요.",
+        "note": "구체적인 조건과 리워드 내용은 베타 진행 중 순차적으로 정해지며, 가입하신 이메일로 안내드릴게요.",
+        "action": "베타 참여하기"
       },
       "footer": {
         "description": "짧은 기록부터 긴 글까지, 한곳에서.",
@@ -1374,6 +1375,91 @@
         "actions": {
           "verify": "검증"
         }
+      },
+      "promotions": {
+        "title": "공지사항 관리",
+        "empty": "등록된 공지사항이 없습니다.",
+        "table": {
+          "post-title": "게시글",
+          "status": "상태",
+          "actions": "관리"
+        },
+        "statuses": {
+          "active": "활성",
+          "inactive": "비활성"
+        },
+        "actions": {
+          "create": "새 공지사항",
+          "edit": "수정",
+          "activate": "활성화",
+          "deactivate": "비활성화",
+          "cancel": "취소",
+          "save": "저장",
+          "add-field": "필드 추가",
+          "view-signups": "신청자 보기",
+          "view-post": "게시글 보기"
+        },
+        "edit-dialog": {
+          "title": "공지사항 수정"
+        },
+        "form": {
+          "fields": {
+            "fields": {
+              "label": "신청 필드",
+              "empty": "설정된 필드가 없습니다. 필드가 없으면 신청 없이 안내만 하는 공지사항이 됩니다.",
+              "key-placeholder": "키 (예: phoneNumber)",
+              "label-placeholder": "라벨 (예: 전화번호)",
+              "required": "필수"
+            }
+          },
+          "errors": {
+            "required_field_key": "필드 키를 입력해주세요.",
+            "required_field_label": "필드 라벨을 입력해주세요.",
+            "duplicate_field_key": "중복된 필드 키가 있습니다."
+          }
+        },
+        "messages": {
+          "create-success": "공지사항을 생성했습니다.",
+          "update-success": "공지사항을 수정했습니다.",
+          "activate-success": "공지사항을 활성화했습니다.",
+          "deactivate-success": "공지사항을 비활성화했습니다.",
+          "save-error": "저장에 실패했습니다.",
+          "toggle-error": "상태 변경에 실패했습니다."
+        },
+        "field-types": {
+          "TEXT": "텍스트",
+          "PHONE_NUMBER": "전화번호",
+          "CHECKBOX": "체크박스"
+        },
+        "signups-dialog": {
+          "title": "{title} 신청자",
+          "table": {
+            "user": "신청자",
+            "attachment": "제출 내용",
+            "createdAt": "신청 시각"
+          },
+          "empty": "신청자가 없습니다."
+        },
+        "new": {
+          "title": "포스트와 함께 공지사항 만들기",
+          "fields": {
+            "project-handle": {
+              "label": "프로젝트 핸들",
+              "placeholder": "project-handle",
+              "found": "{name} 프로젝트를 찾았어요.",
+              "not-found": "해당 핸들의 프로젝트를 찾을 수 없어요."
+            }
+          },
+          "messages": {
+            "success": "게시글과 공지사항을 생성했습니다."
+          },
+          "errors": {
+            "project-handle-required": "프로젝트 핸들을 입력해주세요.",
+            "promotion-invalid": "공지사항 정보를 확인해주세요.",
+            "post-create-failed": "게시글 생성에 실패했습니다. 공지사항은 생성되지 않았습니다.",
+            "promotion-create-failed": "게시글은 생성되었지만({slug}) 공지사항 생성에 실패했습니다. 다시 시도해주세요."
+          }
+        }
       }
     },
     "legal": {
@@ -1416,8 +1502,7 @@
         "edit": "수정",
         "delete": "삭제",
         "cancel": "취소",
-        "options": "컬렉션 옵션",
-        "remove-item": "컬렉션에서 제거"
+        "options": "컬렉션 옵션"
       },
       "empty": {
         "title": "아직 담긴 포스트가 없습니다",
@@ -1435,8 +1520,7 @@
       },
       "messages": {
         "delete-success": "컬렉션을 삭제했습니다.",
-        "delete-error": "컬렉션을 삭제하지 못했습니다.",
-        "remove-error": "포스트를 제거하지 못했습니다."
+        "delete-error": "컬렉션을 삭제하지 못했습니다."
       },
       "form": {
         "title": {
@@ -1649,6 +1733,28 @@
       "messages": {
         "saveSuccess": "설정이 저장되었습니다."
       }
+    },
+    "promotions": {
+      "title": "진행 중인 공지사항",
+      "description": "지금 참여할 수 있는 공지사항을 확인하세요.",
+      "empty": "현재 진행 중인 공지사항이 없어요.",
+      "form": {
+        "errors": {
+          "required": "필수 입력 항목이에요.",
+          "invalid": "형식이 올바르지 않아요."
+        },
+        "submit": {
+          "apply": "신청",
+          "update": "수정"
+        }
+      },
+      "messages": {
+        "success": "신청이 완료되었어요.",
+        "error": "신청에 실패했어요. 다시 시도해주세요."
+      },
+      "actions": {
+        "go-to-post": "게시글로 이동"
+      }
     }
   },
   "components": {
@@ -1760,7 +1866,8 @@
         "sign-out": "로그아웃",
         "errors": {
           "sign-out": "로그아웃에 실패했습니다. 다시 시도해주세요."
-        }
+        },
+        "promotions": "공지사항"
       },
       "notifications": {
         "aria-label": "알림",
@@ -1799,6 +1906,11 @@
           "bookmarks": "북마크",
           "settings": "설정",
           "collections": "컬렉션"
+        },
+        "admin": {
+          "title": "관리자",
+          "reports": "신고 관리",
+          "promotions": "공지사항 관리"
         }
       }
     },

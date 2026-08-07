@@ -2,6 +2,7 @@
 
 import {
   GearSixIcon,
+  GiftIcon,
   SignOutIcon,
   UserGearIcon,
   UserIcon,
@@ -82,6 +83,14 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
       label: t('user.settings'),
       onClick: () => {
         openModal(ModalType.SETTINGS);
+      },
+    },
+    {
+      icon: GiftIcon,
+      isAdmin: false,
+      label: t('user.promotions'),
+      onClick: () => {
+        openModal(ModalType.PROMOTIONS);
       },
     },
     {

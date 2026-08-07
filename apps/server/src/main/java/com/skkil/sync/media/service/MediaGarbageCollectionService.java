@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
@@ -28,6 +29,7 @@ public class MediaGarbageCollectionService {
   }
 
   @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+  @Transactional
   public void markStalePendingMediaDeleted() {
     Instant cutoff = Instant.now().minus(PENDING_MEDIA_TTL);
     int marked = mediaRepository.markStalePendingMediaDeleted(cutoff);

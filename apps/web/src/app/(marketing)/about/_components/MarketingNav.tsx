@@ -25,7 +25,9 @@ export default function MarketingNav() {
     if (!hero) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => setIsScrolled(!entry.isIntersecting),
+      ([entry]) => {
+        if (entry) setIsScrolled(!entry.isIntersecting);
+      },
       { threshold: 0 },
     );
     observer.observe(hero);

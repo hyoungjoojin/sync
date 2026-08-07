@@ -33,7 +33,8 @@ public class CollectionPermissionEvaluator implements CustomPermissionEvaluator<
   @Override
   public boolean hasPermission(
       AuthenticatedUser user, String externalId, PermissionOperation permission) {
-    Collection collection = collectionRepository.findByExternalId(externalId).orElse(null);
+    Collection collection =
+        collectionRepository.findByExternalIdWithProject(externalId).orElse(null);
     if (collection == null) {
       log.debug("Collection with external id {} not found", externalId);
       return false;

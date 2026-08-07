@@ -58,6 +58,8 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
                     .requestMatchers("/projects/*/invitations/**", "/invitations/**")
                     .authenticated()
+                    .requestMatchers("/promotions/**")
+                    .authenticated()
                     .requestMatchers(HttpMethod.GET, "/users/recommendations")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/handles/availability")
