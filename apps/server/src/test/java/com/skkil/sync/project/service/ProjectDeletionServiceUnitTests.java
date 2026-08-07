@@ -7,7 +7,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.skkil.sync.media.model.Media;
 import com.skkil.sync.media.repository.MediaRepository;
+import com.skkil.sync.post.repository.PostRepository;
 import com.skkil.sync.post.repository.PostTagRepository;
 import com.skkil.sync.post.repository.TagRepository;
 import com.skkil.sync.project.model.Project;
@@ -26,6 +28,8 @@ class ProjectDeletionServiceUnitTests {
 
   @Mock private ProjectRepository projectRepository;
 
+  @Mock private PostRepository postRepository;
+
   @Mock private PostTagRepository postTagRepository;
 
   @Mock private TagRepository tagRepository;
@@ -34,13 +38,15 @@ class ProjectDeletionServiceUnitTests {
 
   @Mock private Project project;
 
+  @Mock private Media icon;
+
   private ProjectDeletionService projectDeletionService;
 
   @BeforeEach
   void setUp() {
     projectDeletionService =
         new ProjectDeletionService(
-            projectRepository, postTagRepository, tagRepository, mediaRepository);
+            projectRepository, postRepository, postTagRepository, tagRepository, mediaRepository);
   }
 
   @Test
@@ -49,13 +55,19 @@ class ProjectDeletionServiceUnitTests {
     Long projectId = 1L;
     List<Long> affectedGlobalTagIds = List.of(11L, 12L);
     when(project.getId()).thenReturn(projectId);
+    when(project.getIcon()).thenReturn(icon);
+    when(icon.getId()).thenReturn(21L);
+    when(postRepository.findMediaIdsByProjectId(projectId)).thenReturn(List.of(22L, 23L));
     when(postTagRepository.findGlobalTagIdsByProjectId(projectId)).thenReturn(affectedGlobalTagIds);
 
     projectDeletionService.delete(project);
 
-    InOrder inOrder = inOrder(postTagRepository, mediaRepository, projectRepository, tagRepository);
+    InOrder inOrder =
+        inOrder(
+            postTagRepository, postRepository, mediaRepository, projectRepository, tagRepository);
     inOrder.verify(postTagRepository).findGlobalTagIdsByProjectId(projectId);
-    inOrder.verify(mediaRepository).markProjectMediaDeleted(projectId);
+    inOrder.verify(postRepository).findMediaIdsByProjectId(projectId);
+    inOrder.verify(mediaRepository).markDeletedByIds(List.of(22L, 23L, 21L));
     inOrder.verify(projectRepository).delete(project);
     inOrder.verify(projectRepository).flush();
     inOrder.verify(tagRepository).recomputePostCounts(affectedGlobalTagIds);
@@ -73,5 +85,18 @@ class ProjectDeletionServiceUnitTests {
 
     verify(tagRepository, never()).recomputePostCounts(anyList());
     verify(tagRepository, never()).recomputeCounts(anyLong());
+  }
+
+  @Test
+  @DisplayName("[delete] 정리할 미디어가 없으면 삭제 쿼리를 호출하지 않는다")
+  void delete_noProjectMedia_skipsMediaDeletion() {
+    Long projectId = 1L;
+    when(project.getId()).thenReturn(projectId);
+    when(postRepository.findMediaIdsByProjectId(projectId)).thenReturn(List.of());
+    when(postTagRepository.findGlobalTagIdsByProjectId(projectId)).thenReturn(List.of());
+
+    projectDeletionService.delete(project);
+
+    verify(mediaRepository, never()).markDeletedByIds(anyList());
   }
 }

@@ -4,6 +4,7 @@ import com.skkil.sync.post.model.Post;
 import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.project.model.Project;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,4 +31,21 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       "UPDATE Post p SET p.isSeriesPost = false WHERE p.id IN "
           + "(SELECT sp.post.id FROM PostSeriesPost sp WHERE sp.series.id = :seriesId)")
   void clearSeriesFlagBySeriesId(Long seriesId);
+
+  @Query(
+      value =
+          """
+          SELECT cover_media_id
+          FROM posts
+          WHERE project_id = :projectId AND cover_media_id IS NOT NULL
+
+          UNION
+
+          SELECT pmf.media_id
+          FROM post_media_files pmf
+          JOIN posts p ON p.id = pmf.post_id
+          WHERE p.project_id = :projectId
+          """,
+      nativeQuery = true)
+  List<Long> findMediaIdsByProjectId(Long projectId);
 }
