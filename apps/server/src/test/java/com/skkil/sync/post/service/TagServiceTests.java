@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.skkil.sync.post.dto.request.CreateTagRequest;
 import com.skkil.sync.post.dto.request.MergeTagsRequest;
 import com.skkil.sync.post.dto.response.CreateTagResponse;
+import com.skkil.sync.post.dto.summary.TagSummary;
 import com.skkil.sync.post.exception.PostTagLimitExceededException;
 import com.skkil.sync.post.exception.TagAlreadyExistsException;
 import com.skkil.sync.post.exception.TagNotFoundException;
@@ -367,6 +368,39 @@ class TagServiceTests {
     verify(tagRepository, times(1)).reassignTagFollows(sourceId, targetId);
     verify(tagRepository, times(1)).recomputeCounts(targetId);
     verify(tagRepository, times(1)).delete(source);
+  }
+
+  @Test
+  @DisplayName("[unverifyTag] 전역 태그의 검증 상태를 해제")
+  void unverifyTag_unverifiesTag() {
+    String name = "java";
+    Tag tag = Tag.builder().name(name).build();
+    tag.verify();
+
+    when(tagRepository.findByNameAndProjectIsNull(name)).thenReturn(Optional.of(tag));
+
+    tagService.unverifyTag(name);
+
+    assertThat(tag.isVerified()).isFalse();
+  }
+
+  @Test
+  @DisplayName("[getAllTagsForAdmin] 전역 태그를 검증 여부 기준으로 조회하여 매핑")
+  void getAllTagsForAdmin_mapsGlobalTags() {
+    Tag unverifiedTag = Tag.builder().name("java").build();
+    Tag verifiedTag = Tag.builder().name("spring").build();
+    verifiedTag.verify();
+    TagSummary unverifiedSummary = TagSummary.builder().id(1L).name("java").verified(false).build();
+    TagSummary verifiedSummary = TagSummary.builder().id(2L).name("spring").verified(true).build();
+
+    when(tagRepository.findByProjectIsNullOrderByVerifiedAscNameAsc())
+        .thenReturn(List.of(unverifiedTag, verifiedTag));
+    when(tagMapper.toTagSummary(unverifiedTag, Set.of())).thenReturn(unverifiedSummary);
+    when(tagMapper.toTagSummary(verifiedTag, Set.of())).thenReturn(verifiedSummary);
+
+    var result = tagService.getAllTagsForAdmin();
+
+    assertThat(result.tags()).containsExactly(unverifiedSummary, verifiedSummary);
   }
 
   @Test

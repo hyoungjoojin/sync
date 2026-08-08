@@ -1,11 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckIcon, PlusIcon } from '@phosphor-icons/react';
+import { CheckIcon, PencilIcon, PlusIcon } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
@@ -19,6 +19,9 @@ import {
   useVerifyProjectTag,
 } from '@/api/__generated__/tag/tag';
 import { GetTagsResponseTagsItem } from '@/api/__generated__/types';
+import TagEditDialog, {
+  TagEditScope,
+} from '@/components/feature/tag/TagEditDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -41,14 +44,46 @@ import {
 import SyncError, { ErrorCode } from '@/lib/error';
 
 export default function ManageProjectTags() {
+  const { handle } = useParams<{ handle: string }>();
+  const queryClient = useQueryClient();
+  const [editingTag, setEditingTag] = useState<GetTagsResponseTagsItem | null>(
+    null,
+  );
+  const editScope = useMemo(
+    (): TagEditScope => ({ type: 'project', handle }),
+    [handle],
+  );
+
+  const invalidateTags = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: getGetProjectTagsQueryKey(handle),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: getGetProjectUnverifiedTagsQueryKey(handle),
+      }),
+    ]);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-end">
         <CreateProjectTagPopover />
       </div>
 
-      <UnverifiedTagsSection />
-      <VerifiedTagsSection />
+      <UnverifiedTagsSection onEdit={setEditingTag} />
+      <VerifiedTagsSection onEdit={setEditingTag} />
+
+      <TagEditDialog
+        tag={editingTag}
+        scope={editScope}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingTag(null);
+          }
+        }}
+        onSuccess={invalidateTags}
+      />
     </div>
   );
 }
@@ -150,7 +185,11 @@ function CreateProjectTagPopover() {
   );
 }
 
-function UnverifiedTagsSection() {
+interface TagsSectionProps {
+  onEdit: (tag: GetTagsResponseTagsItem) => void;
+}
+
+function UnverifiedTagsSection({ onEdit }: TagsSectionProps) {
   const t = useTranslations('pages.projects.project.tags.manage');
 
   const { handle } = useParams<{ handle: string }>();
@@ -233,7 +272,15 @@ function UnverifiedTagsSection() {
                 </TableCell>
                 <TableCell className="border-l-0">{tag.postCount}</TableCell>
                 <TableCell className="border-l-0">
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(tag)}
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                      {t('edit.trigger')}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -254,7 +301,7 @@ function UnverifiedTagsSection() {
   );
 }
 
-function VerifiedTagsSection() {
+function VerifiedTagsSection({ onEdit }: TagsSectionProps) {
   const t = useTranslations('pages.projects.project.tags.manage');
 
   const { handle } = useParams<{ handle: string }>();
@@ -289,6 +336,7 @@ function VerifiedTagsSection() {
               <TableHead className="border-l-0">
                 {t('table.columns.post-count')}
               </TableHead>
+              <TableHead className="w-0 border-l-0" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -304,6 +352,18 @@ function VerifiedTagsSection() {
                   {tag.description || t('table.no-description')}
                 </TableCell>
                 <TableCell className="border-l-0">{tag.postCount}</TableCell>
+                <TableCell className="border-l-0">
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(tag)}
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                      {t('edit.trigger')}
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

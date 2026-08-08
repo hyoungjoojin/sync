@@ -51,6 +51,10 @@ public class Tag extends BaseEntity {
     this.verified = true;
   }
 
+  public void unverify() {
+    this.verified = false;
+  }
+
   public void updateDescription(String description) {
     this.description = description;
   }

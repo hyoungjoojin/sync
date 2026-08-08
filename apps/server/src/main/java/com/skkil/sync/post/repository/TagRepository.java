@@ -16,6 +16,8 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
   Page<Tag> findByProjectIsNullAndVerifiedTrueOrderByNameAsc(Pageable pageable);
 
+  List<Tag> findByProjectIsNullOrderByVerifiedAscNameAsc();
+
   @Query(
       """
       SELECT t

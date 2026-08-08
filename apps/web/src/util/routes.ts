@@ -85,6 +85,7 @@ const ROUTES = {
   ADMIN_POST_REPORTS: () => '/admin/post-reports',
   ADMIN_PROMOTIONS: () => '/admin/promotions',
   ADMIN_NEW_PROMOTION: () => '/admin/promotions/new',
+  ADMIN_TAGS: () => '/admin/tags',
 };
 
 export default ROUTES;

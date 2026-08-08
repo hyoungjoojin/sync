@@ -273,6 +273,24 @@ public class TagService {
   }
 
   @Transactional
+  @PreAuthorize("hasRole('ADMIN')")
+  public void unverifyTag(String name) {
+    Tag tag = findTag(name, null);
+    tag.unverify();
+  }
+
+  @Transactional(readOnly = true)
+  @PreAuthorize("hasRole('ADMIN')")
+  public GetTagsResponse getAllTagsForAdmin() {
+    var tags =
+        tagRepository.findByProjectIsNullOrderByVerifiedAscNameAsc().stream()
+            .map(tag -> tagMapper.toTagSummary(tag, Set.of()))
+            .toList();
+
+    return new GetTagsResponse(tags);
+  }
+
+  @Transactional
   @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
   public void verifyProjectTag(String handle, String name) {
     Tag tag = findTag(name, handle);

@@ -1,6 +1,11 @@
 'use client';
 
-import { ArrowLeftIcon, FlagIcon, GiftIcon } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon,
+  FlagIcon,
+  GiftIcon,
+  TagIcon,
+} from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -29,6 +34,11 @@ const nav = [
     labelKey: 'admin.promotions',
     href: ROUTES.ADMIN_PROMOTIONS(),
     icon: GiftIcon,
+  },
+  {
+    labelKey: 'admin.tags',
+    href: ROUTES.ADMIN_TAGS(),
+    icon: TagIcon,
   },
 ] as const;
 
