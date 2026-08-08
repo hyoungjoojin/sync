@@ -151,6 +151,7 @@ public class PasswordResetService {
     context.setVariable("resetUrl", buildResetUrl(token));
     context.setVariable(
         "expirationMinutes", PasswordResetConstants.PASSWORD_RESET_TOKEN_TTL.toMinutes());
+    context.setVariable("frontendBaseUrl", frontendBaseUrl);
 
     EmailMessage email =
         EmailMessage.builder()

@@ -29,8 +29,19 @@ public class PostReportAssembler {
         report.getResolutionNote());
   }
 
+  /**
+   * 신고된 글의 본문. 에이전트가 만든 초안은 Tiptap JSON 이 아니라 Markdown 으로만 저장되므로, JSON 이 없으면 Markdown 을 그대로 넘긴다 —
+   * 검토하는 관리자에게 빈 본문을 보여 주면 무엇이 신고됐는지 알 수 없다.
+   */
   private GetPostReportsResponse.Post toPost(Post post) {
+    String content =
+        post.getJsonContent() == null ? post.getMarkdownContent() : post.getJsonContent();
+
     return new GetPostReportsResponse.Post(
-        post.getId(), post.getSlug(), post.getTitle(), post.getContent(), post.getVisibility());
+        post.getId(),
+        post.getSlug(),
+        post.getTitle(),
+        content == null ? "" : content,
+        post.getVisibility());
   }
 }

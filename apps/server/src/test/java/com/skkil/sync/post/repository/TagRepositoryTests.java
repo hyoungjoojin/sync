@@ -150,9 +150,9 @@ class TagRepositoryTests {
             .author(author)
             .type(type)
             .status(status)
-            .content("태그가 포함된 게시글")
+            .jsonContent("태그가 포함된 게시글")
             .build();
-    post.updateContent("태그가 포함된 게시글", "태그가 포함된 게시글", 0);
+    post.updateJsonContent("태그가 포함된 게시글", "태그가 포함된 게시글", 0);
     post.addTag(PostTag.builder().post(post).tag(tag).build());
     Post savedPost = postRepository.save(post);
     tagRepository.incrementPostCount(tag);

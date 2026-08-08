@@ -155,7 +155,7 @@ class PostPermissionEvaluatorTests {
             .slug("post-slug")
             .author(new User(AUTHOR_ID))
             .project(project)
-            .content("{}")
+            .jsonContent("{}")
             .type(PostType.SHORT)
             .build();
     post.setId(POST_ID);

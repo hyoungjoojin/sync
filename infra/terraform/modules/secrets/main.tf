@@ -52,6 +52,8 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     OPENAI_API_KEY                                  = var.openai_api_key
     ADMIN_EMAIL                                     = var.admin_email
     ADMIN_PASSWORD                                  = var.admin_password
+    APP_AGENT_RSA_PRIVATE_KEY                       = var.agent_rsa_private_key
+    APP_AGENT_RSA_PUBLIC_KEY                        = var.agent_rsa_public_key
   })
 }
 

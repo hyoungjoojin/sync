@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,9 +61,14 @@ public class BucketConfig {
 
   @Bean
   FilterRegistrationBean<RateLimitFilter> authRateLimitFilter() {
+    ClientIpResolver clientIpResolver = new ClientIpResolver(trustedProxyCount);
     FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>();
     registration.setFilter(
-        new RateLimitFilter(rateLimitProxyManager(), new ClientIpResolver(trustedProxyCount)));
+        new RateLimitFilter(
+            rateLimitProxyManager(),
+            request -> request.getRequestURI() + ":" + clientIpResolver.resolve(request),
+            AUTH_RATE_LIMIT_CAPACITY,
+            AUTH_RATE_LIMIT_REFILL_PERIOD));
     registration.addUrlPatterns(
         "/auth/login",
         "/auth/register",
@@ -91,19 +97,27 @@ public class BucketConfig {
   private static class RateLimitFilter extends OncePerRequestFilter {
 
     private final ProxyManager<String> proxyManager;
-    private final ClientIpResolver clientIpResolver;
+    private final Function<HttpServletRequest, String> keyResolver;
+    private final int capacity;
+    private final Duration refillPeriod;
     private final JsonMapper jsonMapper = new JsonMapper();
 
-    RateLimitFilter(ProxyManager<String> proxyManager, ClientIpResolver clientIpResolver) {
+    RateLimitFilter(
+        ProxyManager<String> proxyManager,
+        Function<HttpServletRequest, String> keyResolver,
+        int capacity,
+        Duration refillPeriod) {
       this.proxyManager = proxyManager;
-      this.clientIpResolver = clientIpResolver;
+      this.keyResolver = keyResolver;
+      this.capacity = capacity;
+      this.refillPeriod = refillPeriod;
     }
 
     @Override
     protected void doFilterInternal(
         HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {
-      String key = request.getRequestURI() + ":" + clientIpResolver.resolve(request);
+      String key = keyResolver.apply(request);
       Bucket bucket = proxyManager.getProxy(key, this::bucketConfiguration);
 
       ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
@@ -128,11 +142,7 @@ public class BucketConfig {
 
     private BucketConfiguration bucketConfiguration() {
       return BucketConfiguration.builder()
-          .addLimit(
-              limit ->
-                  limit
-                      .capacity(AUTH_RATE_LIMIT_CAPACITY)
-                      .refillGreedy(AUTH_RATE_LIMIT_CAPACITY, AUTH_RATE_LIMIT_REFILL_PERIOD))
+          .addLimit(limit -> limit.capacity(capacity).refillGreedy(capacity, refillPeriod))
           .build();
     }
   }

@@ -115,6 +115,11 @@ export type GetCollectionPostsResponsePostsNodesItemContentPost = {
    */
   accessLevel?: GetCollectionPostsResponsePostsNodesItemContentPostAccessLevel;
   /**
+   * 이 글을 만든 에이전트 클라이언트의 이름. 사람이 직접 쓴 글에는 없다
+   * @nullable
+   */
+  createdViaClientName?: string | null;
+  /**
    * Whether the current user bookmarked this post
    * @nullable
    */

@@ -129,23 +129,73 @@ public class PostService {
             .type(type)
             .status(status)
             .title(title)
-            .content(content.json())
+            .jsonContent(content.json())
             .coverMedia(coverMedia);
     if (project != null) {
       postBuilder.project(project);
     }
     Post post = postBuilder.build();
 
-    post.updateContent(content.json(), content.text(), mediaFiles.size());
+    post.updateJsonContent(content.json(), content.text(), mediaFiles.size());
+
+    return new CreatePostResponse(
+        persistNewPost(
+                post, project, tags, projectTags, referencedPostIds, mediaFiles, content.text())
+            .getSlug());
+  }
+
+  @Transactional
+  Post createMarkdownDraft(
+      Long authorId,
+      @Nullable String title,
+      PostType type,
+      String bodyMarkdown,
+      List<String> tags,
+      List<String> projectTags,
+      @Nullable Project project,
+      String createdViaClientId) {
+    User author = userDomainService.getUserReference(authorId);
+    String slug = PostSlugGenerator.generate(author, title);
+
+    Post.PostBuilder postBuilder =
+        Post.builder()
+            .slug(slug)
+            .author(author)
+            .type(type)
+            .status(PostStatus.DRAFT)
+            .title(title)
+            .createdViaClientId(createdViaClientId);
+    if (project != null) {
+      postBuilder.project(project);
+    }
+    Post post = postBuilder.build();
+
+    post.updateMarkdownContent(bodyMarkdown);
+
+    return persistNewPost(post, project, tags, projectTags, null, List.of(), bodyMarkdown);
+  }
+
+  /**
+   * 새 게시글을 저장하고 그 뒤에 따라붙는 처리(태그, 미디어, 참조, 이벤트)를 수행한다. Tiptap 본문 경로와 Markdown 초안 경로가 공유하는 부분이며, 두
+   * 경로의 차이는 여기 도달하기 전까지의 본문 구성뿐이다.
+   */
+  private Post persistNewPost(
+      Post post,
+      @Nullable Project project,
+      List<String> tags,
+      List<String> projectTags,
+      @Nullable List<Long> referencedPostIds,
+      List<Media> mediaFiles,
+      String contentText) {
     tagService.addTagsToPost(post, project, tags, projectTags);
 
-    post = postRepository.save(post);
-    contentMediaService.savePostMediaFiles(post, mediaFiles);
-    postReferenceService.replaceReferences(post, referencedPostIds);
+    Post saved = postRepository.save(post);
+    contentMediaService.savePostMediaFiles(saved, mediaFiles);
+    postReferenceService.replaceReferences(saved, referencedPostIds);
 
-    applyPublishSideEffects(post, false, content.text());
+    applyPublishSideEffects(saved, false, contentText);
 
-    return new CreatePostResponse(post.getSlug());
+    return saved;
   }
 
   @Transactional

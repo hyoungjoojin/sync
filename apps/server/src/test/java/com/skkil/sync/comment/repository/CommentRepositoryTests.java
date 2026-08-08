@@ -113,9 +113,9 @@ class CommentRepositoryTests {
             .author(author)
             .type(PostType.QUESTION)
             .status(PostStatus.PUBLISHED)
-            .content("질문 본문")
+            .jsonContent("질문 본문")
             .build();
-    post.updateContent("질문 본문", "질문 본문", 0);
+    post.updateJsonContent("질문 본문", "질문 본문", 0);
 
     Post savedPost = postRepository.saveAndFlush(post);
     entityManager.flush();

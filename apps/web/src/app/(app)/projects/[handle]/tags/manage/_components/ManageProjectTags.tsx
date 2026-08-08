@@ -1,7 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckIcon, PencilIcon, PlusIcon } from '@phosphor-icons/react';
+import {
+  CheckIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -16,12 +21,24 @@ import {
   useCreateProjectTag,
   useGetProjectTags,
   useGetProjectUnverifiedTags,
+  useRejectProjectTag,
   useVerifyProjectTag,
 } from '@/api/__generated__/tag/tag';
 import { GetTagsResponseTagsItem } from '@/api/__generated__/types';
 import TagEditDialog, {
   TagEditScope,
 } from '@/components/feature/tag/TagEditDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -189,6 +206,80 @@ interface TagsSectionProps {
   onEdit: (tag: GetTagsResponseTagsItem) => void;
 }
 
+function DeleteProjectTagButton({ tag }: { tag: GetTagsResponseTagsItem }) {
+  const t = useTranslations('pages.projects.project.tags.manage.delete');
+
+  const { handle } = useParams<{ handle: string }>();
+  const queryClient = useQueryClient();
+
+  const { mutate: rejectTag, isPending } = useRejectProjectTag();
+
+  const onDelete = () => {
+    rejectTag(
+      { handle, name: tag.name },
+      {
+        onSuccess: async () => {
+          toast.success(t('messages.success', { name: tag.name }));
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: getGetProjectTagsQueryKey(handle),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: getGetProjectUnverifiedTagsQueryKey(handle),
+            }),
+          ]);
+        },
+        onError: (error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.TAG_NOT_FOUND:
+                toast.error(t('messages.not-found'));
+                return;
+            }
+          }
+          toast.error(t('messages.error'));
+        },
+      },
+    );
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isPending}
+          className="border-destructive/50 text-destructive hover:bg-destructive/10"
+        >
+          <TrashIcon className="h-4 w-4" />
+          {t('trigger')}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('description', { name: tag.name })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={(event) => {
+              event.preventDefault();
+              onDelete();
+            }}
+          >
+            {t('submit')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 function UnverifiedTagsSection({ onEdit }: TagsSectionProps) {
   const t = useTranslations('pages.projects.project.tags.manage');
 
@@ -290,6 +381,7 @@ function UnverifiedTagsSection({ onEdit }: TagsSectionProps) {
                       <CheckIcon className="h-4 w-4" />
                       {t('unverified.verify')}
                     </Button>
+                    <DeleteProjectTagButton tag={tag} />
                   </div>
                 </TableCell>
               </TableRow>
@@ -353,7 +445,7 @@ function VerifiedTagsSection({ onEdit }: TagsSectionProps) {
                 </TableCell>
                 <TableCell className="border-l-0">{tag.postCount}</TableCell>
                 <TableCell className="border-l-0">
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -362,6 +454,7 @@ function VerifiedTagsSection({ onEdit }: TagsSectionProps) {
                       <PencilIcon className="h-4 w-4" />
                       {t('edit.trigger')}
                     </Button>
+                    <DeleteProjectTagButton tag={tag} />
                   </div>
                 </TableCell>
               </TableRow>

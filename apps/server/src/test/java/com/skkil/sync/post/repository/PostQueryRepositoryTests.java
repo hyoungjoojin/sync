@@ -83,6 +83,48 @@ class PostQueryRepositoryTests {
         .isEmpty();
   }
 
+  @Test
+  @DisplayName("[getPostBySlug] 프로젝트 초안은 팀원인 작성자 본인에게만 조회된다")
+  void getPostBySlug_projectDraft_visibleToAuthorOnly() {
+    User author = saveUser("project-draft-author");
+    User teammate = saveUser("project-draft-teammate");
+    User outsider = saveUser("project-draft-outsider");
+    Project project = saveProject("draft-project", true);
+    teammateRepository.saveAndFlush(Teammate.owner(project, author));
+    teammateRepository.saveAndFlush(Teammate.member(project, teammate));
+
+    Post draft = savePost("project-draft", author, project, PostStatus.DRAFT);
+
+    assertThat(postQueryRepository.getPostBySlug(author.getId(), draft.getSlug())).isPresent();
+    // 공개 프로젝트라도 초안은 다른 팀원에게 노출하지 않는다.
+    assertThat(postQueryRepository.getPostBySlug(teammate.getId(), draft.getSlug())).isEmpty();
+    assertThat(postQueryRepository.getPostBySlug(outsider.getId(), draft.getSlug())).isEmpty();
+    assertThat(postQueryRepository.getPostBySlug(null, draft.getSlug())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("[getPostBySlug] 프로젝트를 떠난 작성자는 자신의 프로젝트 초안을 조회할 수 없다")
+  void getPostBySlug_projectDraft_hiddenFromFormerTeammate() {
+    User author = saveUser("left-project-author");
+    Project project = saveProject("left-project", true);
+    Post draft = savePost("left-project-draft", author, project, PostStatus.DRAFT);
+
+    assertThat(postQueryRepository.getPostBySlug(author.getId(), draft.getSlug())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("[getPostBySlug] 개인 초안은 작성자 본인에게만 조회된다")
+  void getPostBySlug_personalDraft_visibleToAuthorOnly() {
+    User author = saveUser("personal-draft-author");
+    User outsider = saveUser("personal-draft-outsider");
+
+    Post draft = savePost("personal-draft", author, null, PostStatus.DRAFT);
+
+    assertThat(postQueryRepository.getPostBySlug(author.getId(), draft.getSlug())).isPresent();
+    assertThat(postQueryRepository.getPostBySlug(outsider.getId(), draft.getSlug())).isEmpty();
+    assertThat(postQueryRepository.getPostBySlug(null, draft.getSlug())).isEmpty();
+  }
+
   private User saveUser(String key) {
     return userRepository.saveAndFlush(
         User.builder().email(key + "@example.com").fullName("사용자").build());
@@ -94,16 +136,20 @@ class PostQueryRepositoryTests {
   }
 
   private Post savePost(String slug, User author, @Nullable Project project) {
+    return savePost(slug, author, project, PostStatus.PUBLISHED);
+  }
+
+  private Post savePost(String slug, User author, @Nullable Project project, PostStatus status) {
     Post post =
         Post.builder()
             .slug(slug)
             .author(author)
             .project(project)
             .type(PostType.SHORT)
-            .status(PostStatus.PUBLISHED)
-            .content("본문")
+            .status(status)
+            .jsonContent("본문")
             .build();
-    post.updateContent("본문", "본문", 0);
+    post.updateJsonContent("본문", "본문", 0);
 
     return postRepository.saveAndFlush(post);
   }

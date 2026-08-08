@@ -26,9 +26,10 @@ export function useReadOnlyPostEditor(
   slug: string | null = null,
 ) {
   let doc: JSONContent;
-  if (content === undefined) {
-    // 유료 게이트(PREVIEW)처럼 서버가 본문을 아예 내려주지 않는 경우. 잠긴 본문 대신
-    // 무엇을 보여줄지는 호출부(PostCard)가 결정하고, 에디터는 빈 문서를 유지한다.
+  if (content === undefined || !content.json) {
+    // 유료 게이트(PREVIEW)처럼 서버가 본문을 아예 내려주지 않는 경우, 또는 아직 변환되지 않은
+    // Markdown 초안이라 Tiptap JSON 이 없는 경우. 잠긴 본문 대신 무엇을 보여줄지는
+    // 호출부(PostCard)가 결정하고, 에디터는 빈 문서를 유지한다.
     doc = EMPTY_DOC;
   } else {
     try {

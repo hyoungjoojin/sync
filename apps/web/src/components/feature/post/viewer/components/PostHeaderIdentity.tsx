@@ -13,6 +13,7 @@ import type {
   PostProjectSummary,
   PostSummary,
 } from '../types';
+import { DraftedViaBadge } from './DraftedViaBadge';
 
 type IdentifiedProject = PostProjectSummary & { handle: string };
 
@@ -37,6 +38,7 @@ export function PostHeaderIdentity({
         project={{ ...project, handle: project.handle }}
         createdAt={summary.createdAt}
         isPreview={isPreview}
+        createdViaClientName={summary.createdViaClientName}
       />
     );
   }
@@ -46,6 +48,7 @@ export function PostHeaderIdentity({
       author={summary.author}
       createdAt={summary.createdAt}
       isPreview={isPreview}
+      createdViaClientName={summary.createdViaClientName}
     />
   );
 }
@@ -54,10 +57,12 @@ function ProjectIdentity({
   project,
   createdAt,
   isPreview,
+  createdViaClientName,
 }: {
   project: IdentifiedProject;
   createdAt: string;
   isPreview: boolean;
+  createdViaClientName?: string | null;
 }) {
   const name = project.name ?? project.handle;
 
@@ -75,6 +80,7 @@ function ProjectIdentity({
       handle={project.handle}
       createdAt={createdAt}
       isPreview={isPreview}
+      createdViaClientName={createdViaClientName}
     />
   );
 }
@@ -83,10 +89,12 @@ function AuthorIdentity({
   author,
   createdAt,
   isPreview,
+  createdViaClientName,
 }: {
   author: PostAuthorSummary;
   createdAt: string;
   isPreview: boolean;
+  createdViaClientName?: string | null;
 }) {
   return (
     <IdentityLayout
@@ -102,6 +110,7 @@ function AuthorIdentity({
       handle={author.handle}
       createdAt={createdAt}
       isPreview={isPreview}
+      createdViaClientName={createdViaClientName}
     />
   );
 }
@@ -112,12 +121,14 @@ function IdentityLayout({
   handle,
   createdAt,
   isPreview,
+  createdViaClientName,
 }: {
   avatar: React.ReactNode;
   name: React.ReactNode;
   handle: string;
   createdAt: string;
   isPreview: boolean;
+  createdViaClientName?: string | null;
 }) {
   // 피드 카드는 전체가 클릭 영역이라, 안쪽 링크는 카드 이동을 막아야 한다.
   const stopPropagation = isPreview
@@ -139,12 +150,14 @@ function IdentityLayout({
             {name}
           </span>
           · <RelativeTime date={createdAt} />
+          <DraftedViaBadge clientName={createdViaClientName} />
         </div>
       ) : (
         <div className="flex flex-col">
           <span className="text-sm font-medium">{name}</span>
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground flex items-center gap-1 text-xs">
             @{handle} · <RelativeTime date={createdAt} />
+            <DraftedViaBadge clientName={createdViaClientName} />
           </span>
         </div>
       )}

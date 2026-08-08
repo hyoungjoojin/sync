@@ -129,6 +129,20 @@ variable "openai_api_key" {
   description = "OpenAI API key, used for post embeddings. Leave empty to keep AI_EMBEDDING_PROVIDER unset."
 }
 
+variable "agent_rsa_private_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "PKCS#8 PEM private key signing agent OAuth2 access tokens (app.agent.rsa-private-key). Leave empty to fall back to an ephemeral key generated at boot, which invalidates every issued agent token on restart and cannot be shared across instances."
+}
+
+variable "agent_rsa_public_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "X.509 PEM public key matching agent_rsa_private_key (app.agent.rsa-public-key)."
+}
+
 variable "captcha_site_key" {
   type        = string
   sensitive   = true

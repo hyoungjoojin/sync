@@ -278,9 +278,9 @@ class PostRecommendationQueryRepositoryTests {
             .title(postType == PostType.SHORT ? null : "제목")
             .type(postType)
             .status(PostStatus.PUBLISHED)
-            .content("본문")
+            .jsonContent("본문")
             .build();
-    post.updateContent("본문", "본문", 0);
+    post.updateJsonContent("본문", "본문", 0);
 
     return postRepository.saveAndFlush(post);
   }

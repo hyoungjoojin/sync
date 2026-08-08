@@ -8,6 +8,8 @@
 export type GetTagResponseTag = {
   /** 요청자가 해당 태그를 팔로우하고 있는지 여부 (프로젝트 태그는 항상 false) */
   isFollowing: boolean;
+  /** 태그 검증 여부 */
+  verified: boolean;
   /** 태그 이름 */
   name: string;
   /** 태그가 사용된 게시물 수 */

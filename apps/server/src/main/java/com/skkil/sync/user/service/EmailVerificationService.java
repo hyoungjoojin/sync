@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -31,18 +32,21 @@ public class EmailVerificationService {
   private final EmailService emailService;
   private final SpringTemplateEngine templateEngine;
   private final Random random;
+  private final String frontendBaseUrl;
 
   public EmailVerificationService(
       UserRepository userRepository,
       EmailVerificationTokenRepository tokenRepository,
       EmailService emailService,
-      SpringTemplateEngine templateEngine)
+      SpringTemplateEngine templateEngine,
+      @Value("${app.frontend.base-url}") String frontendBaseUrl)
       throws NoSuchAlgorithmException {
     this.userRepository = userRepository;
     this.tokenRepository = tokenRepository;
     this.emailService = emailService;
     this.templateEngine = templateEngine;
     this.random = SecureRandom.getInstanceStrong();
+    this.frontendBaseUrl = frontendBaseUrl;
   }
 
   @Transactional
@@ -76,6 +80,7 @@ public class EmailVerificationService {
     context.setVariable("token", token.getToken());
     context.setVariable(
         "expirationMinutes", EmailVerificationConstants.EMAIL_VERIFICATION_TOKEN_TTL.toMinutes());
+    context.setVariable("frontendBaseUrl", frontendBaseUrl);
 
     EmailMessage email =
         EmailMessage.builder()

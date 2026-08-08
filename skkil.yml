@@ -1,7 +1,24 @@
 version: 1
+name: sync
+requires:
+  - name: Java 25
+    check: 'java -version 2>&1 | grep -q ''version "25'''
+    hint: "sdk install java 25-tem   (https://sdkman.io)"
+  - name: direnv
+    check: direnv --version
+    hint: "https://direnv.net"
+  - name: pnpm
+    check: pnpm --version
+    hint: npm install -g pnpm
+  - name: Docker running
+    check: docker info
+    hint: start Docker Desktop, or `systemctl start docker` on Linux
 
 dev:
   run:
+    - name: localstack
+      run: docker compose -f infra/localstack/docker-compose.yml up
+
     - name: server
       run: ./gradlew bootRun --args='--spring.profiles.active=dev'
       dir: apps/server
@@ -9,3 +26,31 @@ dev:
     - name: web
       run: pn run dev
       dir: apps/web
+
+assets:
+  - name: logo
+    source: assets/logo/icon.svg
+    outputs:
+      - format: ico
+        dest: ./apps/web/src/app/favicon.ico
+        size:
+          - 16
+          - 32
+          - 48
+          - 64
+          - 128
+
+      - format: copy
+        dest: ./apps/web/public/assets/icons/sync_logo.svg
+
+ci:
+  tasks:
+    - name: server
+      dir: apps/server
+      build: ./gradlew build
+
+    - name: web
+      dir: apps/web
+      format: pnpm run format
+      lint: pnpm run lint
+      build: pnpm run build
