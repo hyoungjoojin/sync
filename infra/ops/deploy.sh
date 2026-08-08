@@ -75,9 +75,16 @@ CAPTCHA_SECRET_KEY=$(echo "$SERVER_SECRET" | jq -r '.CAPTCHA_SECRET_KEY // empty
 OPENAI_API_KEY=$(echo "$SERVER_SECRET" | jq -r '.OPENAI_API_KEY // empty')
 ADMIN_EMAIL=$(echo "$SERVER_SECRET" | jq -r '.ADMIN_EMAIL // empty')
 ADMIN_PASSWORD=$(echo "$SERVER_SECRET" | jq -r '.ADMIN_PASSWORD // empty')
+# server.env is a flat KEY=VALUE-per-line file (docker compose env_file format,
+# no multi-line values) but these are PEMs. AgentSigningKeys.parsePem strips
+# all whitespace before base64-decoding, so collapsing onto one line here is
+# safe and keeps the PEM from breaking every line after it in server.env.
+APP_AGENT_RSA_PRIVATE_KEY=$(echo "$SERVER_SECRET" | jq -r '.APP_AGENT_RSA_PRIVATE_KEY // empty' | tr -d '\n')
+APP_AGENT_RSA_PUBLIC_KEY=$(echo "$SERVER_SECRET" | jq -r '.APP_AGENT_RSA_PUBLIC_KEY // empty' | tr -d '\n')
 APP_CORS_ALLOWED_ORIGINS=https://${APP_DOMAIN}
 APP_RATE_LIMIT_TRUSTED_PROXY_COUNT=1
 APP_OAUTH2_FRONTEND_REDIRECT_URI=https://${APP_DOMAIN}
+APP_AGENT_ISSUER_URI=https://${APP_DOMAIN}
 OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI=https://${APP_DOMAIN}/api/login/oauth2/code/google
 OAUTH2_CLIENT_REGISTRATION_NAVER_REDIRECT_URI=https://${APP_DOMAIN}/api/login/oauth2/code/naver
 OAUTH2_CLIENT_REGISTRATION_GITHUB_REDIRECT_URI=https://${APP_DOMAIN}/api/login/oauth2/code/github

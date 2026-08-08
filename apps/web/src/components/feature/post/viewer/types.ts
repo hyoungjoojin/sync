@@ -60,11 +60,18 @@ export interface PostSummary {
   mediaCount: number;
   /** 자동 생성 또는 업로드된 커버 이미지 URL */
   coverImageUrl?: string | null;
+  /** 이 글을 만든 에이전트 클라이언트의 이름. 사람이 직접 쓴 글에는 없다. */
+  createdViaClientName?: string | null;
 }
 
+/**
+ * 뷰어가 받는 본문. 객체 형태의 `json` 이 비어 있을 수 있는데, 에이전트가 만들어 아직 변환되지
+ * 않은 Markdown 초안이 그렇다. 뷰어는 Tiptap JSON 만 그리므로 그 경우 빈 문서로 처리하고,
+ * 작성자는 편집 화면으로 유도한다(초안은 어차피 작성자 외에는 조회할 수 없다).
+ */
 export type PostContent =
   | string
-  | { json: string; media: GetPostResponseContentMediaItem[] };
+  | { json?: string | null; media: GetPostResponseContentMediaItem[] };
 
 export interface PostViewSource {
   summary: PostSummary;

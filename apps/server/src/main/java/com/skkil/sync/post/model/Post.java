@@ -55,8 +55,14 @@ public class Post extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private PostStatus status = PostStatus.PUBLISHED;
 
-  @Column(name = "content", columnDefinition = "TEXT", nullable = false)
-  private String content;
+  @Column(name = "content", columnDefinition = "TEXT")
+  private @Nullable String jsonContent;
+
+  @Column(name = "markdown_content", columnDefinition = "TEXT")
+  private @Nullable String markdownContent;
+
+  @Column(name = "created_via_client_id")
+  private @Nullable String createdViaClientId;
 
   @Column(name = "summary", columnDefinition = "TEXT")
   private String summary;
@@ -114,7 +120,9 @@ public class Post extends BaseEntity {
       User author,
       Project project,
       String title,
-      String content,
+      @Nullable String jsonContent,
+      @Nullable String markdownContent,
+      @Nullable String createdViaClientId,
       PostType type,
       PostStatus status,
       @Nullable Media coverMedia) {
@@ -124,7 +132,9 @@ public class Post extends BaseEntity {
     this.title = title;
     this.type = type == null ? PostType.SHORT : type;
     this.status = status == null ? PostStatus.PUBLISHED : status;
-    this.content = content;
+    this.jsonContent = jsonContent;
+    this.markdownContent = markdownContent;
+    this.createdViaClientId = createdViaClientId;
     this.coverMedia = coverMedia;
   }
 
@@ -132,19 +142,41 @@ public class Post extends BaseEntity {
     this.coverMedia = coverMedia;
   }
 
-  public void updateContent(String content, String text, int mediaCount) {
-    this.content = content;
+  /**
+   * Tiptap JSON 본문으로 갱신한다. 에이전트가 만든 Markdown 초안이라면 작성자가 에디터에서 처음 저장하는 순간 이 경로를 타면서 {@link
+   * #markdownContent} 가 비워지고, 그 뒤로는 다른 글과 구별되지 않는다.
+   */
+  public void updateJsonContent(String jsonContent, String text, int mediaCount) {
+    this.jsonContent = jsonContent;
+    this.markdownContent = null;
     this.preview = PostContentUtils.getPreview(text);
     this.mediaCount = mediaCount;
     this.wordCount = PostContentUtils.getWordCount(text);
   }
 
+  /**
+   * 에이전트가 보낸 Markdown 을 본문으로 삼는다. 서버는 Markdown 을 파싱하지 않으므로 미리보기와 단어 수도 원문을 그대로 넣어 계산한다({@link
+   * PostContentUtils} 는 임의의 평문에 대해 안전하다).
+   */
+  public void updateMarkdownContent(String markdownContent) {
+    this.jsonContent = null;
+    this.markdownContent = markdownContent;
+    this.preview = PostContentUtils.getPreview(markdownContent);
+    this.mediaCount = 0;
+    this.wordCount = PostContentUtils.getWordCount(markdownContent);
+  }
+
   public void update(
-      String title, PostType type, PostStatus status, String content, String text, int mediaCount) {
+      String title,
+      PostType type,
+      PostStatus status,
+      String jsonContent,
+      String text,
+      int mediaCount) {
     this.title = title;
     this.type = type;
     this.status = status;
-    updateContent(content, text, mediaCount);
+    updateJsonContent(jsonContent, text, mediaCount);
   }
 
   public void updateSummary(String summary) {

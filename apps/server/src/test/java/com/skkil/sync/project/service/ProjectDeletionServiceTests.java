@@ -164,9 +164,9 @@ class ProjectDeletionServiceTests {
             .title("삭제할 게시글")
             .type(PostType.LONG)
             .status(PostStatus.PUBLISHED)
-            .content("본문")
+            .jsonContent("본문")
             .build();
-    post.updateContent("본문", "본문", 1);
+    post.updateJsonContent("본문", "본문", 1);
     tags.forEach(tag -> post.addTag(PostTag.builder().post(post).tag(tag).build()));
     return postRepository.saveAndFlush(post);
   }

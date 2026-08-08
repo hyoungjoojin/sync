@@ -12,7 +12,6 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
@@ -35,11 +34,19 @@ public interface PostMapper {
 
   List<GetPostResponse.Media> toPreviewMedia(List<MediaDto> media);
 
-  @Mappings({
-    @Mapping(target = "json", source = "post.content"),
-    @Mapping(target = "media", source = "media")
-  })
-  GetPostResponse.Content toContent(PostDto post, List<MediaDto> media);
+  /**
+   * 본문 형식을 판별해 그에 맞는 변형을 만든다. 형식은 저장된 값이 아니라 두 본문 컬럼 중 어느 쪽이 채워져 있는지에서 파생되며, 정확히 한쪽만 채워진다는 것은 DB
+   * CHECK 제약(posts_content_format_check)이 보장한다.
+   */
+  default GetPostResponse.Content toContent(PostDto post, List<MediaDto> media) {
+    List<GetPostResponse.Media> mappedMedia = toPreviewMedia(media);
+
+    if (post.markdownContent() != null) {
+      return new GetPostResponse.MarkdownContent(post.markdownContent(), mappedMedia);
+    }
+
+    return new GetPostResponse.TiptapContent(post.content(), mappedMedia);
+  }
 
   @Mapping(target = "handle", source = "projectHandle")
   @Mapping(target = "name", source = "projectName")

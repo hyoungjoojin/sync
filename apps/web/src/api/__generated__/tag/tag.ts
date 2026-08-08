@@ -58,6 +58,542 @@ const withQueryKey = <T extends object, K>(
   return result;
 };
 
+export type getAdminTagsResponse200 = {
+  data: GetTagsResponse;
+  status: 200;
+};
+
+export type getAdminTagsResponseSuccess = getAdminTagsResponse200 & {
+  headers: Headers;
+};
+export type getAdminTagsResponse = getAdminTagsResponseSuccess;
+
+export const getGetAdminTagsUrl = () => {
+  return `/admin/tags`;
+};
+
+/**
+ * 모든 전역 태그를 조회합니다. (관리자 전용)
+ * @summary Get Admin Tags
+ */
+export const getAdminTags = async (
+  options?: RequestInit,
+): Promise<getAdminTagsResponse> => {
+  return api<getAdminTagsResponse>(getGetAdminTagsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetAdminTagsQueryKey = () => {
+  return [`/admin/tags`] as const;
+};
+
+export const getGetAdminTagsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminTags>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getAdminTags>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof api>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAdminTagsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTags>>> = ({
+    signal,
+  }) => getAdminTags({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminTags>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetAdminTagsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminTags>>
+>;
+export type GetAdminTagsQueryError = ErrorType<unknown>;
+
+export function useGetAdminTags<
+  TData = Awaited<ReturnType<typeof getAdminTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getAdminTags>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminTags>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminTags>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAdminTags<
+  TData = Awaited<ReturnType<typeof getAdminTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getAdminTags>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminTags>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminTags>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAdminTags<
+  TData = Awaited<ReturnType<typeof getAdminTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getAdminTags>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Admin Tags
+ */
+
+export function useGetAdminTags<
+  TData = Awaited<ReturnType<typeof getAdminTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getAdminTags>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetAdminTagsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type adminCreateTagResponse201 = {
+  data: CreateTagResponse;
+  status: 201;
+};
+
+export type adminCreateTagResponseSuccess = adminCreateTagResponse201 & {
+  headers: Headers;
+};
+export type adminCreateTagResponse = adminCreateTagResponseSuccess;
+
+export const getAdminCreateTagUrl = () => {
+  return `/admin/tags`;
+};
+
+/**
+ * 검증된 전역 태그를 생성합니다. (관리자 전용)
+ * @summary Admin Create Tag
+ */
+export const adminCreateTag = async (
+  createTagRequest?: CreateTagRequest,
+  options?: RequestInit,
+): Promise<adminCreateTagResponse> => {
+  return api<adminCreateTagResponse>(getAdminCreateTagUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createTagRequest),
+  });
+};
+
+export const getAdminCreateTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminCreateTag>>,
+    TError,
+    { data?: CreateTagRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminCreateTag>>,
+  TError,
+  { data?: CreateTagRequest },
+  TContext
+> => {
+  const mutationKey = ['adminCreateTag'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminCreateTag>>,
+    { data?: CreateTagRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminCreateTag(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminCreateTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminCreateTag>>
+>;
+export type AdminCreateTagMutationBody = CreateTagRequest | undefined;
+export type AdminCreateTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin Create Tag
+ */
+export const useAdminCreateTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminCreateTag>>,
+      TError,
+      { data?: CreateTagRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminCreateTag>>,
+  TError,
+  { data?: CreateTagRequest },
+  TContext
+> => {
+  return useMutation(getAdminCreateTagMutationOptions(options), queryClient);
+};
+export type adminDeleteTagResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type adminDeleteTagResponseSuccess = adminDeleteTagResponse204 & {
+  headers: Headers;
+};
+export type adminDeleteTagResponse = adminDeleteTagResponseSuccess;
+
+export const getAdminDeleteTagUrl = (name: string) => {
+  return `/admin/tags/${name}`;
+};
+
+/**
+ * 전역 태그를 삭제합니다. (관리자 전용)
+ * @summary Admin Delete Tag
+ */
+export const adminDeleteTag = async (
+  name: string,
+  options?: RequestInit,
+): Promise<adminDeleteTagResponse> => {
+  return api<adminDeleteTagResponse>(getAdminDeleteTagUrl(name), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminDeleteTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeleteTag>>,
+    TError,
+    { name: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminDeleteTag>>,
+  TError,
+  { name: string },
+  TContext
+> => {
+  const mutationKey = ['adminDeleteTag'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminDeleteTag>>,
+    { name: string }
+  > = (props) => {
+    const { name } = props ?? {};
+
+    return adminDeleteTag(name, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminDeleteTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminDeleteTag>>
+>;
+
+export type AdminDeleteTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin Delete Tag
+ */
+export const useAdminDeleteTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminDeleteTag>>,
+      TError,
+      { name: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminDeleteTag>>,
+  TError,
+  { name: string },
+  TContext
+> => {
+  return useMutation(getAdminDeleteTagMutationOptions(options), queryClient);
+};
+export type adminUnverifyTagResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type adminUnverifyTagResponseSuccess = adminUnverifyTagResponse204 & {
+  headers: Headers;
+};
+export type adminUnverifyTagResponse = adminUnverifyTagResponseSuccess;
+
+export const getAdminUnverifyTagUrl = (name: string) => {
+  return `/admin/tags/${name}/unverify`;
+};
+
+/**
+ * 전역 태그의 검증 상태를 해제합니다. (관리자 전용)
+ * @summary Admin Unverify Tag
+ */
+export const adminUnverifyTag = async (
+  name: string,
+  options?: RequestInit,
+): Promise<adminUnverifyTagResponse> => {
+  return api<adminUnverifyTagResponse>(getAdminUnverifyTagUrl(name), {
+    ...options,
+    method: 'PATCH',
+  });
+};
+
+export const getAdminUnverifyTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUnverifyTag>>,
+    TError,
+    { name: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminUnverifyTag>>,
+  TError,
+  { name: string },
+  TContext
+> => {
+  const mutationKey = ['adminUnverifyTag'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminUnverifyTag>>,
+    { name: string }
+  > = (props) => {
+    const { name } = props ?? {};
+
+    return adminUnverifyTag(name, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminUnverifyTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminUnverifyTag>>
+>;
+
+export type AdminUnverifyTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin Unverify Tag
+ */
+export const useAdminUnverifyTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminUnverifyTag>>,
+      TError,
+      { name: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminUnverifyTag>>,
+  TError,
+  { name: string },
+  TContext
+> => {
+  return useMutation(getAdminUnverifyTagMutationOptions(options), queryClient);
+};
+export type adminVerifyTagResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type adminVerifyTagResponseSuccess = adminVerifyTagResponse204 & {
+  headers: Headers;
+};
+export type adminVerifyTagResponse = adminVerifyTagResponseSuccess;
+
+export const getAdminVerifyTagUrl = (name: string) => {
+  return `/admin/tags/${name}/verify`;
+};
+
+/**
+ * 전역 태그를 검증 상태로 변경합니다. (관리자 전용)
+ * @summary Admin Verify Tag
+ */
+export const adminVerifyTag = async (
+  name: string,
+  options?: RequestInit,
+): Promise<adminVerifyTagResponse> => {
+  return api<adminVerifyTagResponse>(getAdminVerifyTagUrl(name), {
+    ...options,
+    method: 'PATCH',
+  });
+};
+
+export const getAdminVerifyTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminVerifyTag>>,
+    TError,
+    { name: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminVerifyTag>>,
+  TError,
+  { name: string },
+  TContext
+> => {
+  const mutationKey = ['adminVerifyTag'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminVerifyTag>>,
+    { name: string }
+  > = (props) => {
+    const { name } = props ?? {};
+
+    return adminVerifyTag(name, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminVerifyTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminVerifyTag>>
+>;
+
+export type AdminVerifyTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin Verify Tag
+ */
+export const useAdminVerifyTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminVerifyTag>>,
+      TError,
+      { name: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminVerifyTag>>,
+  TError,
+  { name: string },
+  TContext
+> => {
+  return useMutation(getAdminVerifyTagMutationOptions(options), queryClient);
+};
 export type getProjectTagsResponse200 = {
   data: GetTagsResponse;
   status: 200;

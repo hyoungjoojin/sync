@@ -10,10 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type {
-  GetPostResponseContent,
-  GetPostResponseContentMediaItem,
-} from '@/api/__generated__/types';
+import type { GetPostResponseContent } from '@/api/__generated__/types';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button, LinkButton } from '@/components/ui/button';
@@ -23,7 +20,12 @@ import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
 import { QUESTION_TITLE_PREFIX } from '../constants';
-import { PostScope, PostStatus, PostType } from '../types/post';
+import {
+  PostContentFormat,
+  PostScope,
+  PostStatus,
+  PostType,
+} from '../types/post';
 import type { PostTocItem } from '../viewer/PostContext';
 import { PostDeleteButton } from '../viewer/components/PostDeleteButton';
 import { PostTableOfContentsList } from '../viewer/components/PostTableOfContentsList';
@@ -51,6 +53,7 @@ import { ImageNode } from './extensions/nodes/image';
 import { TableNode } from './extensions/nodes/table';
 import { TaskItemNode, TaskListNode } from './extensions/nodes/tasks';
 import { SelectAllExtension } from './extensions/select-all';
+import { markdownToHtml } from './utils/markdown';
 import { deserialize, serialize } from './utils/serializer';
 
 interface PostEditorProps {
@@ -88,8 +91,6 @@ interface PostEditorProps {
   }) => void;
 }
 
-const EMPTY_MEDIA: GetPostResponseContentMediaItem[] = [];
-
 const ACCENT_RING: Record<PostType, string> = {
   [PostType.SHORT]: 'focus-within:ring-primary/30',
   [PostType.LONG]: 'focus-within:ring-blue-500/30',
@@ -125,8 +126,6 @@ export default function PostEditor({
   const initialTitle = summary?.title;
   const initialStatus = summary?.status ?? PostStatus.PUBLISHED;
   const initialScope = summary?.scope;
-  const initialContentJson = content?.json;
-  const initialMedia = content?.media ?? EMPTY_MEDIA;
 
   useEffect(() => {
     if (!isEditing || !slug) {
@@ -199,17 +198,28 @@ export default function PostEditor({
     [t],
   );
 
+  // 본문 형식은 두 가지다. 지금까지의 모든 글은 Tiptap JSON 이고, 에이전트가 만들어 아직 한 번도
+  // 저장되지 않은 초안만 Markdown 이다. 후자는 HTML 로 바꿔서 넘기면 Tiptap 이 자기 스키마로
+  // 읽어 들이고, 이어지는 첫 저장이 Tiptap JSON 을 남기면서 형식 차이가 사라진다.
   const initialContent = useMemo(() => {
-    if (!initialContentJson) {
+    if (!content) {
+      return '';
+    }
+
+    if (content.format === PostContentFormat.MARKDOWN) {
+      return content.markdown ? markdownToHtml(content.markdown) : '';
+    }
+
+    if (!content.json) {
       return '';
     }
 
     try {
-      return deserialize(initialContentJson, initialMedia);
+      return deserialize(content.json, content.media);
     } catch {
       return '';
     }
-  }, [initialContentJson, initialMedia]);
+  }, [content]);
 
   const editor = useEditor({
     extensions: [

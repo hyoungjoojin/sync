@@ -40,4 +40,5 @@ public record PostSummary(
     List<GetPostResponse.Media> previewMedia,
     int mediaCount,
     int wordCount,
-    @Nullable String coverImageUrl) {}
+    @Nullable String coverImageUrl,
+    @Nullable String createdViaClientName) {}

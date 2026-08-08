@@ -73,7 +73,15 @@ export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
             return;
           }
 
-          router.replace(redirectTo ?? ROUTES.HOME());
+          // redirectTo 는 에이전트 OAuth 흐름이 되돌아갈 /oauth2/authorize 처럼 Next 가 아니라
+          // 서버가 처리하는 경로일 수 있다. 클라이언트 라우터로는 그런 경로를 열 수 없으므로
+          // 통째로 이동한다.
+          if (redirectTo) {
+            window.location.replace(redirectTo);
+            return;
+          }
+
+          router.replace(ROUTES.HOME());
         },
         onError: (error) => {
           if (

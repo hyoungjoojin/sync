@@ -6,7 +6,6 @@ import com.skkil.sync.common.util.restdocs.RestDocsUtils;
 import com.skkil.sync.common.util.time.DateTimeTestUtils;
 import com.skkil.sync.post.dto.response.GetPostResponse;
 import com.skkil.sync.post.dto.summary.PostSummary;
-import com.skkil.sync.post.dto.summary.TagSummary;
 import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
@@ -47,16 +46,7 @@ public class PostSummarySnippets {
         .liked(true)
         .commentCount(1L)
         .bookmarked(true)
-        .tags(
-            List.of(
-                TagSummary.builder()
-                    .id(1L)
-                    .name("java")
-                    .description("자바 관련 태그")
-                    .postCount(10L)
-                    .followerCount(3L)
-                    .isFollowing(false)
-                    .build()))
+        .tags(List.of(TagSummarySnippets.getTagSummary()))
         .preview("This is a preview of the post content.")
         .previewMedia(
             List.of(
@@ -70,6 +60,7 @@ public class PostSummarySnippets {
         .mediaCount(1)
         .wordCount(120)
         .coverImageUrl("https://example.com/cover.png")
+        .createdViaClientName("Claude Code")
         .build();
   }
 
@@ -163,30 +154,7 @@ public class PostSummarySnippets {
             .description("Whether the current user bookmarked this post"));
     fields.add(
         fieldWithPath(prefix + "tags").type(JsonFieldType.ARRAY).description("게시물에 달린 태그 목록"));
-    fields.add(fieldWithPath(prefix + "tags[].id").type(JsonFieldType.NUMBER).description("태그 ID"));
-    fields.add(
-        fieldWithPath(prefix + "tags[].name").type(JsonFieldType.STRING).description("태그 이름"));
-    fields.add(
-        fieldWithPath(prefix + "tags[].description")
-            .type(JsonFieldType.STRING)
-            .description("태그 설명"));
-    fields.add(
-        fieldWithPath(prefix + "tags[].postCount")
-            .type(JsonFieldType.NUMBER)
-            .description("태그가 사용된 게시물 수"));
-    fields.add(
-        fieldWithPath(prefix + "tags[].followerCount")
-            .type(JsonFieldType.NUMBER)
-            .description("태그를 팔로우하는 사용자 수"));
-    fields.add(
-        fieldWithPath(prefix + "tags[].projectHandle")
-            .type(JsonFieldType.STRING)
-            .description("프로젝트 태그인 경우 해당 프로젝트의 핸들 (전역 태그인 경우 없음)")
-            .optional());
-    fields.add(
-        fieldWithPath(prefix + "tags[].isFollowing")
-            .type(JsonFieldType.BOOLEAN)
-            .description("요청자가 해당 태그를 팔로우하고 있는지 여부 (프로젝트 태그는 항상 false)"));
+    fields.addAll(TagSummarySnippets.getTagSummaryFields(prefix + "tags[]."));
     fields.add(
         fieldWithPath(prefix + "preview")
             .type(JsonFieldType.STRING)
@@ -225,6 +193,11 @@ public class PostSummarySnippets {
         fieldWithPath(prefix + "coverImageUrl")
             .type(JsonFieldType.STRING)
             .description("게시물 커버 이미지 URL (없으면 없음)")
+            .optional());
+    fields.add(
+        fieldWithPath(prefix + "createdViaClientName")
+            .type(JsonFieldType.STRING)
+            .description("이 글을 만든 에이전트 클라이언트의 이름. 사람이 직접 쓴 글에는 없다")
             .optional());
     return fields;
   }

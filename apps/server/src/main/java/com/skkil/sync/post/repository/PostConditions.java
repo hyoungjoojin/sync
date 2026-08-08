@@ -62,7 +62,8 @@ final class PostConditions {
   }
 
   // 워크스페이스(프로젝트) 게시글은 현재 팀원에게만 접근을 허용한다. 작성자라도 프로젝트에서
-  // 나가거나 추방되면(TEAMMATES 레코드 삭제) 접근 권한을 잃으므로, 작성자 분기를 두지 않는다.
+  // 나가거나 추방되면(TEAMMATES 레코드 삭제) 접근 권한을 잃는다. 그래서 readable() 이 작성자
+  // 분기를 둘 때도 이 조건을 함께 AND 로 걸어, 작성자라는 사실만으로는 접근이 열리지 않게 한다.
   static Condition teammate(Long requesterId) {
     if (requesterId == null) {
       return DSL.falseCondition();
@@ -82,11 +83,22 @@ final class PostConditions {
     }
 
     // 개인 게시글(PROJECT_ID null)은 작성자 본인에게 항상 노출한다(초안 포함). 워크스페이스 게시글은
-    // 작성자 여부와 무관하게 현재 팀원 조건(teammate)을 통해서만 노출한다.
+    // 어느 경우에도 현재 팀원에게만 노출한다. 프로젝트에서 나가거나 추방되면 자기가 쓴 글이라도 접근
+    // 권한을 잃는다는 규칙은 그대로 유지되며, 발행 여부만 작성자에게 한해 완화한다.
+    //
+    // 마지막 절(미발행 워크스페이스 게시글 -> 작성자 본인)이 없으면 작성자가 자기 프로젝트 초안을 열 수
+    // 없다. 초안 목록(getDraftsByAuthor)은 프로젝트 초안을 보여주므로, 그 목록에서 클릭해 들어간
+    // /posts/{slug} 와 편집 화면이 404 가 되는 상태였다.
     return visible()
         .and(
             publiclyReadable
                 .or(POSTS.PROJECT_ID.isNull().and(POSTS.AUTHOR_ID.eq(requesterId)))
-                .or(workspacePublished().and(teammate(requesterId))));
+                .or(workspacePublished().and(teammate(requesterId)))
+                .or(
+                    POSTS
+                        .PROJECT_ID
+                        .isNotNull()
+                        .and(POSTS.AUTHOR_ID.eq(requesterId))
+                        .and(teammate(requesterId))));
   }
 }

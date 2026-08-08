@@ -6,7 +6,10 @@ import { notFound, redirect } from 'next/navigation';
 import { getGetPostCommentsInfiniteQueryOptions } from '@/api/__generated__/comment/comment';
 import { getGetPostBySlugQueryKey } from '@/api/__generated__/post/post';
 import { COMMENT_PAGE_SIZE } from '@/components/feature/post/constants';
-import type { PostType } from '@/components/feature/post/types/post';
+import {
+  PostContentFormat,
+  type PostType,
+} from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
 import PostComments from '@/components/feature/post/viewer/PostComments';
 import { PostProvider } from '@/components/feature/post/viewer/PostContext';
@@ -72,6 +75,14 @@ export default async function Post({ params }: PostProps) {
     isPostAuthor = post.summary.isAuthor;
     canComment = post.summary.canComment;
     requiresMembership = post.summary.scope === 'WORKSPACE';
+
+    // 아직 변환되지 않은 Markdown 초안은 이 화면(Tiptap 전용 뷰어)이 그릴 수 없다. 작성자가
+    // 편집 화면을 한 번도 열지 않은 채 링크로 바로 들어온 경우이므로 편집 화면으로 보낸다.
+    // 초안은 애초에 작성자 외에는 조회되지 않으므로(서버 쿼리에서 걸러진다) 보안 장치가 아니라
+    // 화면이 깨지지 않게 하는 방어선이다.
+    if (post.content?.format === PostContentFormat.MARKDOWN) {
+      redirect(ROUTES.POST_EDIT(slug));
+    }
 
     if (post.summary.project?.handle) {
       redirect(ROUTES.PROJECT_POST(post.summary.project.handle, slug));

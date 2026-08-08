@@ -163,9 +163,9 @@ class ProjectQueryRepositoryTests {
             .title(type == PostType.SHORT ? null : "제목")
             .type(type)
             .status(status)
-            .content("본문")
+            .jsonContent("본문")
             .build();
-    post.updateContent("본문", "본문", 0);
+    post.updateJsonContent("본문", "본문", 0);
 
     return postRepository.saveAndFlush(post);
   }

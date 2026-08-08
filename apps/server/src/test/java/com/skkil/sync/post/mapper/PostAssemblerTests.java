@@ -120,7 +120,7 @@ class PostAssemblerTests {
     PostDto post = post();
     List<MediaDto> media = mediaFiles();
     GetPostResponse.Content content =
-        GetPostResponse.Content.builder().json("{\"type\":\"doc\"}").media(List.of()).build();
+        GetPostResponse.TiptapContent.builder().json("{\"type\":\"doc\"}").media(List.of()).build();
 
     when(postContentMediaService.getPreviewMediaForPosts(List.of(POST_ID))).thenReturn(Map.of());
     when(postAccessPolicy.resolveAccessLevels(REQUESTER_ID, List.of(post)))
@@ -195,6 +195,8 @@ class PostAssemblerTests {
         null,
         null,
         "{\"type\":\"doc\"}",
+        null,
+        null,
         now,
         now,
         0L,

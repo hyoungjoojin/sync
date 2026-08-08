@@ -43,7 +43,9 @@ export async function createPostArchive({
 }): Promise<PostArchive> {
   const { summary, content } = post;
 
-  if (content === undefined) {
+  // 본문이 없거나(유료 게이트) 아직 Tiptap 으로 변환되지 않은 Markdown 초안이면 내보낼 문서가
+  // 없다. 초안은 발행 전이므로 내보내기 대상도 아니다.
+  if (content === undefined || !content.json) {
     throw new PostContentUnavailableError();
   }
 

@@ -53,3 +53,28 @@ admin_password = ""
 # OpenAI API key, used for post embeddings (AI_EMBEDDING_PROVIDER). Leave
 # empty until AI is deliberately enabled in prod — see infra/ops/deploy.sh.
 openai_api_key = ""
+
+# RSA keypair signing agent OAuth2 access tokens (app.agent.rsa-private-key /
+# app.agent.rsa-public-key). Leave empty and the server falls back to an
+# ephemeral key generated at boot — every restart then invalidates every
+# issued agent token, and a second instance can't validate tokens the first
+# one signed. Generate a real pair once and keep it stable across deploys:
+#
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
+#     -out agent_private_key.pem
+#   openssl rsa -pubout -in agent_private_key.pem -out agent_public_key.pem
+#
+# Paste each PEM file's contents below (heredoc keeps the newlines the parser
+# expects), then delete the local .pem files — they only need to exist in
+# Terraform state and Secrets Manager from here on.
+agent_rsa_private_key = <<-EOT
+-----BEGIN PRIVATE KEY-----
+changeme
+-----END PRIVATE KEY-----
+EOT
+
+agent_rsa_public_key = <<-EOT
+-----BEGIN PUBLIC KEY-----
+changeme
+-----END PUBLIC KEY-----
+EOT

@@ -66,6 +66,11 @@ export type GetPostResponseSummary = {
   wordCount: number;
   /** 요청자의 열람 수준 (FULL: 본문까지 열람, PREVIEW: 유료 게이트로 본문 잠김) */
   accessLevel: GetPostResponseSummaryAccessLevel;
+  /**
+   * 이 글을 만든 에이전트 클라이언트의 이름. 사람이 직접 쓴 글에는 없다
+   * @nullable
+   */
+  createdViaClientName?: string | null;
   /** Whether the current user bookmarked this post */
   bookmarked: boolean;
   /** 작성자 정보 */

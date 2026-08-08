@@ -189,3 +189,25 @@ variable "openai_api_key" {
   default     = ""
   description = "OpenAI API key, used for post embeddings. Leave empty to keep AI_EMBEDDING_PROVIDER unset."
 }
+
+variable "agent_rsa_private_key" {
+  type        = string
+  sensitive   = true
+  description = "PKCS#8 PEM private key signing agent OAuth2 access tokens (app.agent.rsa-private-key). Required: the server refuses to start on a non-loopback issuer without it, because an ephemeral key would invalidate every issued agent token on restart and could not be shared across instances."
+
+  validation {
+    condition     = length(trimspace(var.agent_rsa_private_key)) > 0
+    error_message = "agent_rsa_private_key must be set."
+  }
+}
+
+variable "agent_rsa_public_key" {
+  type        = string
+  sensitive   = true
+  description = "X.509 PEM public key matching agent_rsa_private_key (app.agent.rsa-public-key)."
+
+  validation {
+    condition     = length(trimspace(var.agent_rsa_public_key)) > 0
+    error_message = "agent_rsa_public_key must be set."
+  }
+}

@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { requireOnboardedSession } from '@/lib/auth/guards';
 
+import AgentsCard from './_components/AgentsCard';
 import DiscoverCard from './_components/DiscoverCard';
 import HomeFeed from './_components/HomeFeed';
 import TrendingTags from './_components/TrendingTags';
@@ -32,6 +33,7 @@ export default async function Home() {
           <div className="space-y-4">
             <DiscoverCard />
             <TrendingTags />
+            <AgentsCard />
           </div>
         }
       />

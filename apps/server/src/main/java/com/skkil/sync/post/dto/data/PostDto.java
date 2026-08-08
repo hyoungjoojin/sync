@@ -21,6 +21,8 @@ public record PostDto(
     @Nullable JoinPolicy projectJoinPolicy,
     @Nullable Long projectFollowerCount,
     @Nullable String content,
+    @Nullable String markdownContent,
+    @Nullable String createdViaClientName,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,
     Long likeCount,

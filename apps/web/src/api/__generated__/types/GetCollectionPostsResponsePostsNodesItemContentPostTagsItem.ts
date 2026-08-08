@@ -12,6 +12,11 @@ export type GetCollectionPostsResponsePostsNodesItemContentPostTagsItem = {
    */
   isFollowing?: boolean | null;
   /**
+   * 태그 검증 여부
+   * @nullable
+   */
+  verified?: boolean | null;
+  /**
    * 태그 이름
    * @nullable
    */

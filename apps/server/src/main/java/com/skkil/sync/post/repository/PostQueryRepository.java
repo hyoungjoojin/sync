@@ -1,6 +1,7 @@
 package com.skkil.sync.post.repository;
 
 import static com.skkil.sync.jooq.tables.Comments.COMMENTS;
+import static com.skkil.sync.jooq.tables.Oauth2RegisteredClient.OAUTH2_REGISTERED_CLIENT;
 import static com.skkil.sync.jooq.tables.PostBookmarks.POST_BOOKMARKS;
 import static com.skkil.sync.jooq.tables.PostLikes.POST_LIKES;
 import static com.skkil.sync.jooq.tables.PostReferences.POST_REFERENCES;
@@ -356,6 +357,22 @@ public class PostQueryRepository {
     Field<String> content =
         shouldFetchContent ? POSTS.CONTENT : DSL.value((String) null, POSTS.CONTENT.getDataType());
 
+    // Markdown 본문도 content 와 같은 이유로 상세 조회에서만 싣는다. 두 컬럼 중 정확히 한쪽만
+    // 채워져 있으므로(posts_content_format_check), 응답 매핑에서 어느 쪽이 null 이 아닌지로
+    // 본문 형식을 판별할 수 있다.
+    Field<String> markdownContent =
+        shouldFetchContent
+            ? POSTS.MARKDOWN_CONTENT
+            : DSL.value((String) null, POSTS.MARKDOWN_CONTENT.getDataType());
+
+    // "🤖 {clientName} 으로 작성됨" 배지의 출처. 목록 조회에서도 필요하므로 항상 싣되, 조인을
+    // 추가해 기존 쿼리 구조를 흔들지 않도록 스칼라 서브쿼리로 가져온다. 사람이 쓴 글은 null 이다.
+    Field<String> createdViaClientName =
+        DSL.field(
+            DSL.select(OAUTH2_REGISTERED_CLIENT.CLIENT_NAME)
+                .from(OAUTH2_REGISTERED_CLIENT)
+                .where(OAUTH2_REGISTERED_CLIENT.ID.eq(POSTS.CREATED_VIA_CLIENT_ID)));
+
     return List.of(
         POSTS.ID.as("id"),
         POSTS.POST_TYPE.as("type"),
@@ -371,6 +388,8 @@ public class PostQueryRepository {
         PROJECTS.JOIN_POLICY.as("projectJoinPolicy"),
         PROJECTS.FOLLOWER_COUNT.as("projectFollowerCount"),
         content.as("content"),
+        markdownContent.as("markdownContent"),
+        createdViaClientName.as("createdViaClientName"),
         POSTS.CREATED_AT.as("createdAt"),
         POSTS.UPDATED_AT.as("updatedAt"),
         POSTS.LIKE_COUNT.as("likeCount"),

@@ -96,9 +96,9 @@ class CommentLikeRepositoryTests {
             .author(author)
             .type(PostType.SHORT)
             .status(PostStatus.PUBLISHED)
-            .content("댓글이 달린 게시글")
+            .jsonContent("댓글이 달린 게시글")
             .build();
-    post.updateContent("댓글이 달린 게시글", "댓글이 달린 게시글", 0);
+    post.updateJsonContent("댓글이 달린 게시글", "댓글이 달린 게시글", 0);
     Post savedPost = postRepository.save(post);
 
     Comment comment = Comment.builder().author(author).post(savedPost).content("댓글 내용").build();

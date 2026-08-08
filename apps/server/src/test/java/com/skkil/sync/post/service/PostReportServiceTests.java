@@ -60,7 +60,7 @@ class PostReportServiceTests {
         Post.builder()
             .slug("post-slug")
             .author(new User(3L))
-            .content("{}")
+            .jsonContent("{}")
             .type(PostType.SHORT)
             .build();
     post.setId(postId);

@@ -144,9 +144,9 @@ class TagRecommendationQueryRepositoryTests {
             .project(project)
             .type(PostType.SHORT)
             .status(status)
-            .content("본문")
+            .jsonContent("본문")
             .build();
-    post.updateContent("본문", "본문", 0);
+    post.updateJsonContent("본문", "본문", 0);
     return postRepository.saveAndFlush(post);
   }
 

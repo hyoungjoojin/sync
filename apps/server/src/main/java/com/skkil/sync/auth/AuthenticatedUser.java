@@ -1,5 +1,6 @@
 package com.skkil.sync.auth;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.skkil.sync.user.constant.Role;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 @Builder
 public record AuthenticatedUser(
-    Long userId, String fullName, String email, String password, Role role)
+    Long userId, String fullName, String email, @JsonIgnore String password, Role role)
     implements UserDetails, OidcUser {
 
   public AuthenticatedUser(Long userId) {
@@ -27,6 +28,7 @@ public record AuthenticatedUser(
   }
 
   @Override
+  @JsonIgnore
   public @Nullable String getPassword() {
     return password;
   }
@@ -38,12 +40,12 @@ public record AuthenticatedUser(
 
   @Override
   public Map<String, Object> getClaims() {
-    return null;
+    return Map.of();
   }
 
   @Override
   public Map<String, Object> getAttributes() {
-    return null;
+    return Map.of();
   }
 
   @Override

@@ -139,6 +139,8 @@ class PostModerationPolicyTests {
         null,
         null,
         "{\"type\":\"doc\"}",
+        null,
+        null,
         now,
         now,
         0L,

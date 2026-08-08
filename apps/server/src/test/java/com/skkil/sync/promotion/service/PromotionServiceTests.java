@@ -59,7 +59,7 @@ class PromotionServiceTests {
     return Post.builder()
         .slug(slug)
         .author(new User(1L))
-        .content("{}")
+        .jsonContent("{}")
         .type(PostType.SHORT)
         .build();
   }

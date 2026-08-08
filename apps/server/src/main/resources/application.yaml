@@ -70,6 +70,16 @@ spring:
             user-name-attribute: response
 
   ai:
+    mcp:
+      server:
+        enabled: ${MCP_SERVER_ENABLED:true}
+        protocol: streamable
+        type: sync
+        name: sync
+        version: 0.0.1
+        instructions: >
+          SYNC 에 사용자를 대신해 초안을 만든다. 만들어진 글은 자동으로 발행되지
+          않으며, 사용자가 직접 검토하고 발행해야 한다.
     vectorstore:
       type: none
     model:
@@ -133,6 +143,13 @@ app:
     frontend-redirect-uri: ${APP_OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:3000}
   frontend:
     base-url: ${APP_FRONTEND_BASE_URL:http://localhost:3000}
+
+  agent:
+    enabled: ${APP_AGENT_ENABLED:true}
+    issuer-uri: ${APP_AGENT_ISSUER_URI:http://localhost:8080}
+    rsa-private-key: ${APP_AGENT_RSA_PRIVATE_KEY:}
+    rsa-public-key: ${APP_AGENT_RSA_PUBLIC_KEY:}
+
   slack:
     webhook-url: ${SLACK_WEBHOOK_URL:}
   channel-talk:
