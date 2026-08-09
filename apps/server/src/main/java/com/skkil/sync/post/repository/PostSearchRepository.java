@@ -42,7 +42,10 @@ public interface PostSearchRepository extends Repository<PostEmbedding, Long> {
           AND r.status = 'PUBLISHED'
           AND ((:projectHandle IS NULL AND r.project_id IS NULL)
             OR (:projectHandle IS NOT NULL AND r.project_id IS NOT NULL AND pr.handle = :projectHandle))
-          AND (r.title ILIKE '%' || :query || '%' OR r.content ILIKE '%' || :query || '%')
+          AND NOT EXISTS (
+            SELECT 1 FROM unnest(regexp_split_to_array(trim(:query), '\\s+')) AS term
+            WHERE r.title NOT ILIKE '%' || term || '%' AND r.content NOT ILIKE '%' || term || '%'
+          )
           ORDER BY GREATEST(similarity(r.title, :query), similarity(r.content, :query)) DESC
           LIMIT :n
           """,
