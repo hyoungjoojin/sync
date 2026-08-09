@@ -105,7 +105,6 @@ const eslintConfig = defineConfig([
           // Brand names — never translated, regardless of where they appear
           'sync',
           'Google',
-          'Naver',
           'GitHub',
         ],
       },

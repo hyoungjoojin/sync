@@ -40,8 +40,6 @@ resource "aws_secretsmanager_secret_version" "server_app" {
   secret_string = jsonencode({
     OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID     = var.google_client_id
     OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET = var.google_client_secret
-    OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_ID      = var.naver_client_id
-    OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_SECRET  = var.naver_client_secret
     OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_ID     = var.github_client_id
     OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_SECRET = var.github_client_secret
     MAIL_USERNAME                                   = var.mail_username

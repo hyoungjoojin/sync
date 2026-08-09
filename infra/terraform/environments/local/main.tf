@@ -53,8 +53,6 @@ module "secrets" {
   postgres_password    = var.postgres_password
   google_client_id     = var.google_client_id
   google_client_secret = var.google_client_secret
-  naver_client_id      = var.naver_client_id
-  naver_client_secret  = var.naver_client_secret
   github_client_id     = var.github_client_id
   github_client_secret = var.github_client_secret
   mail_username        = var.mail_username

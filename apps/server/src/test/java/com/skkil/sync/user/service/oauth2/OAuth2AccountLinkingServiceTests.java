@@ -65,7 +65,7 @@ public class OAuth2AccountLinkingServiceTests {
     when(userRepository.findByEmailWithOAuthAccounts(email)).thenReturn(Optional.of(existingUser));
     when(userRepository.save(any(User.class))).thenReturn(existingUser);
 
-    User result = oAuth2AccountLinkingService.getOrCreateUser(OAuth2Provider.NAVER, userDetails);
+    User result = oAuth2AccountLinkingService.getOrCreateUser(OAuth2Provider.GITHUB, userDetails);
 
     assertThat(result).isNotNull();
     assertThat(result.getEmail()).isEqualTo(email);
@@ -86,10 +86,11 @@ public class OAuth2AccountLinkingServiceTests {
 
     when(userRepository.save(any(User.class))).thenReturn(user);
 
-    oAuth2AccountLinkingService.linkOAuth2Account(user, OAuth2Provider.NAVER, userDetails);
+    oAuth2AccountLinkingService.linkOAuth2Account(user, OAuth2Provider.GITHUB, userDetails);
 
     assertThat(user.getOAuth2Accounts()).hasSize(1);
-    assertThat(user.getOAuth2Accounts().get(0).getOAuth2Provider()).isEqualTo(OAuth2Provider.NAVER);
+    assertThat(user.getOAuth2Accounts().get(0).getOAuth2Provider())
+        .isEqualTo(OAuth2Provider.GITHUB);
     verify(userRepository).save(user);
   }
 
