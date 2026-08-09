@@ -2,7 +2,6 @@
 
 import { GithubLogoIcon, GoogleLogoIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { toast } from 'sonner';
@@ -25,17 +24,6 @@ const OAuth2Providers: {
   {
     id: 'GOOGLE',
     icon: <GoogleLogoIcon />,
-  },
-  {
-    id: 'NAVER',
-    icon: (
-      <Image
-        src="/assets/icons/naver_logo.svg"
-        alt="Naver"
-        width={16}
-        height={16}
-      />
-    ),
   },
   {
     id: 'GITHUB',

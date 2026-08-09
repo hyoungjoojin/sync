@@ -21,9 +21,13 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -39,29 +43,45 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
+import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.security.jackson.SecurityJacksonModules;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationContext;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationValidator;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.JwtGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
@@ -87,7 +107,10 @@ public class AgentAuthorizationServerConfig {
   @Bean
   @Order(0)
   SecurityFilterChain agentAuthorizationServerFilterChain(
-      HttpSecurity http, AgentOAuth2Properties properties) throws Exception {
+      HttpSecurity http,
+      AgentOAuth2Properties properties,
+      RegisteredClientRepository registeredClientRepository)
+      throws Exception {
     OAuth2AuthorizationServerConfigurer authorizationServer =
         new OAuth2AuthorizationServerConfigurer();
 
@@ -102,6 +125,17 @@ public class AgentAuthorizationServerConfig {
                               builder.scopes(scopes -> scopes.add(AgentScopes.POSTS_DRAFT))));
               server.authorizationEndpoint(
                   endpoint -> endpoint.authenticationProviders(AgentRedirectUris::apply));
+              server.clientAuthentication(
+                  clientAuthentication -> {
+                    clientAuthentication.authenticationConverter(
+                        new PublicClientRefreshTokenAuthenticationConverter());
+                    clientAuthentication.authenticationProviders(
+                        providers ->
+                            providers.add(
+                                0,
+                                new PublicClientRefreshTokenAuthenticationProvider(
+                                    registeredClientRepository)));
+                  });
             })
         .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
         .csrf(csrf -> csrf.ignoringRequestMatchers(authorizationServer.getEndpointsMatcher()))
@@ -217,9 +251,123 @@ public class AgentAuthorizationServerConfig {
     return context ->
         context
             .getClaims()
-            .audience(List.of(properties.issuerUri()))
+            .audience(new ArrayList<>(List.of(properties.issuerUri())))
             .claim(JwtClaimNames.ISS, properties.issuerUri())
             .claim(OAuth2ParameterNames.CLIENT_ID, context.getRegisteredClient().getClientId());
+  }
+
+  @Bean
+  OAuth2TokenGenerator<?> agentTokenGenerator(
+      JWKSource<SecurityContext> jwkSource,
+      OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer) {
+    JwtGenerator jwtGenerator = new JwtGenerator(new NimbusJwtEncoder(jwkSource));
+    jwtGenerator.setJwtCustomizer(jwtCustomizer);
+
+    return new DelegatingOAuth2TokenGenerator(
+        jwtGenerator, new OAuth2AccessTokenGenerator(), new AgentRefreshTokenGenerator());
+  }
+
+  static final class PublicClientRefreshTokenAuthenticationConverter
+      implements AuthenticationConverter {
+
+    @Override
+    public @Nullable Authentication convert(HttpServletRequest request) {
+      if (!AuthorizationGrantType.REFRESH_TOKEN
+          .getValue()
+          .equals(request.getParameter(OAuth2ParameterNames.GRANT_TYPE))) {
+        return null;
+      }
+
+      String clientId = request.getParameter(OAuth2ParameterNames.CLIENT_ID);
+      if (clientId == null
+          || clientId.isBlank()
+          || request.getParameter(OAuth2ParameterNames.CLIENT_SECRET) != null) {
+        return null;
+      }
+
+      return new OAuth2ClientAuthenticationToken(
+          clientId,
+          ClientAuthenticationMethod.NONE,
+          null,
+          Map.of(OAuth2ParameterNames.GRANT_TYPE, AuthorizationGrantType.REFRESH_TOKEN.getValue()));
+    }
+  }
+
+  static final class PublicClientRefreshTokenAuthenticationProvider
+      implements AuthenticationProvider {
+
+    private final RegisteredClientRepository registeredClientRepository;
+
+    PublicClientRefreshTokenAuthenticationProvider(
+        RegisteredClientRepository registeredClientRepository) {
+      this.registeredClientRepository = registeredClientRepository;
+    }
+
+    @Override
+    public @Nullable Authentication authenticate(Authentication authentication) {
+      OAuth2ClientAuthenticationToken clientAuthentication =
+          (OAuth2ClientAuthenticationToken) authentication;
+
+      if (!ClientAuthenticationMethod.NONE.equals(
+              clientAuthentication.getClientAuthenticationMethod())
+          || !AuthorizationGrantType.REFRESH_TOKEN
+              .getValue()
+              .equals(
+                  clientAuthentication
+                      .getAdditionalParameters()
+                      .get(OAuth2ParameterNames.GRANT_TYPE))) {
+        return null;
+      }
+
+      RegisteredClient registeredClient =
+          registeredClientRepository.findByClientId(clientAuthentication.getPrincipal().toString());
+      if (registeredClient == null
+          || !registeredClient
+              .getClientAuthenticationMethods()
+              .contains(ClientAuthenticationMethod.NONE)
+          || !registeredClient
+              .getAuthorizationGrantTypes()
+              .contains(AuthorizationGrantType.REFRESH_TOKEN)) {
+        throw new OAuth2AuthenticationException(OAuth2ErrorCodes.INVALID_CLIENT);
+      }
+
+      return new OAuth2ClientAuthenticationToken(
+          registeredClient, ClientAuthenticationMethod.NONE, null);
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+      return OAuth2ClientAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+  }
+
+  static final class AgentRefreshTokenGenerator
+      implements OAuth2TokenGenerator<OAuth2RefreshToken> {
+
+    private final StringKeyGenerator refreshTokenGenerator =
+        new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 96);
+
+    @Override
+    public @Nullable OAuth2RefreshToken generate(OAuth2TokenContext context) {
+      if (!OAuth2TokenType.REFRESH_TOKEN.equals(context.getTokenType())) {
+        return null;
+      }
+
+      Instant issuedAt = Instant.now();
+      Instant expiresAt =
+          Optional.ofNullable(context.getAuthorization())
+              .map(OAuth2Authorization::getRefreshToken)
+              .map(token -> token.getToken().getExpiresAt())
+              .orElseGet(
+                  () ->
+                      issuedAt.plus(
+                          context
+                              .getRegisteredClient()
+                              .getTokenSettings()
+                              .getRefreshTokenTimeToLive()));
+
+      return new OAuth2RefreshToken(refreshTokenGenerator.generateKey(), issuedAt, expiresAt);
+    }
   }
 
   @Bean
@@ -313,17 +461,22 @@ public class AgentAuthorizationServerConfig {
 
     static void seed(RegisteredClientRepository repository, String issuerUri) {
       for (String vendor : VENDORS) {
-        if (repository.findByClientId(vendor) != null) {
-          continue;
-        }
+        RegisteredClient existing = repository.findByClientId(vendor);
 
-        repository.save(build(vendor, issuerUri));
-        log.info("에이전트 OAuth2 클라이언트를 등록했습니다: {}", vendor);
+        repository.save(
+            build(
+                vendor,
+                issuerUri,
+                existing == null ? UUID.randomUUID().toString() : existing.getId()));
+
+        if (existing == null) {
+          log.info("에이전트 OAuth2 클라이언트를 등록했습니다: {}", vendor);
+        }
       }
     }
 
-    private static RegisteredClient build(String vendor, String issuerUri) {
-      return RegisteredClient.withId(UUID.randomUUID().toString())
+    private static RegisteredClient build(String vendor, String issuerUri, String id) {
+      return RegisteredClient.withId(id)
           .clientId(vendor)
           .clientName(displayName(vendor))
           // 최종 사용자 기기에서 도는 공개 클라이언트라 비밀값을 지킬 수 없다. 시크릿 없이
@@ -346,7 +499,7 @@ public class AgentAuthorizationServerConfig {
           .tokenSettings(
               TokenSettings.builder()
                   .accessTokenTimeToLive(Duration.ofHours(1))
-                  .refreshTokenTimeToLive(Duration.ofDays(60))
+                  .refreshTokenTimeToLive(Duration.ofDays(30))
                   .reuseRefreshTokens(false)
                   .build())
           .build();

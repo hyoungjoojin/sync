@@ -7,9 +7,6 @@ postgres_password = "changeme"
 google_client_id     = "changeme"
 google_client_secret = "changeme"
 
-naver_client_id     = "changeme"
-naver_client_secret = "changeme"
-
 github_client_id     = "changeme"
 github_client_secret = "changeme"
 
