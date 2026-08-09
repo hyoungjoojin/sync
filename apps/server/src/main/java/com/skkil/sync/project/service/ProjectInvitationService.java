@@ -3,6 +3,9 @@ package com.skkil.sync.project.service;
 import com.skkil.sync.project.dto.request.CreateProjectInvitationRequest;
 import com.skkil.sync.project.dto.response.GetMyProjectInvitationsResponse;
 import com.skkil.sync.project.dto.response.GetProjectInvitationsResponse;
+import com.skkil.sync.project.event.ProjectInvitationAcceptedEvent;
+import com.skkil.sync.project.event.ProjectInvitationCreatedEvent;
+import com.skkil.sync.project.event.ProjectInvitationDeclinedEvent;
 import com.skkil.sync.project.exception.ProjectInvitationAlreadyExistsException;
 import com.skkil.sync.project.exception.ProjectInvitationExpiredException;
 import com.skkil.sync.project.exception.ProjectInvitationNotFoundException;
@@ -17,6 +20,7 @@ import com.skkil.sync.project.repository.ProjectRepository;
 import com.skkil.sync.project.repository.TeammateRepository;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.domain.UserDomainService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,17 +38,21 @@ public class ProjectInvitationService {
 
   private final ProjectAssembler projectAssembler;
 
+  private final ApplicationEventPublisher eventPublisher;
+
   public ProjectInvitationService(
       ProjectRepository projectRepository,
       TeammateRepository teammateRepository,
       ProjectInvitationRepository projectInvitationRepository,
       UserDomainService userDomainService,
-      ProjectAssembler projectAssembler) {
+      ProjectAssembler projectAssembler,
+      ApplicationEventPublisher eventPublisher) {
     this.projectRepository = projectRepository;
     this.teammateRepository = teammateRepository;
     this.projectInvitationRepository = projectInvitationRepository;
     this.userDomainService = userDomainService;
     this.projectAssembler = projectAssembler;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -70,7 +78,11 @@ public class ProjectInvitationService {
             .invitee(invitee)
             .role(request.role())
             .build();
-    projectInvitationRepository.save(invitation);
+    invitation = projectInvitationRepository.save(invitation);
+
+    eventPublisher.publishEvent(
+        new ProjectInvitationCreatedEvent(
+            invitation.getId(), project.getId(), userId, invitee.getId(), invitation.getToken()));
   }
 
   @Transactional(readOnly = true)
@@ -120,16 +132,20 @@ public class ProjectInvitationService {
 
     if (teammateRepository
         .findByProjectIdAndUserId(invitation.getProject().getId(), user.getId())
-        .isPresent()) {
-      invitation.accept();
-      return;
+        .isEmpty()) {
+      Teammate teammate = Teammate.member(invitation.getProject(), user);
+      teammate.setRole(invitation.getRole());
+      invitation.getProject().addTeammate(teammate);
     }
 
-    Teammate teammate = Teammate.member(invitation.getProject(), user);
-    teammate.setRole(invitation.getRole());
-    invitation.getProject().addTeammate(teammate);
-
     invitation.accept();
+
+    eventPublisher.publishEvent(
+        new ProjectInvitationAcceptedEvent(
+            invitation.getId(),
+            invitation.getProject().getId(),
+            invitation.getInviter().getId(),
+            userId));
   }
 
   @Transactional
@@ -138,6 +154,13 @@ public class ProjectInvitationService {
     ProjectInvitation invitation = getInvitationForUser(user, token);
 
     invitation.decline();
+
+    eventPublisher.publishEvent(
+        new ProjectInvitationDeclinedEvent(
+            invitation.getId(),
+            invitation.getProject().getId(),
+            invitation.getInviter().getId(),
+            userId));
   }
 
   private ProjectInvitation getInvitationForUser(User user, String token) {

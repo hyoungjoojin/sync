@@ -48,7 +48,6 @@ sourceSets {
 			exclude '**/review/**'
 			exclude '**/experience/**'
 			exclude '**/message/**'
-			exclude '**/notification/**'
 		}
 	}
 	test {

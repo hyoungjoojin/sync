@@ -21,8 +21,14 @@ public class OffsetPaginationResponseSnippets {
     return new OffsetPaginationResponse<>(pageInfo, content);
   }
 
+  /**
+   * 래퍼 객체 자체({@code pathPrefix})를 필드로 선언해야 스키마의 {@code required}에 포함된다. 이것이 빠지면 서버가 항상 채워 보내는 값인데도
+   * 생성 타입이 optional로 내려가 호출부마다 불필요한 null 검사가 생긴다.
+   */
   public static FieldDescriptors getPaginationResponseFields(String pathPrefix) {
-    FieldDescriptors fields = new FieldDescriptors();
+    FieldDescriptors fields =
+        new FieldDescriptors(
+            fieldWithPath(pathPrefix).type(JsonFieldType.OBJECT).description("Paginated Result"));
 
     return fields.andWithPrefix(
         pathPrefix,

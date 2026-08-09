@@ -7,6 +7,9 @@
 import type { GetPostReportsResponseReportsContentItem } from './GetPostReportsResponseReportsContentItem';
 import type { GetPostReportsResponseReportsPageInfo } from './GetPostReportsResponseReportsPageInfo';
 
+/**
+ * Paginated Result
+ */
 export type GetPostReportsResponseReports = {
   /** Page Info */
   pageInfo: GetPostReportsResponseReportsPageInfo;

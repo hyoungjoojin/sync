@@ -105,7 +105,9 @@ class ProjectJoinControllerTests {
     String projectHandle = "my-project";
     Long requestId = 1L;
 
-    doNothing().when(projectJoinService).approveJoinRequest(projectHandle, requestId);
+    doNothing()
+        .when(projectJoinService)
+        .approveJoinRequest(anyLong(), eq(projectHandle), eq(requestId));
 
     mockMvc
         .perform(

@@ -1208,6 +1208,128 @@ paths:
                       "contentType" : "image/jpeg",
                       "expiresAt" : "1970-01-01T00:00:00"
                     }
+  /notifications:
+    get:
+      tags:
+      - notification
+      summary: Get Notifications
+      description: Get Notifications
+      operationId: GetNotifications
+      parameters:
+      - name: page
+        in: query
+        description: Page (Integer)
+        required: false
+        schema:
+          type: string
+      - name: size
+        in: query
+        description: Page Size (Integer)
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNotificationsResponse"
+              examples:
+                GetNotifications:
+                  value: |-
+                    {
+                      "notifications" : {
+                        "pageInfo" : {
+                          "page" : 1,
+                          "size" : 1,
+                          "hasNextPage" : true,
+                          "hasPreviousPage" : true
+                        },
+                        "content" : [ {
+                          "id" : 1,
+                          "type" : "NEW_COMMENT",
+                          "status" : "UNREAD",
+                          "createdAt" : "2026-01-01T00:00:00Z",
+                          "actor" : {
+                            "handle" : "actor-handle",
+                            "name" : "Actor Name",
+                            "profileImageUrl" : "http://example.com/a.jpg"
+                          },
+                          "entityType" : "COMMENT",
+                          "entityId" : 3,
+                          "payload" : {
+                            "type" : "NEW_COMMENT",
+                            "actorHandle" : "actor-handle",
+                            "actorName" : "Actor Name",
+                            "postTitle" : "Post Title",
+                            "postSlug" : "post-slug"
+                          }
+                        } ]
+                      },
+                      "unreadCount" : 1
+                    }
+  /notifications/preferences:
+    get:
+      tags:
+      - notification
+      summary: Get Notification Preferences
+      description: Get Notification Preferences
+      operationId: GetNotificationPreferences
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNotificationPreferencesResponse"
+              examples:
+                GetNotificationPreferences:
+                  value: "{\"inAppEnabled\":true}"
+    patch:
+      tags:
+      - notification
+      summary: Update Notification Preferences
+      description: Update Notification Preferences
+      operationId: UpdateNotificationPreferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationPreferencesRequest"
+            examples:
+              UpdateNotificationPreferences:
+                value: "{\"inAppEnabled\":false}"
+      responses:
+        "204":
+          description: "204"
+  /notifications/read-all:
+    patch:
+      tags:
+      - notification
+      summary: Mark All Notifications As Read
+      description: Mark All Notifications As Read
+      operationId: MarkAllNotificationsAsRead
+      responses:
+        "204":
+          description: "204"
+  /notifications/{notificationId}/read:
+    patch:
+      tags:
+      - notification
+      summary: Mark Notification As Read
+      description: Mark Notification As Read
+      operationId: MarkNotificationAsRead
+      parameters:
+      - name: notificationId
+        in: path
+        description: Notification ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "204"
   /posts:
     get:
       tags:
@@ -4514,76 +4636,6 @@ paths:
                     Claude Code\"}}]}}"
 components:
   schemas:
-    GetFollowedTagsResponse:
-      title: GetFollowedTagsResponse
-      type: object
-      properties:
-        tags:
-          required:
-          - content
-          - pageInfo
-          type: object
-          properties:
-            pageInfo:
-              required:
-              - hasNextPage
-              - hasPreviousPage
-              - page
-              - size
-              type: object
-              properties:
-                size:
-                  type: number
-                  description: Page Size
-                hasNextPage:
-                  type: boolean
-                  description: Has Next Page
-                hasPreviousPage:
-                  type: boolean
-                  description: Has Previous Page
-                page:
-                  type: number
-                  description: Page Number
-              description: Page Info
-            content:
-              type: array
-              description: Content
-              items:
-                required:
-                - description
-                - followerCount
-                - id
-                - isFollowing
-                - name
-                - postCount
-                - verified
-                type: object
-                properties:
-                  isFollowing:
-                    type: boolean
-                    description: 요청자가 해당 태그를 팔로우하고 있는지 여부 (프로젝트 태그는 항상 false)
-                  verified:
-                    type: boolean
-                    description: 태그 검증 여부
-                  name:
-                    type: string
-                    description: 태그 이름
-                  postCount:
-                    type: number
-                    description: 태그가 사용된 게시물 수
-                  description:
-                    type: string
-                    description: 태그 설명
-                  id:
-                    type: number
-                    description: 태그 ID
-                  followerCount:
-                    type: number
-                    description: 태그를 팔로우하는 사용자 수
-                  projectHandle:
-                    type: string
-                    description: 프로젝트 태그인 경우 해당 프로젝트의 핸들 (전역 태그인 경우 없음)
-                    nullable: true
     GetPostsResponse:
       title: GetPostsResponse
       required:
@@ -5362,76 +5414,6 @@ components:
           type: string
           description: "소속 프로젝트 핸들 (WORKSPACE 범위인 경우, PERSONAL 이면 없음)"
           nullable: true
-    GetAllTagsResponse:
-      title: GetAllTagsResponse
-      type: object
-      properties:
-        tags:
-          required:
-          - content
-          - pageInfo
-          type: object
-          properties:
-            pageInfo:
-              required:
-              - hasNextPage
-              - hasPreviousPage
-              - page
-              - size
-              type: object
-              properties:
-                size:
-                  type: number
-                  description: Page Size
-                hasNextPage:
-                  type: boolean
-                  description: Has Next Page
-                hasPreviousPage:
-                  type: boolean
-                  description: Has Previous Page
-                page:
-                  type: number
-                  description: Page Number
-              description: Page Info
-            content:
-              type: array
-              description: Content
-              items:
-                required:
-                - description
-                - followerCount
-                - id
-                - isFollowing
-                - name
-                - postCount
-                - verified
-                type: object
-                properties:
-                  isFollowing:
-                    type: boolean
-                    description: 요청자가 해당 태그를 팔로우하고 있는지 여부 (프로젝트 태그는 항상 false)
-                  verified:
-                    type: boolean
-                    description: 태그 검증 여부
-                  name:
-                    type: string
-                    description: 태그 이름
-                  postCount:
-                    type: number
-                    description: 태그가 사용된 게시물 수
-                  description:
-                    type: string
-                    description: 태그 설명
-                  id:
-                    type: number
-                    description: 태그 ID
-                  followerCount:
-                    type: number
-                    description: 태그를 팔로우하는 사용자 수
-                  projectHandle:
-                    type: string
-                    description: 프로젝트 태그인 경우 해당 프로젝트의 핸들 (전역 태그인 경우 없음)
-                    nullable: true
     GetHandleAvailabilityResponse:
       title: GetHandleAvailabilityResponse
       required:
@@ -5450,6 +5432,15 @@ components:
         slug:
           type: string
           description: Post Slug
+    UpdateNotificationPreferencesRequest:
+      title: UpdateNotificationPreferencesRequest
+      required:
+      - inAppEnabled
+      type: object
+      properties:
+        inAppEnabled:
+          type: boolean
+          description: Whether in-app notifications should be enabled
     UpdateCommentRequest:
       title: UpdateCommentRequest
       required:
@@ -5935,6 +5926,79 @@ components:
         expiresAt:
           type: string
           description: Expiration Time
+    GetFollowedTagsResponse:
+      title: GetFollowedTagsResponse
+      required:
+      - tags
+      type: object
+      properties:
+        tags:
+          required:
+          - content
+          - pageInfo
+          type: object
+          properties:
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - page
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                page:
+                  type: number
+                  description: Page Number
+              description: Page Info
+            content:
+              type: array
+              description: Content
+              items:
+                required:
+                - description
+                - followerCount
+                - id
+                - isFollowing
+                - name
+                - postCount
+                - verified
+                type: object
+                properties:
+                  isFollowing:
+                    type: boolean
+                    description: 요청자가 해당 태그를 팔로우하고 있는지 여부 (프로젝트 태그는 항상 false)
+                  verified:
+                    type: boolean
+                    description: 태그 검증 여부
+                  name:
+                    type: string
+                    description: 태그 이름
+                  postCount:
+                    type: number
+                    description: 태그가 사용된 게시물 수
+                  description:
+                    type: string
+                    description: 태그 설명
+                  id:
+                    type: number
+                    description: 태그 ID
+                  followerCount:
+                    type: number
+                    description: 태그를 팔로우하는 사용자 수
+                  projectHandle:
+                    type: string
+                    description: 프로젝트 태그인 경우 해당 프로젝트의 핸들 (전역 태그인 경우 없음)
+                    nullable: true
+          description: Paginated Result
     PaginatedGetPostsResponse:
       title: PaginatedGetPostsResponse
       type: object
@@ -6356,6 +6420,95 @@ components:
               userId:
                 type: string
                 description: 사용자 ID
+    GetNotificationsResponse:
+      title: GetNotificationsResponse
+      required:
+      - notifications
+      - unreadCount
+      type: object
+      properties:
+        unreadCount:
+          type: number
+          description: Total unread notification count
+        notifications:
+          required:
+          - content
+          - pageInfo
+          type: object
+          properties:
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - page
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                page:
+                  type: number
+                  description: Page Number
+              description: Page Info
+            content:
+              type: array
+              description: Content
+              items:
+                required:
+                - createdAt
+                - id
+                - payload
+                - status
+                - type
+                type: object
+                properties:
+                  actor:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Actor name
+                        nullable: true
+                      handle:
+                        type: string
+                        description: Actor handle
+                        nullable: true
+                      profileImageUrl:
+                        type: string
+                        description: Actor profile image URL
+                        nullable: true
+                  createdAt:
+                    type: string
+                    description: Creation timestamp
+                  payload:
+                    type: object
+                    description: Type-specific rendering payload (shape depends on
+                      "type")
+                  entityType:
+                    type: string
+                    description: Type of the linked entity
+                    nullable: true
+                  entityId:
+                    type: number
+                    description: ID of the linked entity
+                    nullable: true
+                  id:
+                    type: number
+                    description: Notification ID
+                  type:
+                    type: string
+                    description: Notification type
+                  status:
+                    type: string
+                    description: Read status
+          description: Paginated Result
     UpdateTagRequest:
       title: UpdateTagRequest
       required:
@@ -6644,6 +6797,79 @@ components:
           enum:
           - DRAFT
           - PUBLISHED
+    GetAllTagsResponse:
+      title: GetAllTagsResponse
+      required:
+      - tags
+      type: object
+      properties:
+        tags:
+          required:
+          - content
+          - pageInfo
+          type: object
+          properties:
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - page
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                page:
+                  type: number
+                  description: Page Number
+              description: Page Info
+            content:
+              type: array
+              description: Content
+              items:
+                required:
+                - description
+                - followerCount
+                - id
+                - isFollowing
+                - name
+                - postCount
+                - verified
+                type: object
+                properties:
+                  isFollowing:
+                    type: boolean
+                    description: 요청자가 해당 태그를 팔로우하고 있는지 여부 (프로젝트 태그는 항상 false)
+                  verified:
+                    type: boolean
+                    description: 태그 검증 여부
+                  name:
+                    type: string
+                    description: 태그 이름
+                  postCount:
+                    type: number
+                    description: 태그가 사용된 게시물 수
+                  description:
+                    type: string
+                    description: 태그 설명
+                  id:
+                    type: number
+                    description: 태그 ID
+                  followerCount:
+                    type: number
+                    description: 태그를 팔로우하는 사용자 수
+                  projectHandle:
+                    type: string
+                    description: 프로젝트 태그인 경우 해당 프로젝트의 핸들 (전역 태그인 경우 없음)
+                    nullable: true
+          description: Paginated Result
     GetProjectInvitationsResponse:
       title: GetProjectInvitationsResponse
       required:
@@ -6934,131 +7160,6 @@ components:
           enum:
           - DRAFT
           - PUBLISHED
-    GetPostReportsResponse:
-      title: GetPostReportsResponse
-      type: object
-      properties:
-        reports:
-          required:
-          - content
-          - pageInfo
-          type: object
-          properties:
-            pageInfo:
-              required:
-              - hasNextPage
-              - hasPreviousPage
-              - page
-              - size
-              type: object
-              properties:
-                size:
-                  type: number
-                  description: Page Size
-                hasNextPage:
-                  type: boolean
-                  description: Has Next Page
-                hasPreviousPage:
-                  type: boolean
-                  description: Has Previous Page
-                page:
-                  type: number
-                  description: Page Number
-              description: Page Info
-            content:
-              type: array
-              description: Content
-              items:
-                required:
-                - createdAt
-                - id
-                - reason
-                - reporter
-                - status
-                type: object
-                properties:
-                  createdAt:
-                    type: string
-                    description: 신고 생성 시각
-                  reason:
-                    type: string
-                    description: 신고 사유
-                  post:
-                    required:
-                    - content
-                    - id
-                    - slug
-                    - visibility
-                    type: object
-                    properties:
-                      visibility:
-                        type: string
-                        description: 포스트 노출 상태
-                      id:
-                        type: number
-                        description: 포스트 ID
-                      title:
-                        type: string
-                        description: 포스트 제목
-                        nullable: true
-                      content:
-                        type: string
-                        description: 포스트 본문
-                      slug:
-                        type: string
-                        description: 포스트 슬러그
-                  reviewedAt:
-                    type: string
-                    description: 검토 시각
-                    nullable: true
-                  description:
-                    type: string
-                    description: 신고 상세 설명
-                    nullable: true
-                  reporter:
-                    required:
-                    - handle
-                    - name
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        description: 유저 이름
-                      handle:
-                        type: string
-                        description: 유저 핸들
-                      profileImageUrl:
-                        type: string
-                        description: 유저 프로필 이미지 URL
-                        nullable: true
-                    description: 신고자 정보
-                  id:
-                    type: number
-                    description: 신고 ID
-                  reviewedBy:
-                    required:
-                    - handle
-                    - name
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        description: 유저 이름
-                      handle:
-                        type: string
-                        description: 유저 핸들
-                      profileImageUrl:
-                        type: string
-                        description: 유저 프로필 이미지 URL
-                        nullable: true
-                    description: 검토자 정보
-                  resolutionNote:
-                    type: string
-                    description: 관리자 처리 메모
-                    nullable: true
-                  status:
-                    type: string
-                    description: 신고 상태
     GetProjectJoinRequestsResponse:
       title: GetProjectJoinRequestsResponse
       required:
@@ -8055,6 +8156,134 @@ components:
         id:
           type: number
           description: Created comment ID
+    GetPostReportsResponse:
+      title: GetPostReportsResponse
+      required:
+      - reports
+      type: object
+      properties:
+        reports:
+          required:
+          - content
+          - pageInfo
+          type: object
+          properties:
+            pageInfo:
+              required:
+              - hasNextPage
+              - hasPreviousPage
+              - page
+              - size
+              type: object
+              properties:
+                size:
+                  type: number
+                  description: Page Size
+                hasNextPage:
+                  type: boolean
+                  description: Has Next Page
+                hasPreviousPage:
+                  type: boolean
+                  description: Has Previous Page
+                page:
+                  type: number
+                  description: Page Number
+              description: Page Info
+            content:
+              type: array
+              description: Content
+              items:
+                required:
+                - createdAt
+                - id
+                - reason
+                - reporter
+                - status
+                type: object
+                properties:
+                  createdAt:
+                    type: string
+                    description: 신고 생성 시각
+                  reason:
+                    type: string
+                    description: 신고 사유
+                  post:
+                    required:
+                    - content
+                    - id
+                    - slug
+                    - visibility
+                    type: object
+                    properties:
+                      visibility:
+                        type: string
+                        description: 포스트 노출 상태
+                      id:
+                        type: number
+                        description: 포스트 ID
+                      title:
+                        type: string
+                        description: 포스트 제목
+                        nullable: true
+                      content:
+                        type: string
+                        description: 포스트 본문
+                      slug:
+                        type: string
+                        description: 포스트 슬러그
+                  reviewedAt:
+                    type: string
+                    description: 검토 시각
+                    nullable: true
+                  description:
+                    type: string
+                    description: 신고 상세 설명
+                    nullable: true
+                  reporter:
+                    required:
+                    - handle
+                    - name
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: 유저 이름
+                      handle:
+                        type: string
+                        description: 유저 핸들
+                      profileImageUrl:
+                        type: string
+                        description: 유저 프로필 이미지 URL
+                        nullable: true
+                    description: 신고자 정보
+                  id:
+                    type: number
+                    description: 신고 ID
+                  reviewedBy:
+                    required:
+                    - handle
+                    - name
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: 유저 이름
+                      handle:
+                        type: string
+                        description: 유저 핸들
+                      profileImageUrl:
+                        type: string
+                        description: 유저 프로필 이미지 URL
+                        nullable: true
+                    description: 검토자 정보
+                  resolutionNote:
+                    type: string
+                    description: 관리자 처리 메모
+                    nullable: true
+                  status:
+                    type: string
+                    description: 신고 상태
+          description: Paginated Result
     CreatePostSeriesRequest:
       title: CreatePostSeriesRequest
       required:
@@ -8419,6 +8648,15 @@ components:
                 type: string
                 description: 프로젝트 시리즈인 경우 소속 프로젝트 핸들 (개인 시리즈인 경우 없음)
                 nullable: true
+    GetNotificationPreferencesResponse:
+      title: GetNotificationPreferencesResponse
+      required:
+      - inAppEnabled
+      type: object
+      properties:
+        inAppEnabled:
+          type: boolean
+          description: Whether in-app notifications are enabled
     CreateCollectionRequest:
       title: CreateCollectionRequest
       required:

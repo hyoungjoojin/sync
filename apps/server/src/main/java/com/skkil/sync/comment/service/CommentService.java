@@ -5,6 +5,7 @@ import com.skkil.sync.comment.dto.request.CreateCommentRequest;
 import com.skkil.sync.comment.dto.request.UpdateCommentRequest;
 import com.skkil.sync.comment.dto.response.CreateCommentResponse;
 import com.skkil.sync.comment.dto.response.GetCommentsResponse;
+import com.skkil.sync.comment.event.CommentCreatedEvent;
 import com.skkil.sync.comment.exception.CommentNotAllowedException;
 import com.skkil.sync.comment.exception.CommentNotFoundException;
 import com.skkil.sync.comment.mapper.CommentAssembler;
@@ -23,6 +24,7 @@ import com.skkil.sync.post.service.PostDomainService;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.domain.UserDomainService;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class CommentService {
   private final UserDomainService userDomainService;
   private final PaginationService paginationService;
   private final CommentCursorPaginationProvider paginationProvider;
+  private final ApplicationEventPublisher eventPublisher;
   private final CommentAssembler commentAssembler;
 
   public CommentService(
@@ -49,6 +52,7 @@ public class CommentService {
       UserDomainService userDomainService,
       PaginationService paginationService,
       CommentCursorPaginationProvider paginationProvider,
+      ApplicationEventPublisher eventPublisher,
       CommentAssembler commentAssembler) {
     this.commentRepository = commentRepository;
     this.commentLikeRepository = commentLikeRepository;
@@ -58,6 +62,7 @@ public class CommentService {
     this.userDomainService = userDomainService;
     this.paginationService = paginationService;
     this.paginationProvider = paginationProvider;
+    this.eventPublisher = eventPublisher;
     this.commentAssembler = commentAssembler;
   }
 
@@ -90,6 +95,10 @@ public class CommentService {
         Comment.builder().author(author).post(postReference).content(request.content()).build();
 
     comment = commentRepository.save(comment);
+
+    eventPublisher.publishEvent(
+        new CommentCreatedEvent(comment.getId(), post.id(), post.authorId(), authorId));
+
     commentRepository.incrementCommentCount(post.id());
 
     return new CreateCommentResponse(comment.getId());

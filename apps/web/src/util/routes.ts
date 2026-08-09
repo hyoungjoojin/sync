@@ -65,6 +65,7 @@ const ROUTES = {
     ROUTES.PROJECT(handle) + '/settings/teammates',
   PROJECTS: () => '/projects',
   PROJECT_INVITATIONS: () => '/projects/invitations',
+  NOTIFICATIONS: () => '/notifications',
   PROJECT_JOIN_REQUESTS: () => '/projects/join-requests',
   COLLECTION: (externalId: string) => `/collections/${externalId}`,
   COOKIES: () => '/cookies',

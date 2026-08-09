@@ -2,6 +2,9 @@ package com.skkil.sync.project.service;
 
 import com.skkil.sync.project.dto.response.GetMyProjectJoinRequestsResponse;
 import com.skkil.sync.project.dto.response.GetProjectJoinRequestsResponse;
+import com.skkil.sync.project.event.ProjectJoinRequestApprovedEvent;
+import com.skkil.sync.project.event.ProjectJoinRequestDeclinedEvent;
+import com.skkil.sync.project.event.ProjectJoinRequestedEvent;
 import com.skkil.sync.project.exception.ProjectAlreadyTeammateException;
 import com.skkil.sync.project.exception.ProjectJoinNotAllowedException;
 import com.skkil.sync.project.exception.ProjectJoinRequestAlreadyExistsException;
@@ -16,6 +19,7 @@ import com.skkil.sync.project.repository.ProjectRepository;
 import com.skkil.sync.project.repository.TeammateRepository;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.service.domain.UserDomainService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,17 +37,21 @@ public class ProjectJoinService {
 
   private final ProjectAssembler projectAssembler;
 
+  private final ApplicationEventPublisher eventPublisher;
+
   public ProjectJoinService(
       ProjectRepository projectRepository,
       TeammateRepository teammateRepository,
       ProjectJoinRequestRepository projectJoinRequestRepository,
       UserDomainService userDomainService,
-      ProjectAssembler projectAssembler) {
+      ProjectAssembler projectAssembler,
+      ApplicationEventPublisher eventPublisher) {
     this.projectRepository = projectRepository;
     this.teammateRepository = teammateRepository;
     this.projectJoinRequestRepository = projectJoinRequestRepository;
     this.userDomainService = userDomainService;
     this.projectAssembler = projectAssembler;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -69,8 +77,11 @@ public class ProjectJoinService {
         }
 
         ProjectJoinRequest joinRequest =
-            ProjectJoinRequest.builder().project(project).requester(user).build();
-        projectJoinRequestRepository.save(joinRequest);
+            projectJoinRequestRepository.save(
+                ProjectJoinRequest.builder().project(project).requester(user).build());
+
+        eventPublisher.publishEvent(
+            new ProjectJoinRequestedEvent(joinRequest.getId(), project.getId(), userId));
       }
       case INVITE -> throw new ProjectJoinNotAllowedException();
     }
@@ -107,7 +118,7 @@ public class ProjectJoinService {
 
   @Transactional
   @PreAuthorize("hasPermission(#projectHandle, 'PROJECT', 'EDIT')")
-  public void approveJoinRequest(String projectHandle, Long requestId) {
+  public void approveJoinRequest(Long userId, String projectHandle, Long requestId) {
     Project project =
         projectRepository.findByHandle(projectHandle).orElseThrow(ProjectNotFoundException::new);
 
@@ -116,14 +127,13 @@ public class ProjectJoinService {
 
     projectJoinRequestRepository.delete(joinRequest);
 
-    if (teammateRepository
-        .findByProjectIdAndUserId(project.getId(), requester.getId())
-        .isPresent()) {
-      return;
+    if (teammateRepository.findByProjectIdAndUserId(project.getId(), requester.getId()).isEmpty()) {
+      Teammate teammate = Teammate.member(project, requester);
+      project.addTeammate(teammate);
     }
 
-    Teammate teammate = Teammate.member(project, requester);
-    project.addTeammate(teammate);
+    eventPublisher.publishEvent(
+        new ProjectJoinRequestApprovedEvent(project.getId(), requester.getId(), userId));
   }
 
   @Transactional
@@ -133,8 +143,11 @@ public class ProjectJoinService {
         projectRepository.findByHandle(projectHandle).orElseThrow(ProjectNotFoundException::new);
 
     ProjectJoinRequest joinRequest = getJoinRequest(project, requestId);
+    Long requesterId = joinRequest.getRequester().getId();
 
     projectJoinRequestRepository.delete(joinRequest);
+
+    eventPublisher.publishEvent(new ProjectJoinRequestDeclinedEvent(project.getId(), requesterId));
   }
 
   private ProjectJoinRequest getJoinRequest(Project project, Long requestId) {

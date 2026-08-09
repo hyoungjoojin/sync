@@ -3,6 +3,7 @@ package com.skkil.sync.user.service;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.user.dto.response.GetConnectionsResponse;
+import com.skkil.sync.user.event.UserFollowedEvent;
 import com.skkil.sync.user.exception.UserCannotFollowSelfException;
 import com.skkil.sync.user.exception.UserNotFoundException;
 import com.skkil.sync.user.mapper.UserConnectionAssembler;
@@ -13,6 +14,7 @@ import com.skkil.sync.user.repository.UserFollowRelationshipRepository;
 import com.skkil.sync.user.repository.UserRepository;
 import com.skkil.sync.user.repository.pagination.UserConnectionCursorPaginationProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class UserRelationshipService {
   private final UserConnectionCursorPaginationProvider connectionPaginationProvider;
   private final UserConnectionAssembler userConnectionAssembler;
   private final PaginationService paginationService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public UserRelationshipService(
       UserRepository userRepository,
@@ -34,13 +37,15 @@ public class UserRelationshipService {
       UserConnectionQueryRepository userConnectionQueryRepository,
       UserConnectionCursorPaginationProvider connectionPaginationProvider,
       UserConnectionAssembler userConnectionAssembler,
-      PaginationService paginationService) {
+      PaginationService paginationService,
+      ApplicationEventPublisher eventPublisher) {
     this.userRepository = userRepository;
     this.userFollowRelationshipRepository = userFollowRelationshipRepository;
     this.userConnectionQueryRepository = userConnectionQueryRepository;
     this.connectionPaginationProvider = connectionPaginationProvider;
     this.userConnectionAssembler = userConnectionAssembler;
     this.paginationService = paginationService;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -81,6 +86,8 @@ public class UserRelationshipService {
 
     userRepository.incrementFollowerCount(followeeId);
     userRepository.incrementFollowingCount(followerId);
+
+    eventPublisher.publishEvent(new UserFollowedEvent(followerId, followeeId));
   }
 
   @Transactional(readOnly = true)

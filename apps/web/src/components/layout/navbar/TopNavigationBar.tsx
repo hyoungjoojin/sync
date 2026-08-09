@@ -11,6 +11,7 @@ import { useSession } from '@/lib/auth/client';
 import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
+import NotificationsButton from './_components/NotificationsButton';
 import SearchBar from './_components/SearchBar';
 import UserAvatar from './_components/UserAvatar';
 
@@ -73,6 +74,7 @@ function RightSection() {
           <div className="md:hidden">
             <SearchBar variant="mobile" />
           </div>
+          <NotificationsButton />
         </>
       )}
 

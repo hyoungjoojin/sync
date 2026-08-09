@@ -143,6 +143,18 @@
         "description": "다시 보고 싶은 포스트를 북마크하면 여기에 모입니다."
       }
     },
+    "notifications": {
+      "title": "알림",
+      "empty": {
+        "title": "알림이 없습니다",
+        "description": "새로운 소식이 도착하면 여기에 표시됩니다."
+      },
+      "actions": {
+        "previous": "이전",
+        "next": "다음",
+        "mark-all-read": "모두 읽음"
+      }
+    },
     "posts": {
       "report": {
         "trigger": "신고",
@@ -1362,6 +1374,12 @@
         },
         "collections": {
           "label": "컬렉션"
+        },
+        "drafts": {
+          "label": "초안"
+        },
+        "bookmarks": {
+          "label": "북마크"
         }
       },
       "header": {
@@ -2018,7 +2036,40 @@
       },
       "notifications": {
         "aria-label": "알림",
-        "placeholder": "준비 중입니다"
+        "title": "알림",
+        "mark-all-read": "모두 읽음",
+        "view-all": "전체 보기",
+        "empty": "새로운 알림이 없습니다",
+        "types": {
+          "NEW_COMMENT": "{name}님이 '{title}' 글에 댓글을 남겼습니다.",
+          "NEW_FOLLOWER": "{name}님이 회원님을 팔로우하기 시작했습니다.",
+          "PROJECT_INVITATION": "{name}님이 '{project}' 프로젝트에 회원님을 초대했습니다.",
+          "PROJECT_INVITATION_ACCEPTED": "{name}님이 '{project}' 프로젝트 초대를 수락했습니다.",
+          "PROJECT_INVITATION_DECLINED": "{name}님이 '{project}' 프로젝트 초대를 거절했습니다.",
+          "PROJECT_JOIN_REQUEST": "{name}님이 '{project}' 프로젝트에 가입을 요청했습니다.",
+          "PROJECT_JOIN_REQUEST_APPROVED": "{name}님이 '{project}' 프로젝트 가입 요청을 승인했습니다.",
+          "PROJECT_JOIN_REQUEST_DECLINED": "'{project}' 프로젝트 가입 요청이 반려되었습니다.",
+          "NEW_MESSAGE": "{name}님이 회원님에게 메시지를 보냈습니다.",
+          "WELCOME": "Sync에 오신 것을 환영합니다! 첫 글을 작성해 보세요."
+        },
+        "actions": {
+          "error": "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.",
+          "invitation": {
+            "accept": "수락",
+            "decline": "거절",
+            "accepted": "초대를 수락했습니다.",
+            "declined": "초대를 거절했습니다.",
+            "already-handled": "이미 처리된 초대입니다.",
+            "expired": "만료된 초대입니다."
+          },
+          "join-request": {
+            "approve": "승인",
+            "decline": "반려",
+            "approved": "가입 요청을 승인했습니다.",
+            "declined": "가입 요청을 반려했습니다.",
+            "already-handled": "이미 처리된 가입 요청입니다."
+          }
+        }
       }
     },
     "footer": {

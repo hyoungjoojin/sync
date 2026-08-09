@@ -2,6 +2,7 @@ package com.skkil.sync.notification.listener;
 
 import com.skkil.sync.notification.constant.NotificationType;
 import com.skkil.sync.notification.event.NotificationEvent;
+import com.skkil.sync.notification.model.WelcomePayload;
 import com.skkil.sync.user.event.UserRegisteredEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,6 +24,8 @@ public class UserRegisteredEventListener {
   @TransactionalEventListener
   public void handleUserRegisteredEvent(UserRegisteredEvent event) {
     log.debug("User registered event received for user ID: {}", event.getUserId());
-    eventPublisher.publishEvent(new NotificationEvent(event.getUserId(), NotificationType.WELCOME));
+    eventPublisher.publishEvent(
+        new NotificationEvent(
+            event.getUserId(), NotificationType.WELCOME, null, null, null, new WelcomePayload()));
   }
 }

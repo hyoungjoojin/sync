@@ -20,6 +20,11 @@ public class UserDomainService {
   }
 
   @Transactional(readOnly = true)
+  public User getUser(Long userId) {
+    return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+  }
+
+  @Transactional(readOnly = true)
   public User getUserByHandle(String handle) {
     return userRepository.findByHandle(handle).orElseThrow(() -> new UserNotFoundException(handle));
   }

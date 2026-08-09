@@ -54,8 +54,11 @@ public class ProjectJoinController {
 
   @PostMapping("/projects/{handle}/join-requests/{requestId}/approve")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void approveJoinRequest(@PathVariable String handle, @PathVariable Long requestId) {
-    projectJoinService.approveJoinRequest(handle, requestId);
+  public void approveJoinRequest(
+      @AuthenticationPrincipal @NotNull AuthenticatedUser user,
+      @PathVariable String handle,
+      @PathVariable Long requestId) {
+    projectJoinService.approveJoinRequest(user.userId(), handle, requestId);
   }
 
   @PostMapping("/projects/{handle}/join-requests/{requestId}/decline")
