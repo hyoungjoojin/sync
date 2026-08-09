@@ -35,16 +35,16 @@ import type {
   GetLikedPostsParams,
   GetPostActivitiesParams,
   GetPostActivitiesResponse,
+  GetPostBacklinksParams,
   GetPostRecommendationsParams,
-  GetPostRecommendationsResponse,
   GetPostResponse,
   GetPostsByProjectParams,
   GetPostsByTagParams,
   GetPostsParams,
   GetPostsResponse,
   GetUserPostsParams,
+  PaginatedGetPostsResponse,
   SearchPostsParams,
-  SearchPostsResponse,
   UpdatePostRequest,
   UpdateProjectPostRequest,
 } from '../types';
@@ -70,7 +70,7 @@ const withQueryKey = <T extends object, K>(
 };
 
 export type getPostsResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -516,7 +516,7 @@ export const useCreatePost = <TError = ErrorType<unknown>, TContext = unknown>(
   return useMutation(getCreatePostMutationOptions(options), queryClient);
 };
 export type getDraftPostsResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -868,7 +868,7 @@ export function useGetDraftPosts<
 }
 
 export type getLikedPostsResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -1220,7 +1220,7 @@ export function useGetLikedPosts<
 }
 
 export type getPostRecommendationsResponse200 = {
-  data: GetPostRecommendationsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -2147,6 +2147,775 @@ export const useUnlikePost = <TError = ErrorType<unknown>, TContext = unknown>(
 > => {
   return useMutation(getUnlikePostMutationOptions(options), queryClient);
 };
+export type getRelatedPostsResponse200 = {
+  data: GetPostsResponse;
+  status: 200;
+};
+
+export type getRelatedPostsResponseSuccess = getRelatedPostsResponse200 & {
+  headers: Headers;
+};
+export type getRelatedPostsResponse = getRelatedPostsResponseSuccess;
+
+export const getGetRelatedPostsUrl = (postId: string) => {
+  return `/posts/${postId}/related`;
+};
+
+/**
+ * 주어진 게시글과 임베딩상 유사한 관련 게시글을 최대 N개 추천한다
+ * @summary Get Related Posts
+ */
+export const getRelatedPosts = async (
+  postId: string,
+  options?: RequestInit,
+): Promise<getRelatedPostsResponse> => {
+  return api<getRelatedPostsResponse>(getGetRelatedPostsUrl(postId), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetRelatedPostsQueryKey = (postId: string) => {
+  return [`/posts/${postId}/related`] as const;
+};
+
+export const getGetRelatedPostsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRelatedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  postId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getRelatedPosts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRelatedPostsQueryKey(postId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRelatedPosts>>> = ({
+    signal,
+  }) => getRelatedPosts(postId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: postId !== null && postId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRelatedPosts>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetRelatedPostsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRelatedPosts>>
+>;
+export type GetRelatedPostsQueryError = ErrorType<unknown>;
+
+export function useGetRelatedPosts<
+  TData = Awaited<ReturnType<typeof getRelatedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  postId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getRelatedPosts>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRelatedPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getRelatedPosts>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetRelatedPosts<
+  TData = Awaited<ReturnType<typeof getRelatedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  postId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getRelatedPosts>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRelatedPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getRelatedPosts>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetRelatedPosts<
+  TData = Awaited<ReturnType<typeof getRelatedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  postId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getRelatedPosts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Related Posts
+ */
+
+export function useGetRelatedPosts<
+  TData = Awaited<ReturnType<typeof getRelatedPosts>>,
+  TError = ErrorType<unknown>,
+>(
+  postId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getRelatedPosts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetRelatedPostsQueryOptions(postId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type getPostBacklinksResponse200 = {
+  data: PaginatedGetPostsResponse;
+  status: 200;
+};
+
+export type getPostBacklinksResponseSuccess = getPostBacklinksResponse200 & {
+  headers: Headers;
+};
+export type getPostBacklinksResponse = getPostBacklinksResponseSuccess;
+
+export const getGetPostBacklinksUrl = (
+  slug: string,
+  params?: GetPostBacklinksParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/posts/${slug}/referenced-by?${stringifiedParams}`
+    : `/posts/${slug}/referenced-by`;
+};
+
+/**
+ * 이 게시글을 가리키는(역참조, backlink) 게시글 목록을 조회합니다.
+ * @summary Get Post Backlinks
+ */
+export const getPostBacklinks = async (
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: RequestInit,
+): Promise<getPostBacklinksResponse> => {
+  return api<getPostBacklinksResponse>(getGetPostBacklinksUrl(slug, params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetPostBacklinksInfiniteQueryKey = (
+  slug: string,
+  params?: GetPostBacklinksParams,
+) => {
+  return [
+    'infinite',
+    `/posts/${slug}/referenced-by`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetPostBacklinksQueryKey = (
+  slug: string,
+  params?: GetPostBacklinksParams,
+) => {
+  return [`/posts/${slug}/referenced-by`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetPostBacklinksInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    GetPostBacklinksParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostBacklinksParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPostBacklinksInfiniteQueryKey(slug, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    QueryKey,
+    GetPostBacklinksParams['after']
+  > = ({ signal, pageParam }) =>
+    getPostBacklinks(
+      slug,
+      { ...params, after: pageParam ?? params?.['after'] },
+      { signal, ...requestOptions },
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: slug !== null && slug !== undefined,
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    TError,
+    TData,
+    QueryKey,
+    GetPostBacklinksParams['after']
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPostBacklinksInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPostBacklinks>>
+>;
+export type GetPostBacklinksInfiniteQueryError = ErrorType<unknown>;
+
+export function useGetPostBacklinksInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    GetPostBacklinksParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params: undefined | GetPostBacklinksParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostBacklinksParams['after']
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostBacklinks>>,
+          TError,
+          Awaited<ReturnType<typeof getPostBacklinks>>,
+          QueryKey
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostBacklinksInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    GetPostBacklinksParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostBacklinksParams['after']
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostBacklinks>>,
+          TError,
+          Awaited<ReturnType<typeof getPostBacklinks>>,
+          QueryKey
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostBacklinksInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    GetPostBacklinksParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostBacklinksParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Post Backlinks
+ */
+
+export function useGetPostBacklinksInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    GetPostBacklinksParams['after']
+  >,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData,
+        QueryKey,
+        GetPostBacklinksParams['after']
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPostBacklinksInfiniteQueryOptions(
+    slug,
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetPostBacklinksQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPostBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPostBacklinksQueryKey(slug, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPostBacklinks>>
+  > = ({ signal }) =>
+    getPostBacklinks(slug, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: slug !== null && slug !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPostBacklinks>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPostBacklinksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPostBacklinks>>
+>;
+export type GetPostBacklinksQueryError = ErrorType<unknown>;
+
+export function useGetPostBacklinks<
+  TData = Awaited<ReturnType<typeof getPostBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params: undefined | GetPostBacklinksParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostBacklinks>>,
+          TError,
+          Awaited<ReturnType<typeof getPostBacklinks>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostBacklinks<
+  TData = Awaited<ReturnType<typeof getPostBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostBacklinks>>,
+          TError,
+          Awaited<ReturnType<typeof getPostBacklinks>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostBacklinks<
+  TData = Awaited<ReturnType<typeof getPostBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Post Backlinks
+ */
+
+export function useGetPostBacklinks<
+  TData = Awaited<ReturnType<typeof getPostBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  params?: GetPostBacklinksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostBacklinks>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPostBacklinksQueryOptions(slug, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type getPostReferencesResponse200 = {
+  data: GetPostsResponse;
+  status: 200;
+};
+
+export type getPostReferencesResponseSuccess = getPostReferencesResponse200 & {
+  headers: Headers;
+};
+export type getPostReferencesResponse = getPostReferencesResponseSuccess;
+
+export const getGetPostReferencesUrl = (slug: string) => {
+  return `/posts/${slug}/references`;
+};
+
+/**
+ * 이 게시글이 가리키는 참조(forward reference) 목록을 조회합니다.
+ * @summary Get Post References
+ */
+export const getPostReferences = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<getPostReferencesResponse> => {
+  return api<getPostReferencesResponse>(getGetPostReferencesUrl(slug), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetPostReferencesQueryKey = (slug: string) => {
+  return [`/posts/${slug}/references`] as const;
+};
+
+export const getGetPostReferencesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPostReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostReferences>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPostReferencesQueryKey(slug);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPostReferences>>
+  > = ({ signal }) => getPostReferences(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: slug !== null && slug !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPostReferences>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPostReferencesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPostReferences>>
+>;
+export type GetPostReferencesQueryError = ErrorType<unknown>;
+
+export function useGetPostReferences<
+  TData = Awaited<ReturnType<typeof getPostReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostReferences>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostReferences>>,
+          TError,
+          Awaited<ReturnType<typeof getPostReferences>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostReferences<
+  TData = Awaited<ReturnType<typeof getPostReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostReferences>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPostReferences>>,
+          TError,
+          Awaited<ReturnType<typeof getPostReferences>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPostReferences<
+  TData = Awaited<ReturnType<typeof getPostReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostReferences>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Post References
+ */
+
+export function useGetPostReferences<
+  TData = Awaited<ReturnType<typeof getPostReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  slug: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPostReferences>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPostReferencesQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type getPostActivitiesResponse200 = {
   data: GetPostActivitiesResponse;
   status: 200;
@@ -2363,7 +3132,7 @@ export function useGetPostActivities<
 }
 
 export type getPostsByProjectResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -2883,6 +3652,192 @@ export const useCreateProjectPost = <
 > => {
   return useMutation(getCreateProjectPostMutationOptions(options), queryClient);
 };
+export type getPinnedPostsByProjectResponse200 = {
+  data: GetPostsResponse;
+  status: 200;
+};
+
+export type getPinnedPostsByProjectResponseSuccess =
+  getPinnedPostsByProjectResponse200 & {
+    headers: Headers;
+  };
+export type getPinnedPostsByProjectResponse =
+  getPinnedPostsByProjectResponseSuccess;
+
+export const getGetPinnedPostsByProjectUrl = (handle: string) => {
+  return `/projects/${handle}/posts/pinned`;
+};
+
+/**
+ * 프로젝트 대시보드에 고정된 게시글 목록을 조회합니다.
+ * @summary Get Pinned Posts By Project
+ */
+export const getPinnedPostsByProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<getPinnedPostsByProjectResponse> => {
+  return api<getPinnedPostsByProjectResponse>(
+    getGetPinnedPostsByProjectUrl(handle),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetPinnedPostsByProjectQueryKey = (handle: string) => {
+  return [`/projects/${handle}/posts/pinned`] as const;
+};
+
+export const getGetPinnedPostsByProjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPinnedPostsByProjectQueryKey(handle);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPinnedPostsByProject>>
+  > = ({ signal }) =>
+    getPinnedPostsByProject(handle, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: handle !== null && handle !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPinnedPostsByProjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPinnedPostsByProject>>
+>;
+export type GetPinnedPostsByProjectQueryError = ErrorType<unknown>;
+
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+          TError,
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+          TError,
+          Awaited<ReturnType<typeof getPinnedPostsByProject>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Pinned Posts By Project
+ */
+
+export function useGetPinnedPostsByProject<
+  TData = Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPinnedPostsByProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPinnedPostsByProjectQueryOptions(handle, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type updateProjectPostResponse204 = {
   data: void;
   status: 204;
@@ -2989,8 +3944,198 @@ export const useUpdateProjectPost = <
 > => {
   return useMutation(getUpdateProjectPostMutationOptions(options), queryClient);
 };
+export type pinPostResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type pinPostResponseSuccess = pinPostResponse204 & {
+  headers: Headers;
+};
+export type pinPostResponse = pinPostResponseSuccess;
+
+export const getPinPostUrl = (handle: string, postId: string) => {
+  return `/projects/${handle}/posts/${postId}/pin`;
+};
+
+/**
+ * 프로젝트 관리자가 게시글을 프로젝트 대시보드에 고정합니다.
+ * @summary Pin Post
+ */
+export const pinPost = async (
+  handle: string,
+  postId: string,
+  options?: RequestInit,
+): Promise<pinPostResponse> => {
+  return api<pinPostResponse>(getPinPostUrl(handle, postId), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getPinPostMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof pinPost>>,
+    TError,
+    { handle: string; postId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof pinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  const mutationKey = ['pinPost'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof pinPost>>,
+    { handle: string; postId: string }
+  > = (props) => {
+    const { handle, postId } = props ?? {};
+
+    return pinPost(handle, postId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PinPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof pinPost>>
+>;
+
+export type PinPostMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Pin Post
+ */
+export const usePinPost = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof pinPost>>,
+      TError,
+      { handle: string; postId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof pinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  return useMutation(getPinPostMutationOptions(options), queryClient);
+};
+export type unpinPostResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type unpinPostResponseSuccess = unpinPostResponse204 & {
+  headers: Headers;
+};
+export type unpinPostResponse = unpinPostResponseSuccess;
+
+export const getUnpinPostUrl = (handle: string, postId: string) => {
+  return `/projects/${handle}/posts/${postId}/pin`;
+};
+
+/**
+ * 프로젝트 관리자가 게시글의 고정을 해제합니다.
+ * @summary Unpin Post
+ */
+export const unpinPost = async (
+  handle: string,
+  postId: string,
+  options?: RequestInit,
+): Promise<unpinPostResponse> => {
+  return api<unpinPostResponse>(getUnpinPostUrl(handle, postId), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getUnpinPostMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unpinPost>>,
+    TError,
+    { handle: string; postId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unpinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  const mutationKey = ['unpinPost'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unpinPost>>,
+    { handle: string; postId: string }
+  > = (props) => {
+    const { handle, postId } = props ?? {};
+
+    return unpinPost(handle, postId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnpinPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unpinPost>>
+>;
+
+export type UnpinPostMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unpin Post
+ */
+export const useUnpinPost = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof unpinPost>>,
+      TError,
+      { handle: string; postId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof unpinPost>>,
+  TError,
+  { handle: string; postId: string },
+  TContext
+> => {
+  return useMutation(getUnpinPostMutationOptions(options), queryClient);
+};
 export type searchPostsResponse200 = {
-  data: SearchPostsResponse;
+  data: GetPostsResponse;
   status: 200;
 };
 
@@ -3156,7 +4301,7 @@ export function useSearchPosts<
 }
 
 export type getPostsByTagResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -3185,7 +4330,7 @@ export const getGetPostsByTagUrl = (
 };
 
 /**
- * Get Posts By Tag
+ * 태그가 붙은 공개 게시글 목록을 조회합니다.
  * @summary Get Posts By Tag
  */
 export const getPostsByTag = async (
@@ -3546,7 +4691,7 @@ export function useGetPostsByTag<
 }
 
 export type getUserPostsResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 
@@ -3936,7 +5081,7 @@ export function useGetUserPosts<
 }
 
 export type getCommentedPostsResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 

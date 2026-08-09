@@ -5,10 +5,10 @@ import java.time.OffsetDateTime;
 public record CommentDto(
     Long id,
     Long authorId,
-    String authorHandle,
-    String authorName,
-    Long authorProfileImageId,
     String content,
     Boolean deleted,
+    Boolean accepted,
+    Long likeCount,
+    Boolean liked,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}

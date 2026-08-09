@@ -8,6 +8,8 @@ import com.skkil.sync.post.repository.PostRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -16,22 +18,49 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 public class PostEmbeddingService {
 
-  private final EmbeddingModel embeddingModel;
+  private final ObjectProvider<EmbeddingModel> embeddingModelProvider;
   private final PostRepository postRepository;
   private final PostEmbeddingRepository embeddingRepository;
 
+  @Value("${app.ai.enabled:true}")
+  private boolean aiEnabled;
+
   public PostEmbeddingService(
-      EmbeddingModel embeddingModel,
+      ObjectProvider<EmbeddingModel> embeddingModelProvider,
       PostRepository postRepository,
       PostEmbeddingRepository embeddingRepository) {
-    this.embeddingModel = embeddingModel;
+    this.embeddingModelProvider = embeddingModelProvider;
     this.postRepository = postRepository;
     this.embeddingRepository = embeddingRepository;
+  }
+
+  private EmbeddingModel requireEmbeddingModel() {
+    EmbeddingModel embeddingModel = embeddingModelProvider.getIfAvailable();
+    if (embeddingModel == null) {
+      throw new IllegalStateException(
+          "AI features are enabled but no EmbeddingModel bean is available"
+              + " (check AI_PROVIDER configuration)");
+    }
+    return embeddingModel;
   }
 
   @Async
   @TransactionalEventListener
   public void refreshPostEmbeddings(PostContentChangedEvent event) {
+    if (!aiEnabled) {
+      log.debug("AI features disabled, skipping embedding refresh for post {}", event.getPostId());
+      return;
+    }
+
+    EmbeddingModel embeddingModel = embeddingModelProvider.getIfAvailable();
+    if (embeddingModel == null) {
+      log.debug(
+          "No embedding model configured (AI_EMBEDDING_PROVIDER=none), skipping embedding refresh"
+              + " for post {}",
+          event.getPostId());
+      return;
+    }
+
     Post post = postRepository.getReferenceById(event.getPostId());
 
     Document document = Document.builder().text(event.getContent()).build();
@@ -46,7 +75,11 @@ public class PostEmbeddingService {
   }
 
   public float[] computeEmbedding(String content) {
+    if (!aiEnabled) {
+      throw new IllegalStateException("AI features are disabled");
+    }
+
     Document document = Document.builder().text(content).build();
-    return embeddingModel.embed(document);
+    return requireEmbeddingModel().embed(document);
   }
 }

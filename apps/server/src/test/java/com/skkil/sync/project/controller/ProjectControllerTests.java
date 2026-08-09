@@ -8,10 +8,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,16 +22,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
+import com.skkil.sync.common.util.restdocs.RestDocsUtils;
 import com.skkil.sync.config.SecurityConfig;
 import com.skkil.sync.project.dto.request.CreateProjectRequest;
 import com.skkil.sync.project.dto.request.UpdateProjectRequest;
 import com.skkil.sync.project.dto.response.CreateProjectResponse;
+import com.skkil.sync.project.dto.response.GetMyProjectsResponse;
 import com.skkil.sync.project.dto.response.GetProjectHandleAvailabilityResponse;
 import com.skkil.sync.project.dto.response.GetProjectResponse;
 import com.skkil.sync.project.dto.response.GetProjectsResponse;
 import com.skkil.sync.project.service.ProjectService;
 import com.skkil.sync.project.snippets.CreateProjectRequestSnippets;
 import com.skkil.sync.project.snippets.CreateProjectResponseSnippets;
+import com.skkil.sync.project.snippets.GetMyProjectsResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectHandleAvailabilityResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectResponseSnippets;
 import com.skkil.sync.project.snippets.GetProjectsResponseSnippets;
@@ -149,6 +154,37 @@ class ProjectControllerTests {
   }
 
   @Test
+  @DisplayName("[getMyProjects] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void getMyProjects() throws Exception {
+    GetMyProjectsResponse response = GetMyProjectsResponseSnippets.getGetMyProjectsResponse();
+
+    when(projectService.getMyProjects(anyLong())).thenReturn(response);
+
+    mockMvc
+        .perform(get("/projects/my"))
+        .andExpect(status().isOk())
+        .andDo(
+            document(
+                "GetMyProjects",
+                ResourceSnippetParameters.builder()
+                    .tag("project")
+                    .summary("Get My Projects")
+                    .description("현재 사용자가 참여 중인 프로젝트와 실제 운영 정보를 조회합니다.")
+                    .responseSchema(schema(GetMyProjectsResponse.class.getSimpleName())),
+                null,
+                null,
+                Function.identity(),
+                GetMyProjectsResponseSnippets.getGetMyProjectsResponseFields()));
+  }
+
+  @Test
+  @DisplayName("[getMyProjects] 로그인하지 않은 사용자는 접근할 수 없다")
+  void getMyProjects_unauthenticatedUser_shouldReturnUnauthorized() throws Exception {
+    mockMvc.perform(get("/projects/my")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
   @DisplayName("[getProjectsByUser] API 문서화 테스트")
   void getProjectsByUser() throws Exception {
     String handle = "john";
@@ -165,7 +201,7 @@ class ProjectControllerTests {
                 ResourceSnippetParameters.builder()
                     .tag("project")
                     .summary("Get Projects By User")
-                    .description("유저 핸들로 해당 유저의 프로젝트 목록을 조회합니다.")
+                    .description("유저 핸들로 해당 유저가 참여 중인 공개 프로젝트 목록을 조회합니다.")
                     .responseSchema(schema(GetProjectsResponse.class.getSimpleName())),
                 null,
                 null,
@@ -273,5 +309,29 @@ class ProjectControllerTests {
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
                 UpdateProjectRequestSnippets.getUpdateProjectRequestFields()));
+  }
+
+  @Test
+  @DisplayName("[deleteProject] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void deleteProject() throws Exception {
+    String projectHandle = "my-project";
+
+    doNothing().when(projectService).deleteProject(projectHandle);
+
+    mockMvc
+        .perform(delete("/projects/{handle}", projectHandle).with(csrf()))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "DeleteProject",
+                ResourceSnippetParameters.builder()
+                    .tag("project")
+                    .summary("Delete Project")
+                    .description("프로젝트 소유자가 프로젝트와 프로젝트의 모든 게시글을 삭제합니다."),
+                preprocessRequest(RestDocsUtils.removeCsrfFormBody()),
+                null,
+                Function.identity(),
+                pathParameters(parameterWithName("handle").description("삭제할 프로젝트 핸들"))));
   }
 }

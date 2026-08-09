@@ -3,6 +3,7 @@ package com.skkil.sync.post.service.recommendation;
 import com.skkil.sync.common.util.pagination.interfaces.CursorPaginationDataFetcher;
 import com.skkil.sync.common.util.pagination.keyset.KeysetCursorPaginationProvider;
 import com.skkil.sync.post.dto.data.PostRecommendationCandidate;
+import com.skkil.sync.post.dto.data.PostRecommendationContext;
 import com.skkil.sync.post.dto.data.PostRecommendationCursor;
 import com.skkil.sync.post.model.PostRecommendationType;
 import com.skkil.sync.post.repository.PostRecommendationQueryRepository;
@@ -26,9 +27,9 @@ public class FollowingPostRecommendationChannel implements PostRecommendationCha
 
   @Override
   public CursorPaginationDataFetcher<PostRecommendationCandidate> getCandidateFetcher(
-      Long requesterId) {
+      PostRecommendationContext context) {
     return postRecommendationQueryRepository.getCandidates(
-        postRecommendationQueryRepository.followingCondition(requesterId));
+        postRecommendationQueryRepository.followingCondition(context.requesterId()), context);
   }
 
   @Override

@@ -2,7 +2,7 @@ package com.skkil.sync.post.controller;
 
 import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
-import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.service.PostBookmarkService;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
@@ -41,7 +41,7 @@ public class PostBookmarkController {
 
   @GetMapping("/bookmarks/posts")
   @ResponseStatus(HttpStatus.OK)
-  public GetPostsResponse getBookmarkedPosts(
+  public PaginatedGetPostsResponse getBookmarkedPosts(
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestParam(required = false) @Nullable String projectHandle,
       @Validated CursorPaginationRequest pagination) {

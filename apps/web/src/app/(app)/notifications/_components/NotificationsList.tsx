@@ -55,7 +55,7 @@ export default function NotificationsList() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>

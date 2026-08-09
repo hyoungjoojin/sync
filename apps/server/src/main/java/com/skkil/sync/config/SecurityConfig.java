@@ -1,8 +1,10 @@
 package com.skkil.sync.config;
 
+import com.skkil.sync.auth.session.AbsoluteSessionTimeoutFilter;
 import com.skkil.sync.common.security.GlobalPermissionEvaluator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -20,8 +22,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -29,13 +30,22 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 public class SecurityConfig {
 
   @Bean
+  @Order(Ordered.HIGHEST_PRECEDENCE)
+  SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) throws Exception {
+    return http.securityMatcher("/actuator/**")
+        .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
+        .csrf(csrf -> csrf.disable())
+        .build();
+  }
+
+  @Bean
   @Order(2)
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http, AbsoluteSessionTimeoutFilter absoluteSessionTimeoutFilter)
+      throws Exception {
     http.securityMatcher("/**")
-        .csrf(
-            csrf ->
-                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+        .addFilterBefore(absoluteSessionTimeoutFilter, SecurityContextHolderFilter.class)
+        .csrf(csrf -> csrf.spa())
         .formLogin(formLogin -> formLogin.disable())
         .logout(
             logout ->
@@ -53,6 +63,8 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
                     .requestMatchers("/projects/*/invitations/**", "/invitations/**")
                     .authenticated()
+                    .requestMatchers("/promotions/**")
+                    .authenticated()
                     .requestMatchers(HttpMethod.GET, "/users/recommendations")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/handles/availability")
@@ -63,6 +75,10 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/projects/recommendations")
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/projects/my")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/tags/recommendations", "/tags/unverified")
+                    .authenticated()
                     .requestMatchers("/search/**")
                     .authenticated()
                     .requestMatchers(
@@ -72,6 +88,8 @@ public class SecurityConfig {
                         "/posts/**",
                         "/comments/**",
                         "/users/**",
+                        "/tags/{tagId}",
+                        "/tags/{tagId}/posts",
                         "/team-building/**",
                         "/projects/**",
                         "/contests/**")
@@ -91,6 +109,8 @@ public class SecurityConfig {
                         "/profiles/**",
                         "/auth/login",
                         "/auth/register",
+                        "/auth/csrf",
+                        "/auth/password-reset/**",
                         "/providers/**")
                     .permitAll()
                     .anyRequest()

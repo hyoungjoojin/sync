@@ -32,11 +32,14 @@ import type {
   CreateProjectRequest,
   CreateProjectResponse,
   GetMyProjectInvitationsResponse,
+  GetMyProjectJoinRequestsResponse,
+  GetMyProjectsResponse,
   GetProjectFollowersParams,
   GetProjectFollowersResponse,
   GetProjectHandleAvailabilityParams,
   GetProjectHandleAvailabilityResponse,
   GetProjectInvitationsResponse,
+  GetProjectJoinRequestsResponse,
   GetProjectRecommendationsParams,
   GetProjectRecommendationsResponse,
   GetProjectResponse,
@@ -447,6 +450,283 @@ export const useDeclineProjectInvitation = <
     queryClient,
   );
 };
+export type getMyProjectJoinRequestsResponse200 = {
+  data: GetMyProjectJoinRequestsResponse;
+  status: 200;
+};
+
+export type getMyProjectJoinRequestsResponseSuccess =
+  getMyProjectJoinRequestsResponse200 & {
+    headers: Headers;
+  };
+export type getMyProjectJoinRequestsResponse =
+  getMyProjectJoinRequestsResponseSuccess;
+
+export const getGetMyProjectJoinRequestsUrl = () => {
+  return `/join-requests`;
+};
+
+/**
+ * 내가 보낸 대기 중인 프로젝트 가입 요청 목록을 조회합니다.
+ * @summary Get My Project Join Requests
+ */
+export const getMyProjectJoinRequests = async (
+  options?: RequestInit,
+): Promise<getMyProjectJoinRequestsResponse> => {
+  return api<getMyProjectJoinRequestsResponse>(
+    getGetMyProjectJoinRequestsUrl(),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetMyProjectJoinRequestsQueryKey = () => {
+  return [`/join-requests`] as const;
+};
+
+export const getGetMyProjectJoinRequestsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof api>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetMyProjectJoinRequestsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMyProjectJoinRequests>>
+  > = ({ signal }) => getMyProjectJoinRequests({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyProjectJoinRequestsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyProjectJoinRequests>>
+>;
+export type GetMyProjectJoinRequestsQueryError = ErrorType<unknown>;
+
+export function useGetMyProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProjectJoinRequests>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProjectJoinRequests>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get My Project Join Requests
+ */
+
+export function useGetMyProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMyProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyProjectJoinRequestsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type cancelProjectJoinRequestResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type cancelProjectJoinRequestResponseSuccess =
+  cancelProjectJoinRequestResponse204 & {
+    headers: Headers;
+  };
+export type cancelProjectJoinRequestResponse =
+  cancelProjectJoinRequestResponseSuccess;
+
+export const getCancelProjectJoinRequestUrl = (requestId: string) => {
+  return `/join-requests/${requestId}`;
+};
+
+/**
+ * 내가 보낸 프로젝트 가입 요청을 취소합니다.
+ * @summary Cancel Project Join Request
+ */
+export const cancelProjectJoinRequest = async (
+  requestId: string,
+  options?: RequestInit,
+): Promise<cancelProjectJoinRequestResponse> => {
+  return api<cancelProjectJoinRequestResponse>(
+    getCancelProjectJoinRequestUrl(requestId),
+    {
+      ...options,
+      method: 'DELETE',
+    },
+  );
+};
+
+export const getCancelProjectJoinRequestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelProjectJoinRequest>>,
+    TError,
+    { requestId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelProjectJoinRequest>>,
+  TError,
+  { requestId: string },
+  TContext
+> => {
+  const mutationKey = ['cancelProjectJoinRequest'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelProjectJoinRequest>>,
+    { requestId: string }
+  > = (props) => {
+    const { requestId } = props ?? {};
+
+    return cancelProjectJoinRequest(requestId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CancelProjectJoinRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cancelProjectJoinRequest>>
+>;
+
+export type CancelProjectJoinRequestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Cancel Project Join Request
+ */
+export const useCancelProjectJoinRequest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cancelProjectJoinRequest>>,
+      TError,
+      { requestId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof cancelProjectJoinRequest>>,
+  TError,
+  { requestId: string },
+  TContext
+> => {
+  return useMutation(
+    getCancelProjectJoinRequestMutationOptions(options),
+    queryClient,
+  );
+};
 export type createProjectResponse201 = {
   data: CreateProjectResponse;
   status: 201;
@@ -549,6 +829,152 @@ export const useCreateProject = <
 > => {
   return useMutation(getCreateProjectMutationOptions(options), queryClient);
 };
+export type getMyProjectsResponse200 = {
+  data: GetMyProjectsResponse;
+  status: 200;
+};
+
+export type getMyProjectsResponseSuccess = getMyProjectsResponse200 & {
+  headers: Headers;
+};
+export type getMyProjectsResponse = getMyProjectsResponseSuccess;
+
+export const getGetMyProjectsUrl = () => {
+  return `/projects/my`;
+};
+
+/**
+ * 현재 사용자가 참여 중인 프로젝트와 실제 운영 정보를 조회합니다.
+ * @summary Get My Projects
+ */
+export const getMyProjects = async (
+  options?: RequestInit,
+): Promise<getMyProjectsResponse> => {
+  return api<getMyProjectsResponse>(getGetMyProjectsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getGetMyProjectsQueryKey = () => {
+  return [`/projects/my`] as const;
+};
+
+export const getGetMyProjectsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyProjects>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getMyProjects>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof api>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyProjectsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyProjects>>> = ({
+    signal,
+  }) => getMyProjects({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyProjects>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyProjectsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyProjects>>
+>;
+export type GetMyProjectsQueryError = ErrorType<unknown>;
+
+export function useGetMyProjects<
+  TData = Awaited<ReturnType<typeof getMyProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProjects>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProjects>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProjects>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProjects<
+  TData = Awaited<ReturnType<typeof getMyProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProjects>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProjects>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProjects>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProjects<
+  TData = Awaited<ReturnType<typeof getMyProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProjects>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get My Projects
+ */
+
+export function useGetMyProjects<
+  TData = Awaited<ReturnType<typeof getMyProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProjects>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyProjectsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type getProjectRecommendationsResponse200 = {
   data: GetProjectRecommendationsResponse;
   status: 200;
@@ -930,6 +1356,103 @@ export function useGetProjectByHandle<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+export type deleteProjectResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type deleteProjectResponseSuccess = deleteProjectResponse204 & {
+  headers: Headers;
+};
+export type deleteProjectResponse = deleteProjectResponseSuccess;
+
+export const getDeleteProjectUrl = (handle: string) => {
+  return `/projects/${handle}`;
+};
+
+/**
+ * 프로젝트 소유자가 프로젝트와 프로젝트의 모든 게시글을 삭제합니다.
+ * @summary Delete Project
+ */
+export const deleteProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<deleteProjectResponse> => {
+  return api<deleteProjectResponse>(getDeleteProjectUrl(handle), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getDeleteProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProject>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['deleteProject'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProject>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return deleteProject(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProject>>
+>;
+
+export type DeleteProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete Project
+ */
+export const useDeleteProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteProject>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(getDeleteProjectMutationOptions(options), queryClient);
+};
 export type updateProjectResponse204 = {
   data: void;
   status: 204;
@@ -2052,6 +2575,286 @@ export const useCreateProjectInvitation = <
     queryClient,
   );
 };
+export type joinProjectResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type joinProjectResponseSuccess = joinProjectResponse204 & {
+  headers: Headers;
+};
+export type joinProjectResponse = joinProjectResponseSuccess;
+
+export const getJoinProjectUrl = (handle: string) => {
+  return `/projects/${handle}/join`;
+};
+
+/**
+ * 프로젝트에 참여합니다. OPEN 정책이면 즉시 팀원이 되고, REQUEST 정책이면 가입 요청이 생성됩니다.
+ * @summary Join Project
+ */
+export const joinProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<joinProjectResponse> => {
+  return api<joinProjectResponse>(getJoinProjectUrl(handle), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getJoinProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof joinProject>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof joinProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['joinProject'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof joinProject>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return joinProject(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type JoinProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof joinProject>>
+>;
+
+export type JoinProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Join Project
+ */
+export const useJoinProject = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof joinProject>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof joinProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(getJoinProjectMutationOptions(options), queryClient);
+};
+export type getProjectJoinRequestsResponse200 = {
+  data: GetProjectJoinRequestsResponse;
+  status: 200;
+};
+
+export type getProjectJoinRequestsResponseSuccess =
+  getProjectJoinRequestsResponse200 & {
+    headers: Headers;
+  };
+export type getProjectJoinRequestsResponse =
+  getProjectJoinRequestsResponseSuccess;
+
+export const getGetProjectJoinRequestsUrl = (handle: string) => {
+  return `/projects/${handle}/join-requests`;
+};
+
+/**
+ * 프로젝트의 대기 중인 가입 요청 목록을 조회합니다.
+ * @summary Get Project Join Requests
+ */
+export const getProjectJoinRequests = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<getProjectJoinRequestsResponse> => {
+  return api<getProjectJoinRequestsResponse>(
+    getGetProjectJoinRequestsUrl(handle),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+};
+
+export const getGetProjectJoinRequestsQueryKey = (handle: string) => {
+  return [`/projects/${handle}/join-requests`] as const;
+};
+
+export const getGetProjectJoinRequestsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetProjectJoinRequestsQueryKey(handle);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getProjectJoinRequests>>
+  > = ({ signal }) =>
+    getProjectJoinRequests(handle, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: handle !== null && handle !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProjectJoinRequests>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetProjectJoinRequestsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProjectJoinRequests>>
+>;
+export type GetProjectJoinRequestsQueryError = ErrorType<unknown>;
+
+export function useGetProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProjectJoinRequests>>,
+          TError,
+          Awaited<ReturnType<typeof getProjectJoinRequests>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProjectJoinRequests>>,
+          TError,
+          Awaited<ReturnType<typeof getProjectJoinRequests>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Project Join Requests
+ */
+
+export function useGetProjectJoinRequests<
+  TData = Awaited<ReturnType<typeof getProjectJoinRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getProjectJoinRequests>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetProjectJoinRequestsQueryOptions(handle, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export type getProjectTeammatesResponse200 = {
   data: GetProjectTeammatesResponse;
   status: 200;
@@ -2537,6 +3340,103 @@ export const useCancelProjectInvitation = <
     queryClient,
   );
 };
+export type leaveProjectResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type leaveProjectResponseSuccess = leaveProjectResponse204 & {
+  headers: Headers;
+};
+export type leaveProjectResponse = leaveProjectResponseSuccess;
+
+export const getLeaveProjectUrl = (handle: string) => {
+  return `/projects/${handle}/teammates/me`;
+};
+
+/**
+ * 현재 사용자가 프로젝트에서 나갑니다. 프로젝트 소유자는 나갈 수 없습니다.
+ * @summary Leave Project
+ */
+export const leaveProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<leaveProjectResponse> => {
+  return api<leaveProjectResponse>(getLeaveProjectUrl(handle), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getLeaveProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof leaveProject>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof leaveProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['leaveProject'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof leaveProject>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return leaveProject(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LeaveProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof leaveProject>>
+>;
+
+export type LeaveProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Leave Project
+ */
+export const useLeaveProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof leaveProject>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof leaveProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(getLeaveProjectMutationOptions(options), queryClient);
+};
 export type removeTeammateResponse204 = {
   data: void;
   status: 204;
@@ -2747,6 +3647,224 @@ export const useUpdateTeammate = <
   TContext
 > => {
   return useMutation(getUpdateTeammateMutationOptions(options), queryClient);
+};
+export type approveProjectJoinRequestResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type approveProjectJoinRequestResponseSuccess =
+  approveProjectJoinRequestResponse204 & {
+    headers: Headers;
+  };
+export type approveProjectJoinRequestResponse =
+  approveProjectJoinRequestResponseSuccess;
+
+export const getApproveProjectJoinRequestUrl = (
+  handle: string,
+  requestId: string,
+) => {
+  return `/projects/${handle}/join-requests/${requestId}/approve`;
+};
+
+/**
+ * 프로젝트 가입 요청을 승인합니다. 승인 시 요청자가 팀원으로 추가됩니다.
+ * @summary Approve Project Join Request
+ */
+export const approveProjectJoinRequest = async (
+  handle: string,
+  requestId: string,
+  options?: RequestInit,
+): Promise<approveProjectJoinRequestResponse> => {
+  return api<approveProjectJoinRequestResponse>(
+    getApproveProjectJoinRequestUrl(handle, requestId),
+    {
+      ...options,
+      method: 'POST',
+    },
+  );
+};
+
+export const getApproveProjectJoinRequestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof approveProjectJoinRequest>>,
+    TError,
+    { handle: string; requestId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof approveProjectJoinRequest>>,
+  TError,
+  { handle: string; requestId: string },
+  TContext
+> => {
+  const mutationKey = ['approveProjectJoinRequest'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof approveProjectJoinRequest>>,
+    { handle: string; requestId: string }
+  > = (props) => {
+    const { handle, requestId } = props ?? {};
+
+    return approveProjectJoinRequest(handle, requestId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ApproveProjectJoinRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof approveProjectJoinRequest>>
+>;
+
+export type ApproveProjectJoinRequestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Approve Project Join Request
+ */
+export const useApproveProjectJoinRequest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof approveProjectJoinRequest>>,
+      TError,
+      { handle: string; requestId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof approveProjectJoinRequest>>,
+  TError,
+  { handle: string; requestId: string },
+  TContext
+> => {
+  return useMutation(
+    getApproveProjectJoinRequestMutationOptions(options),
+    queryClient,
+  );
+};
+export type declineProjectJoinRequestResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type declineProjectJoinRequestResponseSuccess =
+  declineProjectJoinRequestResponse204 & {
+    headers: Headers;
+  };
+export type declineProjectJoinRequestResponse =
+  declineProjectJoinRequestResponseSuccess;
+
+export const getDeclineProjectJoinRequestUrl = (
+  handle: string,
+  requestId: string,
+) => {
+  return `/projects/${handle}/join-requests/${requestId}/decline`;
+};
+
+/**
+ * 프로젝트 가입 요청을 거절합니다.
+ * @summary Decline Project Join Request
+ */
+export const declineProjectJoinRequest = async (
+  handle: string,
+  requestId: string,
+  options?: RequestInit,
+): Promise<declineProjectJoinRequestResponse> => {
+  return api<declineProjectJoinRequestResponse>(
+    getDeclineProjectJoinRequestUrl(handle, requestId),
+    {
+      ...options,
+      method: 'POST',
+    },
+  );
+};
+
+export const getDeclineProjectJoinRequestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof declineProjectJoinRequest>>,
+    TError,
+    { handle: string; requestId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof declineProjectJoinRequest>>,
+  TError,
+  { handle: string; requestId: string },
+  TContext
+> => {
+  const mutationKey = ['declineProjectJoinRequest'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof declineProjectJoinRequest>>,
+    { handle: string; requestId: string }
+  > = (props) => {
+    const { handle, requestId } = props ?? {};
+
+    return declineProjectJoinRequest(handle, requestId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeclineProjectJoinRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof declineProjectJoinRequest>>
+>;
+
+export type DeclineProjectJoinRequestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Decline Project Join Request
+ */
+export const useDeclineProjectJoinRequest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof declineProjectJoinRequest>>,
+      TError,
+      { handle: string; requestId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof declineProjectJoinRequest>>,
+  TError,
+  { handle: string; requestId: string },
+  TContext
+> => {
+  return useMutation(
+    getDeclineProjectJoinRequestMutationOptions(options),
+    queryClient,
+  );
 };
 export type searchProjectsResponse200 = {
   data: GetProjectsResponse;
@@ -3300,7 +4418,7 @@ export const getGetProjectsByUserUrl = (handle: string) => {
 };
 
 /**
- * 유저 핸들로 해당 유저의 프로젝트 목록을 조회합니다.
+ * 유저 핸들로 해당 유저가 참여 중인 공개 프로젝트 목록을 조회합니다.
  * @summary Get Projects By User
  */
 export const getProjectsByUser = async (

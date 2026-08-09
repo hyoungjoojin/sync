@@ -1,5 +1,7 @@
 package com.skkil.sync.post.repository;
 
+import com.skkil.sync.post.model.PostStatus;
+import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.post.model.Tag;
 import com.skkil.sync.project.model.Project;
 import java.util.List;
@@ -14,16 +16,29 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
   Page<Tag> findByProjectIsNullAndVerifiedTrueOrderByNameAsc(Pageable pageable);
 
+  List<Tag> findByProjectIsNullOrderByVerifiedAscNameAsc();
+
   @Query(
       """
       SELECT t
       FROM Tag t
       WHERE LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
-        AND t.verified = TRUE
         AND t.project IS NULL
+        AND (
+          t.verified = TRUE
+          OR EXISTS (
+            SELECT pt.id
+            FROM PostTag pt
+            WHERE pt.tag = t
+              AND pt.post.project IS NULL
+              AND pt.post.status = :status
+              AND pt.post.visibility = :visibility
+          )
+        )
+      ORDER BY t.postCount DESC, t.name ASC
       LIMIT 10
       """)
-  List<Tag> searchTags(String query);
+  List<Tag> searchTags(String query, PostStatus status, PostVisibility visibility);
 
   @Query(
       """
@@ -156,4 +171,24 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
               + "WHERE id = :tagId",
       nativeQuery = true)
   void recomputeCounts(Long tagId);
+
+  @Modifying
+  @Query(
+      value =
+          """
+          WITH post_counts AS (
+            SELECT t.id AS tag_id, COUNT(pt.post_id) AS post_count
+            FROM tags t
+            LEFT JOIN post_tags pt ON pt.tag_id = t.id
+            WHERE t.id IN (:tagIds)
+              AND t.project_id IS NULL
+            GROUP BY t.id
+          )
+          UPDATE tags t
+          SET post_count = pc.post_count
+          FROM post_counts pc
+          WHERE t.id = pc.tag_id
+          """,
+      nativeQuery = true)
+  void recomputePostCounts(List<Long> tagIds);
 }

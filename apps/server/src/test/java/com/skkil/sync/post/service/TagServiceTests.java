@@ -11,13 +11,16 @@ import static org.mockito.Mockito.when;
 import com.skkil.sync.post.dto.request.CreateTagRequest;
 import com.skkil.sync.post.dto.request.MergeTagsRequest;
 import com.skkil.sync.post.dto.response.CreateTagResponse;
+import com.skkil.sync.post.dto.summary.TagSummary;
 import com.skkil.sync.post.exception.PostTagLimitExceededException;
 import com.skkil.sync.post.exception.TagAlreadyExistsException;
 import com.skkil.sync.post.exception.TagNotFoundException;
 import com.skkil.sync.post.exception.TagPoolMismatchException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Post;
+import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostTag;
+import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.post.model.Tag;
 import com.skkil.sync.post.repository.TagFollowRelationshipRepository;
 import com.skkil.sync.post.repository.TagRepository;
@@ -49,7 +52,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[addTagsToPost] 태그 수가 최대 허용 개수를 초과하면 PostTagLimitExceededException 예외 발생")
   void addTagsToPost_tagsExceedLimit_throwsException() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     List<String> tags = List.of("tag1", "tag2", "tag3", "tag4", "tag5", "tag6");
 
     assertThatThrownBy(() -> tagService.addTagsToPost(post, null, tags, List.of()))
@@ -59,7 +62,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[addTagsToPost] 이미 존재하는 태그는 새로 저장하지 않고 재사용")
   void addTagsToPost_existingTag_doesNotSaveNewTag() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag existingTag = Tag.builder().name("java").build();
 
     when(tagRepository.findByNameAndProjectIsNull("java")).thenReturn(Optional.of(existingTag));
@@ -72,7 +75,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[addTagsToPost] 존재하지 않는 태그는 새로 생성하여 저장")
   void addTagsToPost_newTag_savesNewTag() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag newTag = Tag.builder().name("spring").build();
 
     when(tagRepository.findByNameAndProjectIsNull("spring")).thenReturn(Optional.empty());
@@ -86,7 +89,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[addTagsToPost] 각 태그에 대해 postCount를 1 증가")
   void addTagsToPost_incrementsPostCountForEachTag() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag tag1 = Tag.builder().name("java").build();
     Tag tag2 = Tag.builder().name("spring").build();
 
@@ -102,7 +105,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[addTagsToPost] 각 태그가 Post의 태그 목록에 추가됨")
   void addTagsToPost_addsTagsToPost() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag tag1 = Tag.builder().name("java").build();
     Tag tag2 = Tag.builder().name("spring").build();
 
@@ -117,7 +120,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[addTagsToPost] 프로젝트가 주어지면 프로젝트에 속한 태그로 조회 및 생성")
   void addTagsToPost_withProject_usesProjectScopedTag() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Project project = Project.builder().handle("my-project").name("My Project").build();
     Tag newTag = Tag.builder().name("java").project(project).build();
 
@@ -199,7 +202,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[replaceTags] 기존 태그를 유지하는 수정은 태그를 다시 추가하지 않음")
   void replaceTags_keepsExistingTag_doesNotReAddTag() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag existingTag = Tag.builder().name("java").build();
     post.addTag(PostTag.builder().post(post).tag(existingTag).build());
 
@@ -216,7 +219,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[replaceTags] 제거된 태그만 감소시키고 새 전역 태그만 추가")
   void replaceTags_removesMissingTagsAndAddsNewGlobalTags() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag keptTag = Tag.builder().name("java").build();
     Tag removedTag = Tag.builder().name("legacy").build();
     Tag addedTag = Tag.builder().name("spring").build();
@@ -242,7 +245,7 @@ class TagServiceTests {
   @DisplayName("[replaceTags] Workspace 글은 프로젝트 범위 태그를 사용")
   void replaceTags_workspacePost_usesProjectScopedTags() {
     Project project = Project.builder().handle("workspace").name("Workspace").build();
-    Post post = Post.builder().slug("slug").title("제목").content("내용").project(project).build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").project(project).build();
     Tag addedTag = Tag.builder().name("spring").project(project).build();
 
     when(tagRepository.findByNameAndProject("spring", project)).thenReturn(Optional.of(addedTag));
@@ -258,7 +261,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[replaceTags] 빈 태그 목록이면 기존 태그를 모두 제거")
   void replaceTags_emptyTags_removesAllTags() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag existingTag = Tag.builder().name("java").build();
     post.addTag(PostTag.builder().post(post).tag(existingTag).build());
 
@@ -272,7 +275,7 @@ class TagServiceTests {
   @Test
   @DisplayName("[replaceTags] 태그 제한 초과 시 기존 태그를 변경하지 않음")
   void replaceTags_tagsExceedLimit_doesNotMutateExistingTags() {
-    Post post = Post.builder().slug("slug").title("제목").content("내용").build();
+    Post post = Post.builder().slug("slug").title("제목").jsonContent("내용").build();
     Tag existingTag = Tag.builder().name("java").build();
     post.addTag(PostTag.builder().post(post).tag(existingTag).build());
     List<String> tags = List.of("tag1", "tag2", "tag3", "tag4", "tag5", "tag6");
@@ -293,7 +296,8 @@ class TagServiceTests {
     Set<Long> followedTagIds = Set.of(5L);
 
     when(tagFollowRelationshipRepository.findTagIdsByFollowerId(1L)).thenReturn(followedTagIds);
-    when(tagRepository.searchTags(query)).thenReturn(List.of());
+    when(tagRepository.searchTags(query, PostStatus.PUBLISHED, PostVisibility.VISIBLE))
+        .thenReturn(List.of());
 
     tagService.searchTags(1L, null, query);
 
@@ -364,6 +368,39 @@ class TagServiceTests {
     verify(tagRepository, times(1)).reassignTagFollows(sourceId, targetId);
     verify(tagRepository, times(1)).recomputeCounts(targetId);
     verify(tagRepository, times(1)).delete(source);
+  }
+
+  @Test
+  @DisplayName("[unverifyTag] 전역 태그의 검증 상태를 해제")
+  void unverifyTag_unverifiesTag() {
+    String name = "java";
+    Tag tag = Tag.builder().name(name).build();
+    tag.verify();
+
+    when(tagRepository.findByNameAndProjectIsNull(name)).thenReturn(Optional.of(tag));
+
+    tagService.unverifyTag(name);
+
+    assertThat(tag.isVerified()).isFalse();
+  }
+
+  @Test
+  @DisplayName("[getAllTagsForAdmin] 전역 태그를 검증 여부 기준으로 조회하여 매핑")
+  void getAllTagsForAdmin_mapsGlobalTags() {
+    Tag unverifiedTag = Tag.builder().name("java").build();
+    Tag verifiedTag = Tag.builder().name("spring").build();
+    verifiedTag.verify();
+    TagSummary unverifiedSummary = TagSummary.builder().id(1L).name("java").verified(false).build();
+    TagSummary verifiedSummary = TagSummary.builder().id(2L).name("spring").verified(true).build();
+
+    when(tagRepository.findByProjectIsNullOrderByVerifiedAscNameAsc())
+        .thenReturn(List.of(unverifiedTag, verifiedTag));
+    when(tagMapper.toTagSummary(unverifiedTag, Set.of())).thenReturn(unverifiedSummary);
+    when(tagMapper.toTagSummary(verifiedTag, Set.of())).thenReturn(verifiedSummary);
+
+    var result = tagService.getAllTagsForAdmin();
+
+    assertThat(result.tags()).containsExactly(unverifiedSummary, verifiedSummary);
   }
 
   @Test

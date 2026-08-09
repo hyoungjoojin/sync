@@ -16,7 +16,9 @@ import com.skkil.sync.post.exception.TagNotFoundException;
 import com.skkil.sync.post.exception.TagPoolMismatchException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Post;
+import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostTag;
+import com.skkil.sync.post.model.PostVisibility;
 import com.skkil.sync.post.model.Tag;
 import com.skkil.sync.post.repository.PostTagRepository;
 import com.skkil.sync.post.repository.TagFollowRelationshipRepository;
@@ -59,6 +61,13 @@ public class TagService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("hasPermission(#id, 'TAG', 'READ')")
+  public TagSummary getTag(Long requesterId, Long id) {
+    Tag tag = tagRepository.findByIdWithProject(id).orElseThrow(() -> new TagNotFoundException(id));
+    return tagMapper.toTagSummary(tag, followedTagIds(requesterId));
+  }
+
+  @Transactional(readOnly = true)
   public Map<Long, List<TagSummary>> getTagsForPosts(Long requesterId, List<Long> postIds) {
     if (postIds.isEmpty()) {
       return Map.of();
@@ -89,7 +98,7 @@ public class TagService {
   }
 
   private List<TagSummary> searchGlobalTags(String query, Set<Long> followedTagIds) {
-    return tagRepository.searchTags(query).stream()
+    return tagRepository.searchTags(query, PostStatus.PUBLISHED, PostVisibility.VISIBLE).stream()
         .map(tag -> tagMapper.toTagSummary(tag, followedTagIds))
         .toList();
   }
@@ -264,6 +273,24 @@ public class TagService {
   }
 
   @Transactional
+  @PreAuthorize("hasRole('ADMIN')")
+  public void unverifyTag(String name) {
+    Tag tag = findTag(name, null);
+    tag.unverify();
+  }
+
+  @Transactional(readOnly = true)
+  @PreAuthorize("hasRole('ADMIN')")
+  public GetTagsResponse getAllTagsForAdmin() {
+    var tags =
+        tagRepository.findByProjectIsNullOrderByVerifiedAscNameAsc().stream()
+            .map(tag -> tagMapper.toTagSummary(tag, Set.of()))
+            .toList();
+
+    return new GetTagsResponse(tags);
+  }
+
+  @Transactional
   @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
   public void verifyProjectTag(String handle, String name) {
     Tag tag = findTag(name, handle);
@@ -402,6 +429,8 @@ public class TagService {
   }
 
   private Set<Long> followedTagIds(Long requesterId) {
-    return tagFollowRelationshipRepository.findTagIdsByFollowerId(requesterId);
+    return requesterId == null
+        ? Set.of()
+        : tagFollowRelationshipRepository.findTagIdsByFollowerId(requesterId);
   }
 }

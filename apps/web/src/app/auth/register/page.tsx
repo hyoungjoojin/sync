@@ -4,6 +4,7 @@ import { SeparatorWithText } from '@/components/ui/separator';
 
 import AuthTermsNotice from '../_components/AuthTermsNotice';
 import OAuthProviders from '../_components/OAuthProviders';
+import CaptchaNotice from './_components/CaptchaNotice';
 import RegisterForm from './_components/RegisterForm';
 
 export default function Register() {
@@ -25,6 +26,7 @@ export default function Register() {
         <OAuthProviders />
 
         <AuthTermsNotice />
+        <CaptchaNotice />
       </div>
     </div>
   );

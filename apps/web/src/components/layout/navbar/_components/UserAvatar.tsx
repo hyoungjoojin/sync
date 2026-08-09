@@ -2,6 +2,7 @@
 
 import {
   GearSixIcon,
+  GiftIcon,
   SignOutIcon,
   UserGearIcon,
   UserIcon,
@@ -12,7 +13,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { useLogout } from '@/api/__generated__/auth/auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,8 +27,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { ModalType } from '@/constants/modal';
 import { useModal } from '@/hooks/store';
 import { useMounted } from '@/hooks/use-mounted';
-import { isAuthenticated } from '@/lib/auth';
-import { signOut, useSession } from '@/lib/auth/client';
+import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 interface UserAvatarProps {
@@ -61,21 +63,35 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
     return null;
   }
 
+  const handle = session.user.handle;
+
   const menu = [
-    {
-      icon: UserIcon,
-      isAdmin: false,
-      label: t('user.profile'),
-      onClick: () => {
-        router.push(ROUTES.PROFILE(session.user.handle));
-      },
-    },
+    ...(handle
+      ? [
+          {
+            icon: UserIcon,
+            isAdmin: false,
+            label: t('user.profile'),
+            onClick: () => {
+              router.push(ROUTES.PROFILE(handle));
+            },
+          },
+        ]
+      : []),
     {
       icon: GearSixIcon,
       isAdmin: false,
       label: t('user.settings'),
       onClick: () => {
         openModal(ModalType.SETTINGS);
+      },
+    },
+    {
+      icon: GiftIcon,
+      isAdmin: false,
+      label: t('user.promotions'),
+      onClick: () => {
+        openModal(ModalType.PROMOTIONS);
       },
     },
     {
@@ -98,7 +114,6 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
           return;
         }
 
-        await signOut();
         queryClient.clear();
         router.replace(ROUTES.HOME());
       },
@@ -109,10 +124,10 @@ export default function UserAvatar({ align = 'end' }: UserAvatarProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar>
-            <AvatarImage src={session.user.image ?? undefined} />
-            <AvatarFallback>{session.user.name[0]}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            name={session.user.name}
+            imageUrl={session.user.image}
+          />
         </Button>
       </DropdownMenuTrigger>
 

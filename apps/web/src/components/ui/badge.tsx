@@ -25,9 +25,9 @@ const badgeVariants = cva(
         success: 'bg-success-tint text-success-text',
         warning: 'bg-warning-tint text-warning-text',
         danger: 'bg-danger-tint text-danger-text',
-        short: 'bg-type-short-tint text-type-short',
-        question: 'bg-type-question-tint text-type-question',
-        long: 'bg-type-long-tint text-type-long',
+        short: 'bg-type-short-tint text-type-short-text',
+        question: 'bg-type-question-tint text-type-question-text',
+        long: 'bg-type-long-tint text-type-long-text',
       },
     },
     defaultVariants: {

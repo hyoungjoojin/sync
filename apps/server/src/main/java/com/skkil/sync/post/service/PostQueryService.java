@@ -8,6 +8,7 @@ import com.skkil.sync.common.util.pagination.service.PaginationService;
 import com.skkil.sync.post.dto.data.PostDto;
 import com.skkil.sync.post.dto.response.GetPostResponse;
 import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.exception.PostNotFoundException;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.model.PostScope;
@@ -48,7 +49,7 @@ public class PostQueryService {
   }
 
   @Transactional(readOnly = true)
-  public GetPostsResponse getPosts(Long requesterId, CursorPaginationRequest pagination) {
+  public PaginatedGetPostsResponse getPosts(Long requesterId, CursorPaginationRequest pagination) {
     return getPostsResponse(requesterId, postQueryRepository.getPosts(requesterId), pagination);
   }
 
@@ -64,16 +65,52 @@ public class PostQueryService {
     return postAssembler.toGetPostResponse(post, media, requesterId);
   }
 
+  /**
+   * 게시글이 가리키는 참조(forward reference) 목록을 조회한다. 대상 게시글을 열람할 수 없으면 404 로 존재 자체를 숨긴다. 참조 대상의 열람 가능 여부는
+   * 저장소 쿼리에서 걸러진다.
+   */
   @Transactional(readOnly = true)
-  public GetPostsResponse getDrafts(
-      Long requesterId, PostType type, PostScope scope, CursorPaginationRequest pagination) {
+  public GetPostsResponse getPostReferences(Long requesterId, String slug) {
+    var source =
+        postQueryRepository
+            .getPostBySlug(requesterId, slug)
+            .orElseThrow(() -> new PostNotFoundException(slug));
+
+    var referenced = postQueryRepository.getReferencedPosts(requesterId, source.id());
+
+    return new GetPostsResponse(postAssembler.toPostResponses(referenced, requesterId));
+  }
+
+  /** 이 게시글을 가리키는(역참조, backlink) 게시글 목록을 커서 페이지네이션으로 조회한다. */
+  @Transactional(readOnly = true)
+  public PaginatedGetPostsResponse getPostBacklinks(
+      Long requesterId, String slug, CursorPaginationRequest pagination) {
+    var target =
+        postQueryRepository
+            .getPostBySlug(requesterId, slug)
+            .orElseThrow(() -> new PostNotFoundException(slug));
+
     return getPostsResponse(
-        requesterId, postQueryRepository.getDraftsByAuthor(requesterId, type, scope), pagination);
+        requesterId, postQueryRepository.getBacklinkPosts(requesterId, target.id()), pagination);
+  }
+
+  @Transactional(readOnly = true)
+  @PreAuthorize("#projectHandle == null or hasPermission(#projectHandle, 'PROJECT', 'READ')")
+  public PaginatedGetPostsResponse getDrafts(
+      Long requesterId,
+      PostType type,
+      PostScope scope,
+      String projectHandle,
+      CursorPaginationRequest pagination) {
+    return getPostsResponse(
+        requesterId,
+        postQueryRepository.getDraftsByAuthor(requesterId, type, scope, projectHandle),
+        pagination);
   }
 
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#userId, 'PROFILE', 'READ')")
-  public GetPostsResponse getUserPosts(
+  public PaginatedGetPostsResponse getUserPosts(
       Long requesterId, Long userId, PostType type, CursorPaginationRequest pagination) {
     return getPostsResponse(
         requesterId, postQueryRepository.getPostsByUser(requesterId, userId, type), pagination);
@@ -81,15 +118,15 @@ public class PostQueryService {
 
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#tagId, 'TAG', 'READ')")
-  public GetPostsResponse getPostsByTag(
-      Long requesterId, Long tagId, CursorPaginationRequest pagination) {
+  public PaginatedGetPostsResponse getPostsByTag(
+      Long requesterId, Long tagId, PostType type, CursorPaginationRequest pagination) {
     return getPostsResponse(
-        requesterId, postQueryRepository.getPostsByTag(requesterId, tagId), pagination);
+        requesterId, postQueryRepository.getPostsByTag(requesterId, tagId, type), pagination);
   }
 
   @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#handle, 'PROJECT', 'READ')")
-  public GetPostsResponse getPostsByProject(
+  public PaginatedGetPostsResponse getPostsByProject(
       Long requesterId,
       String handle,
       PostType type,
@@ -102,8 +139,15 @@ public class PostQueryService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'READ')")
+  public GetPostsResponse getPinnedPostsByProject(Long requesterId, String handle) {
+    var pinned = postQueryRepository.getPinnedPostsByProject(requesterId, handle);
+    return new GetPostsResponse(postAssembler.toPostResponses(pinned, requesterId));
+  }
+
+  @Transactional(readOnly = true)
   @PreAuthorize("hasPermission(#userId, 'PROFILE', 'READ')")
-  public GetPostsResponse getCommentedPosts(
+  public PaginatedGetPostsResponse getCommentedPosts(
       Long requesterId, Long userId, String projectHandle, CursorPaginationRequest pagination) {
     return getPostsResponse(
         requesterId,
@@ -112,14 +156,14 @@ public class PostQueryService {
         pagination);
   }
 
-  private GetPostsResponse getPostsResponse(
+  private PaginatedGetPostsResponse getPostsResponse(
       Long requesterId,
       CursorPaginationDataFetcher<PostDto> fetcher,
       CursorPaginationRequest pagination) {
     return getPostsResponse(requesterId, fetcher, paginationProvider, pagination);
   }
 
-  private <C extends Cursor> GetPostsResponse getPostsResponse(
+  private <C extends Cursor> PaginatedGetPostsResponse getPostsResponse(
       Long requesterId,
       CursorPaginationDataFetcher<PostDto> fetcher,
       CursorPaginationProvider<PostDto, C> provider,
@@ -127,6 +171,6 @@ public class PostQueryService {
     var page = paginationService.paginate(fetcher, provider, pagination);
     var posts = postAssembler.toPostResponses(page, requesterId);
 
-    return new GetPostsResponse(posts);
+    return new PaginatedGetPostsResponse(posts);
   }
 }

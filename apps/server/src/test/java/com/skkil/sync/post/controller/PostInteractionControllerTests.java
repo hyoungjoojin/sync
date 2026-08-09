@@ -22,9 +22,9 @@ import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactor
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.snippets.CursorPaginationRequestSnippets;
 import com.skkil.sync.config.SecurityConfig;
-import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.service.PostInteractionService;
-import com.skkil.sync.post.snippets.GetPostsResponseSnippets;
+import com.skkil.sync.post.snippets.PaginatedGetPostsResponseSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -102,7 +102,8 @@ class PostInteractionControllerTests {
     AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
     CursorPaginationRequest pagination =
         CursorPaginationRequestSnippets.getCursorPaginationRequest();
-    GetPostsResponse response = GetPostsResponseSnippets.getGetBookmarkedPostsResponse();
+    PaginatedGetPostsResponse response =
+        PaginatedGetPostsResponseSnippets.getPaginatedGetPostsResponse();
 
     when(postInteractionService.getLikedPosts(eq(user.userId()), isNull(), eq(pagination)))
         .thenReturn(response);
@@ -120,7 +121,7 @@ class PostInteractionControllerTests {
                     .tag("post")
                     .summary("Get Liked Posts")
                     .description("Get Liked Posts")
-                    .responseSchema(schema(GetPostsResponse.class.getSimpleName())),
+                    .responseSchema(schema(PaginatedGetPostsResponse.class.getSimpleName())),
                 null,
                 null,
                 Function.identity(),
@@ -129,6 +130,6 @@ class PostInteractionControllerTests {
                         parameterWithName("projectHandle")
                             .description("프로젝트로 검색 범위 제한 (선택)")
                             .optional()),
-                GetPostsResponseSnippets.getBookmarkedPostsResponseFields()));
+                PaginatedGetPostsResponseSnippets.getPostsResponseFields()));
   }
 }

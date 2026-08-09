@@ -8,7 +8,12 @@ import type { GetNotificationsResponseNotificationsContentItemActor } from './Ge
 import type { NewCommentPayload } from './NewCommentPayload';
 import type { NewFollowerPayload } from './NewFollowerPayload';
 import type { NewMessagePayload } from './NewMessagePayload';
+import type { ProjectInvitationAcceptedPayload } from './ProjectInvitationAcceptedPayload';
+import type { ProjectInvitationDeclinedPayload } from './ProjectInvitationDeclinedPayload';
 import type { ProjectInvitationPayload } from './ProjectInvitationPayload';
+import type { ProjectJoinRequestApprovedPayload } from './ProjectJoinRequestApprovedPayload';
+import type { ProjectJoinRequestDeclinedPayload } from './ProjectJoinRequestDeclinedPayload';
+import type { ProjectJoinRequestPayload } from './ProjectJoinRequestPayload';
 import type { WelcomePayload } from './WelcomePayload';
 
 export type GetNotificationsResponseNotificationsContentItem = {
@@ -21,6 +26,11 @@ export type GetNotificationsResponseNotificationsContentItem = {
     | NewCommentPayload
     | NewFollowerPayload
     | ProjectInvitationPayload
+    | ProjectInvitationAcceptedPayload
+    | ProjectInvitationDeclinedPayload
+    | ProjectJoinRequestPayload
+    | ProjectJoinRequestApprovedPayload
+    | ProjectJoinRequestDeclinedPayload
     | NewMessagePayload;
   /**
    * Type of the linked entity

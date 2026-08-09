@@ -10,6 +10,6 @@ import type { GetPostResponseSummary } from './GetPostResponseSummary';
 export interface GetPostResponse {
   /** 포스트 정보 */
   summary: GetPostResponseSummary;
-  /** Post Content */
-  content: GetPostResponseContent;
+  /** 게시글 본문. summary.accessLevel 이 PREVIEW(유료 게이트)이면 이 필드 자체가 응답에서 빠진다 */
+  content?: GetPostResponseContent;
 }

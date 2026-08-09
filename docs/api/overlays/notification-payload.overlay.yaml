@@ -65,6 +65,7 @@ actions:
           - actorName
           - projectHandle
           - projectName
+          - token
         properties:
           type:
             type: string
@@ -74,6 +75,107 @@ actions:
             type: string
           actorName:
             type: string
+          projectHandle:
+            type: string
+          projectName:
+            type: string
+          token:
+            type: string
+      ProjectInvitationAcceptedPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - projectHandle
+          - projectName
+        properties:
+          type:
+            type: string
+            enum:
+              - PROJECT_INVITATION_ACCEPTED
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          projectHandle:
+            type: string
+          projectName:
+            type: string
+      ProjectInvitationDeclinedPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - projectHandle
+          - projectName
+        properties:
+          type:
+            type: string
+            enum:
+              - PROJECT_INVITATION_DECLINED
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          projectHandle:
+            type: string
+          projectName:
+            type: string
+      ProjectJoinRequestPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - projectHandle
+          - projectName
+        properties:
+          type:
+            type: string
+            enum:
+              - PROJECT_JOIN_REQUEST
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          projectHandle:
+            type: string
+          projectName:
+            type: string
+      ProjectJoinRequestApprovedPayload:
+        type: object
+        required:
+          - type
+          - actorHandle
+          - actorName
+          - projectHandle
+          - projectName
+        properties:
+          type:
+            type: string
+            enum:
+              - PROJECT_JOIN_REQUEST_APPROVED
+          actorHandle:
+            type: string
+          actorName:
+            type: string
+          projectHandle:
+            type: string
+          projectName:
+            type: string
+      ProjectJoinRequestDeclinedPayload:
+        type: object
+        required:
+          - type
+          - projectHandle
+          - projectName
+        properties:
+          type:
+            type: string
+            enum:
+              - PROJECT_JOIN_REQUEST_DECLINED
           projectHandle:
             type: string
           projectName:
@@ -111,6 +213,11 @@ actions:
         - $ref: '#/components/schemas/NewCommentPayload'
         - $ref: '#/components/schemas/NewFollowerPayload'
         - $ref: '#/components/schemas/ProjectInvitationPayload'
+        - $ref: '#/components/schemas/ProjectInvitationAcceptedPayload'
+        - $ref: '#/components/schemas/ProjectInvitationDeclinedPayload'
+        - $ref: '#/components/schemas/ProjectJoinRequestPayload'
+        - $ref: '#/components/schemas/ProjectJoinRequestApprovedPayload'
+        - $ref: '#/components/schemas/ProjectJoinRequestDeclinedPayload'
         - $ref: '#/components/schemas/NewMessagePayload'
       discriminator:
         propertyName: type
@@ -119,4 +226,9 @@ actions:
           NEW_COMMENT: '#/components/schemas/NewCommentPayload'
           NEW_FOLLOWER: '#/components/schemas/NewFollowerPayload'
           PROJECT_INVITATION: '#/components/schemas/ProjectInvitationPayload'
+          PROJECT_INVITATION_ACCEPTED: '#/components/schemas/ProjectInvitationAcceptedPayload'
+          PROJECT_INVITATION_DECLINED: '#/components/schemas/ProjectInvitationDeclinedPayload'
+          PROJECT_JOIN_REQUEST: '#/components/schemas/ProjectJoinRequestPayload'
+          PROJECT_JOIN_REQUEST_APPROVED: '#/components/schemas/ProjectJoinRequestApprovedPayload'
+          PROJECT_JOIN_REQUEST_DECLINED: '#/components/schemas/ProjectJoinRequestDeclinedPayload'
           NEW_MESSAGE: '#/components/schemas/NewMessagePayload'

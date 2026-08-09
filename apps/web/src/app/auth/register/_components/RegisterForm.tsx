@@ -16,8 +16,12 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { executeCaptcha } from '@/lib/captcha';
+import { env } from '@/lib/env';
 import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
+
+const CAPTCHA_ACTION = 'register';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -26,6 +30,8 @@ export default function RegisterForm() {
 
   const { mutate: register } = useRegister();
   const router = useRouter();
+
+  const captchaSiteKey = env.NEXT_PUBLIC_CAPTCHA_SITE_KEY;
 
   const RegisterFormSchema = z
     .object({
@@ -72,11 +78,23 @@ export default function RegisterForm() {
   });
 
   const onFormSubmit = async (values: RegisterFormValues) => {
+    let captchaToken: string | undefined;
+
+    if (captchaSiteKey) {
+      try {
+        captchaToken = await executeCaptcha(captchaSiteKey, CAPTCHA_ACTION);
+      } catch {
+        toast.error(t('errors.captcha_failed'));
+        return;
+      }
+    }
+
     register(
       {
         data: {
           email: values.email,
           password: values.password,
+          captchaToken,
         },
       },
       {
@@ -85,12 +103,20 @@ export default function RegisterForm() {
         },
         onError: (error) => {
           if (error instanceof SyncError) {
-            const { code } = error;
-
-            if (code === ErrorCode.USER_ALREADY_EXISTS) {
-              toast.error(t('errors.user-already-exists'));
+            switch (error.code) {
+              case ErrorCode.USER_ALREADY_EXISTS:
+                toast.error(t('errors.user-already-exists'));
+                return;
+              case ErrorCode.CAPTCHA_VERIFICATION_FAILED:
+                toast.error(t('errors.captcha_failed'));
+                return;
+              case ErrorCode.NETWORK_ERROR:
+                toast.error(t('errors.network'));
+                return;
             }
           }
+
+          toast.error(t('errors.registration_failed'));
         },
       },
     );

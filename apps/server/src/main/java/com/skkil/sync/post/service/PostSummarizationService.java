@@ -12,6 +12,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Async;
@@ -28,11 +29,15 @@ public class PostSummarizationService {
   @Value("classpath:/prompts/post/summary.st")
   private Resource resource;
 
-  private final ChatModel chatModel;
+  private final ObjectProvider<ChatModel> chatModelProvider;
   private final PostRepository postRepository;
 
-  public PostSummarizationService(ChatModel chatModel, PostRepository postRepository) {
-    this.chatModel = chatModel;
+  @Value("${app.ai.enabled:true}")
+  private boolean aiEnabled;
+
+  public PostSummarizationService(
+      ObjectProvider<ChatModel> chatModelProvider, PostRepository postRepository) {
+    this.chatModelProvider = chatModelProvider;
     this.postRepository = postRepository;
   }
 
@@ -40,6 +45,19 @@ public class PostSummarizationService {
   @TransactionalEventListener
   public void refreshPostSummary(PostContentChangedEvent event) {
     log.debug("Handling PostContentChangedEvent {}", event.getPostId());
+
+    if (!aiEnabled) {
+      log.debug("AI features disabled, skipping summary for post {}", event.getPostId());
+      return;
+    }
+
+    ChatModel chatModel = chatModelProvider.getIfAvailable();
+    if (chatModel == null) {
+      log.debug(
+          "No chat model configured (AI_CHAT_PROVIDER=none), skipping summary for post {}",
+          event.getPostId());
+      return;
+    }
 
     if (event.getContent().trim().length() <= MINIMUM_SUMMARIZABLE_CONTENT_LENGTH) {
       log.debug("Skipping summary for short post {}", event.getPostId());

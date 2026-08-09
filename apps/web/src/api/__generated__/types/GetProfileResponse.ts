@@ -20,6 +20,11 @@ export interface GetProfileResponse {
    * @nullable
    */
   handle?: string | null;
+  /**
+   * 비밀번호 설정 여부 (본인 프로필 조회 시에만 포함, 그 외에는 null)
+   * @nullable
+   */
+  hasPassword?: boolean | null;
   /** Following Count */
   followingCount: number;
   /** ID */

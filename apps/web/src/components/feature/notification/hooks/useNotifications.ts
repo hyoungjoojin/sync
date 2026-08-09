@@ -13,9 +13,15 @@ import type { GetNotificationsResponseNotificationsContentItem } from '@/api/__g
 import { useWebSocket } from '@/components/providers/WebSocketProvider';
 import { useSession } from '@/lib/auth/client';
 
+const WEBSOCKET_ENABLED = process.env.NEXT_PUBLIC_WEBSOCKET_ENABLED === 'true';
+
 /**
  * 알림 목록 조회와 WebSocket 실시간 구독을 함께 처리하는 공용 훅.
  * 드롭다운 미리보기와 전체 알림 페이지가 동일한 구독 로직을 공유한다.
+ *
+ * WebSocket이 꺼져 있으면 구독을 건너뛴다. `subscribe`는 클라이언트가 연결되지
+ * 않았을 때 오류 토스트를 띄우는데, 설정으로 꺼둔 상태는 오류가 아니며 이때는
+ * 폴링으로 알림을 가져온다.
  */
 export function useNotifications(params: GetNotificationsParams) {
   const { page, size } = params;
@@ -28,7 +34,7 @@ export function useNotifications(params: GetNotificationsParams) {
   });
 
   useEffect(() => {
-    if (!session?.user.id) {
+    if (!WEBSOCKET_ENABLED || !session?.user.id) {
       return;
     }
 

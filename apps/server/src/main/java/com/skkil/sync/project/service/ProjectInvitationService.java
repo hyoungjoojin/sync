@@ -3,7 +3,9 @@ package com.skkil.sync.project.service;
 import com.skkil.sync.project.dto.request.CreateProjectInvitationRequest;
 import com.skkil.sync.project.dto.response.GetMyProjectInvitationsResponse;
 import com.skkil.sync.project.dto.response.GetProjectInvitationsResponse;
+import com.skkil.sync.project.event.ProjectInvitationAcceptedEvent;
 import com.skkil.sync.project.event.ProjectInvitationCreatedEvent;
+import com.skkil.sync.project.event.ProjectInvitationDeclinedEvent;
 import com.skkil.sync.project.exception.ProjectInvitationAlreadyExistsException;
 import com.skkil.sync.project.exception.ProjectInvitationExpiredException;
 import com.skkil.sync.project.exception.ProjectInvitationNotFoundException;
@@ -80,7 +82,7 @@ public class ProjectInvitationService {
 
     eventPublisher.publishEvent(
         new ProjectInvitationCreatedEvent(
-            invitation.getId(), project.getId(), userId, invitee.getId()));
+            invitation.getId(), project.getId(), userId, invitee.getId(), invitation.getToken()));
   }
 
   @Transactional(readOnly = true)
@@ -128,11 +130,22 @@ public class ProjectInvitationService {
     User user = userDomainService.getUserReference(userId);
     ProjectInvitation invitation = getInvitationForUser(user, token);
 
-    Teammate teammate = Teammate.member(invitation.getProject(), user);
-    teammate.setRole(invitation.getRole());
-    invitation.getProject().addTeammate(teammate);
+    if (teammateRepository
+        .findByProjectIdAndUserId(invitation.getProject().getId(), user.getId())
+        .isEmpty()) {
+      Teammate teammate = Teammate.member(invitation.getProject(), user);
+      teammate.setRole(invitation.getRole());
+      invitation.getProject().addTeammate(teammate);
+    }
 
     invitation.accept();
+
+    eventPublisher.publishEvent(
+        new ProjectInvitationAcceptedEvent(
+            invitation.getId(),
+            invitation.getProject().getId(),
+            invitation.getInviter().getId(),
+            userId));
   }
 
   @Transactional
@@ -141,6 +154,13 @@ public class ProjectInvitationService {
     ProjectInvitation invitation = getInvitationForUser(user, token);
 
     invitation.decline();
+
+    eventPublisher.publishEvent(
+        new ProjectInvitationDeclinedEvent(
+            invitation.getId(),
+            invitation.getProject().getId(),
+            invitation.getInviter().getId(),
+            userId));
   }
 
   private ProjectInvitation getInvitationForUser(User user, String token) {

@@ -2,11 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import {
-  useGetPostsByProjectInfinite,
-  useGetPostsByTagInfinite,
-} from '@/api/__generated__/post/post';
-import { useGetProjectTags } from '@/api/__generated__/tag/tag';
+import { useGetPostsByProjectInfinite } from '@/api/__generated__/post/post';
 import { PostType } from '@/components/feature/post/types/post';
 import PostList from '@/components/feature/post/viewer/PostList';
 import PostListMessage from '@/components/feature/post/viewer/error/PostListMessage';
@@ -23,48 +19,14 @@ interface ProjectPostsProps {
   handle: string;
   type?: string;
   authorHandle?: string;
-  tagId?: string;
 }
 
 export default function ProjectPosts({
   handle,
   type,
   authorHandle,
-  tagId,
 }: ProjectPostsProps) {
   const t = useTranslations('pages.projects.project.posts');
-
-  const byProjectQuery = useGetPostsByProjectInfinite(
-    handle,
-    { first: PAGE_SIZE, type, authorHandle },
-    {
-      query: {
-        enabled: !tagId,
-        getNextPageParam: (lastPage) => {
-          const pageInfo = lastPage.data.posts?.pageInfo;
-          return pageInfo?.hasNextPage
-            ? (pageInfo.endCursor ?? undefined)
-            : undefined;
-        },
-      },
-    },
-  );
-
-  const byTagQuery = useGetPostsByTagInfinite(
-    tagId ?? '',
-    { first: PAGE_SIZE },
-    {
-      query: {
-        enabled: !!tagId,
-        getNextPageParam: (lastPage) => {
-          const pageInfo = lastPage.data.posts?.pageInfo;
-          return pageInfo?.hasNextPage
-            ? (pageInfo.endCursor ?? undefined)
-            : undefined;
-        },
-      },
-    },
-  );
 
   const {
     data,
@@ -73,27 +35,31 @@ export default function ProjectPosts({
     isFetchingNextPage,
     isPending,
     isError,
-  } = tagId ? byTagQuery : byProjectQuery;
+  } = useGetPostsByProjectInfinite(
+    handle,
+    { first: PAGE_SIZE, type, authorHandle },
+    {
+      query: {
+        getNextPageParam: (lastPage) => {
+          const pageInfo = lastPage.data.posts?.pageInfo;
+          return pageInfo?.hasNextPage
+            ? (pageInfo.endCursor ?? undefined)
+            : undefined;
+        },
+      },
+    },
+  );
 
   const posts =
     data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
 
-  const { data: tagsData } = useGetProjectTags(handle, {
-    query: { enabled: !!tagId },
-  });
-  const tagName = tagsData?.data.tags?.find(
-    (tag) => String(tag.id) === tagId,
-  )?.name;
-
-  const viewTitle = tagId
-    ? t('views.tag', { name: tagName ?? '' })
-    : authorHandle
-      ? t('views.my-posts')
-      : type === PostType.QUESTION
-        ? t('views.questions')
-        : type === PostType.LONG
-          ? t('views.guides')
-          : t('views.feed');
+  const viewTitle = authorHandle
+    ? t('views.my-posts')
+    : type === PostType.QUESTION
+      ? t('views.questions')
+      : type === PostType.LONG
+        ? t('views.guides')
+        : t('views.feed');
 
   return (
     <section className="space-y-3">

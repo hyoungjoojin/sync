@@ -1,12 +1,16 @@
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { toast } from 'sonner';
 
-import { useUpdateUserPreferences } from '@/api/__generated__/preferences/preferences';
+import {
+  useGetUserPreferences,
+  useUpdateUserPreferences,
+} from '@/api/__generated__/preferences/preferences';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { FieldContent, FieldTitle } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 import { SettingsCategoryRef } from '..';
 import { SettingsSubTitle } from './ui/title';
@@ -14,35 +18,55 @@ import { SettingsSubTitle } from './ui/title';
 const ThemeSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
   const t = useTranslations('modals.settings.categories.theme');
 
-  const { data: session } = useSession();
+  const { data: preferences } = useGetUserPreferences();
 
-  const { setTheme } = useTheme();
-  const [selectedTheme, setSelectedTheme] = useState('system');
+  const { theme: previewedTheme, setTheme: setPreviewedTheme } = useTheme();
+  const persistedThemeRef = useRef('light');
+  const hasInitializedRef = useRef(false);
 
   const { mutate: updateUserPreferences } = useUpdateUserPreferences();
 
   useEffect(() => {
-    if (session) {
-      setSelectedTheme(session.user.theme);
+    if (preferences && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      persistedThemeRef.current = preferences.data.theme;
+      setPreviewedTheme(preferences.data.theme);
     }
-  }, [session]);
+  }, [preferences, setPreviewedTheme]);
 
   useImperativeHandle(ref, () => ({
     submit: () => {
+      const theme = previewedTheme ?? persistedThemeRef.current;
+
       updateUserPreferences(
         {
           data: {
-            theme: selectedTheme,
+            theme,
           },
         },
         {
           onSuccess: () => {
-            setTheme(selectedTheme);
+            persistedThemeRef.current = theme;
+            toast.success(t('messages.success'));
+          },
+          onError: (error) => {
+            setPreviewedTheme(persistedThemeRef.current);
+
+            if (
+              error instanceof SyncError &&
+              error.code === ErrorCode.NETWORK_ERROR
+            ) {
+              toast.error(t('errors.network'));
+            } else {
+              toast.error(t('errors.unknown'));
+            }
           },
         },
       );
     },
-    reset: () => {},
+    reset: () => {
+      setPreviewedTheme(persistedThemeRef.current);
+    },
   }));
 
   return (
@@ -50,9 +74,9 @@ const ThemeSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
       <div>
         <SettingsSubTitle>{t('theme.label')}</SettingsSubTitle>
         <RadioGroup
-          defaultValue="system"
-          value={selectedTheme}
-          onValueChange={setSelectedTheme}
+          defaultValue="light"
+          value={previewedTheme}
+          onValueChange={setPreviewedTheme}
         >
           <FieldLabel htmlFor="light">
             <Field orientation="horizontal">

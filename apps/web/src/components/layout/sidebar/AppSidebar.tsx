@@ -15,22 +15,40 @@ import {
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMounted } from '@/hooks/use-mounted';
+import { useProjectContextHandle } from '@/hooks/use-project-context';
+import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 
+import AdminSidebarContent from './AdminSidebarContent';
 import PersonalSidebarContent from './PersonalSidebarContent';
 import ProjectSidebarContent from './ProjectSidebarContent';
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const match = pathname.match(/^\/projects\/(?!new(?:\/|$))([^/]+)/);
-  const handle = match?.[1];
+  const isAdmin = pathname.startsWith('/admin');
+  const handle = useProjectContextHandle();
+
+  // Same `mounted` gating used elsewhere for session-dependent rendering
+  // (e.g. `PersonalSidebarContent`, `TopNavigationBar`) — SSR always renders
+  // the logged-out state, so this avoids a hydration mismatch once the
+  // session resolves client-side.
+  const mounted = useMounted();
+  const { data: session, isPending: isSessionPending } = useSession();
 
   const { isPending, isError } = useGetProjectByHandle(handle ?? '', {
-    query: { enabled: !!handle },
+    query: { enabled: !!handle && !isAdmin },
   });
+
+  if (!mounted || isSessionPending || !isAuthenticated(session)) {
+    return null;
+  }
 
   return (
     <Sidebar>
-      {!handle || isError ? (
+      {isAdmin ? (
+        <AdminSidebarContent />
+      ) : !handle || isError ? (
         <PersonalSidebarContent />
       ) : isPending ? (
         <ProjectSidebarSkeleton />

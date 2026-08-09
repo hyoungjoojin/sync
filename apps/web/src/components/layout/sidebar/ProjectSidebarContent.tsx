@@ -1,7 +1,9 @@
 'use client';
 
 import {
+  ArrowLeftIcon,
   BookOpenIcon,
+  BookmarkSimpleIcon,
   CaretDownIcon,
   ChatCircleIcon,
   DotsThreeIcon,
@@ -11,6 +13,7 @@ import {
   PencilIcon,
   QuestionIcon,
   RssIcon,
+  StackSimpleIcon,
   TagIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
@@ -22,6 +25,7 @@ import {
   useGetProjectByHandle,
   useSearchMyProjects,
 } from '@/api/__generated__/project/project';
+import { GetProjectResponseRole } from '@/api/__generated__/types';
 import { ProjectAvatar } from '@/components/feature/project/avatar';
 import {
   DropdownMenu,
@@ -41,11 +45,13 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
+import { useMounted } from '@/hooks/use-mounted';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
 import ROUTES from '@/util/routes';
 
 import SidebarCloseButton from './SidebarCloseButton';
+import SupportButton from './SupportButton';
 
 interface ProjectSidebarContentProps {
   handle: string;
@@ -54,7 +60,11 @@ interface ProjectSidebarContentProps {
 export default function ProjectSidebarContent({
   handle,
 }: ProjectSidebarContentProps) {
-  const { isAuthenticated } = useRequireAuth();
+  const { data: projectData } = useGetProjectByHandle(handle);
+  const isViewer = !!projectData?.data.isViewer;
+  const isManager =
+    !!projectData?.data.isOwner ||
+    projectData?.data.role === GetProjectResponseRole.Admin;
 
   return (
     <>
@@ -63,30 +73,57 @@ export default function ProjectSidebarContent({
           <SidebarCloseButton />
         </div>
 
+        <BackToHomeButton />
+
         <ProjectSwitcher handle={handle} />
 
-        <AskOrWriteButton handle={handle} />
+        {isViewer && <AskOrWriteButton handle={handle} />}
       </SidebarHeader>
 
       <SidebarContent>
         <Browse handle={handle} />
 
-        {isAuthenticated && (
+        {isViewer && (
           <>
             <SidebarSeparator />
             <MyContributions handle={handle} />
 
-            <SidebarSeparator />
-            <Settings handle={handle} />
+            {isManager && (
+              <>
+                <SidebarSeparator />
+                <Settings handle={handle} />
+              </>
+            )}
           </>
         )}
       </SidebarContent>
+
+      <div className="px-2">
+        <SupportButton />
+      </div>
     </>
   );
 }
 
 interface SectionProps {
   handle: string;
+}
+
+function BackToHomeButton() {
+  const t = useTranslations('components.layout.sidebar');
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild className="text-sidebar-foreground/70">
+          <Link href={ROUTES.HOME()}>
+            <ArrowLeftIcon />
+            {t('back-to-home')}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
 }
 
 const PROJECT_SWITCHER_VISIBLE_COUNT = 5;
@@ -199,7 +236,10 @@ function Browse({ handle }: SectionProps) {
   const isPostsPath = pathname === ROUTES.PROJECT_POSTS(handle);
   const type = searchParams.get('type');
   const authorHandle = searchParams.get('authorHandle');
-  const tagId = searchParams.get('tagId');
+  const isTagsPath = pathname.startsWith(ROUTES.PROJECT_TAGS(handle));
+  const isCollectionsPath = pathname.startsWith(
+    ROUTES.PROJECT_COLLECTIONS(handle),
+  );
 
   const items = [
     {
@@ -212,7 +252,7 @@ function Browse({ handle }: SectionProps) {
       labelKey: 'nav.feed',
       href: ROUTES.PROJECT_FEED(handle),
       icon: RssIcon,
-      isActive: isPostsPath && !type && !authorHandle && !tagId,
+      isActive: isPostsPath && !type && !authorHandle,
     },
     {
       labelKey: 'nav.questions',
@@ -230,8 +270,13 @@ function Browse({ handle }: SectionProps) {
       labelKey: 'nav.tags',
       href: ROUTES.PROJECT_TAGS(handle),
       icon: TagIcon,
-      isActive:
-        pathname === ROUTES.PROJECT_TAGS(handle) || (isPostsPath && !!tagId),
+      isActive: isTagsPath,
+    },
+    {
+      labelKey: 'nav.collections',
+      href: ROUTES.PROJECT_COLLECTIONS(handle),
+      icon: StackSimpleIcon,
+      isActive: isCollectionsPath,
     },
   ] as const;
 
@@ -262,10 +307,13 @@ function Browse({ handle }: SectionProps) {
 function MyContributions({ handle }: SectionProps) {
   const t = useTranslations('components.layout.sidebar');
   const pathname = usePathname();
+  // SSR은 항상 로그아웃 상태로 그리는데 `useSession`은 클라이언트 캐시에서
+  // 하이드레이션 전에 값을 채울 수 있다. `mounted`로 함께 막아야 첫 클라이언트
+  // 렌더가 서버 HTML과 같아진다.
+  const mounted = useMounted();
   const { data: session } = useSession();
 
-  const myHandle = session?.user.handle;
-  if (!myHandle) {
+  if (!mounted || !session?.user.handle) {
     return null;
   }
 
@@ -281,6 +329,18 @@ function MyContributions({ handle }: SectionProps) {
       href: ROUTES.PROJECT_MY_COMMENTS(handle),
       icon: ChatCircleIcon,
       isActive: pathname === ROUTES.PROJECT_MY_COMMENTS(handle),
+    },
+    {
+      labelKey: 'nav.bookmarks',
+      href: ROUTES.PROJECT_BOOKMARKS(handle),
+      icon: BookmarkSimpleIcon,
+      isActive: pathname === ROUTES.PROJECT_BOOKMARKS(handle),
+    },
+    {
+      labelKey: 'nav.drafts',
+      href: ROUTES.PROJECT_DRAFTS(handle),
+      icon: NotePencilIcon,
+      isActive: pathname === ROUTES.PROJECT_DRAFTS(handle),
     },
   ] as const;
 

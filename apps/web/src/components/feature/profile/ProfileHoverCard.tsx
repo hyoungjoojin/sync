@@ -4,7 +4,7 @@ import Link from 'next/link';
 import * as React from 'react';
 
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import {
   Popover,
   PopoverContent,
@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
+
+const MAXIMUM_DISPLAYED_HANDLE_LENGTH = 20;
 
 interface ProfileHoverCardProps {
   handle: string;
@@ -49,15 +51,14 @@ export function ProfileHoverCard({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Avatar
+        <ProfileAvatar
+          name={name}
+          imageUrl={imageUrl}
           size={size}
           className={cn('cursor-pointer', className)}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-        >
-          <AvatarImage src={imageUrl} alt={name} />
-          <AvatarFallback>{name[0]}</AvatarFallback>
-        </Avatar>
+        />
       </PopoverTrigger>
 
       <PopoverContent
@@ -67,30 +68,37 @@ export function ProfileHoverCard({
         onMouseLeave={handleMouseLeave}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex flex-col gap-3">
-          <Link href={ROUTES.PROFILE(handle)}>
-            <Avatar size="lg">
-              <AvatarImage
-                src={
+        <Link href={ROUTES.PROFILE(handle)}>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <ProfileAvatar
+                name={isLoading ? name : (profile?.name ?? name)}
+                imageUrl={
                   isLoading ? imageUrl : (profile?.profileImageUrl ?? imageUrl)
                 }
-                alt={name}
+                size="lg"
               />
-              <AvatarFallback>{name[0]}</AvatarFallback>
-            </Avatar>
 
-            <div className="flex flex-col gap-0.5">
-              <span className="font-medium">
-                {isLoading ? name : (profile?.name ?? name)}
-              </span>
-              <span className="text-muted-foreground">@{handle}</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-medium">
+                  {isLoading ? name : (profile?.name ?? name)}
+                </span>
+                <span className="text-muted-foreground">
+                  @
+                  {handle.length < MAXIMUM_DISPLAYED_HANDLE_LENGTH
+                    ? handle
+                    : `${handle.slice(0, MAXIMUM_DISPLAYED_HANDLE_LENGTH)}...`}
+                </span>
+              </div>
             </div>
-          </Link>
 
-          {!isLoading && profile?.bio && (
-            <p className="text-muted-foreground line-clamp-3">{profile.bio}</p>
-          )}
-        </div>
+            {!isLoading && profile?.bio && (
+              <p className="text-muted-foreground line-clamp-3">
+                {profile.bio}
+              </p>
+            )}
+          </div>
+        </Link>
       </PopoverContent>
     </Popover>
   );

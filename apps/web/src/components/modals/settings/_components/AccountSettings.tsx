@@ -1,9 +1,9 @@
 'use client';
 
-import { GoogleLogoIcon } from '@phosphor-icons/react';
+import { GithubLogoIcon, GoogleLogoIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import SyncError, { ErrorCode } from '@/lib/error';
 import { OAuth2Provider } from '@/types/profile';
 
 import { SettingsCategoryRef } from '..';
+import PasswordSettings from './PasswordSettings';
+import ProfileSettings from './ProfileSettings';
 
 const OAuth2Providers: {
   id: OAuth2Provider;
@@ -22,6 +24,10 @@ const OAuth2Providers: {
   {
     id: 'GOOGLE',
     icon: <GoogleLogoIcon />,
+  },
+  {
+    id: 'GITHUB',
+    icon: <GithubLogoIcon />,
   },
 ];
 
@@ -32,13 +38,23 @@ const AccountSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
   const { data: oauth2Accounts } = useGetOAuth2AccountsQuery();
   const { mutate: deleteOAuth2Account } = useDeleteOAuth2AccountMutation();
 
+  const profileRef = useRef<SettingsCategoryRef>(null);
+
   useImperativeHandle(ref, () => ({
-    submit: () => {},
-    reset: () => {},
+    submit: () => {
+      profileRef.current?.submit();
+    },
+    reset: () => {
+      profileRef.current?.reset();
+    },
   }));
 
   return (
-    <>
+    <div className="flex flex-col gap-8">
+      <ProfileSettings ref={profileRef} />
+
+      <PasswordSettings />
+
       <div>
         <h2 className="font-bold">{t('oauth2.title')}</h2>
         <p className="text-xs mb-4">{t('oauth2.description')}</p>
@@ -58,15 +74,16 @@ const AccountSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
                 if (provider.connected) {
                   deleteOAuth2Account(provider.id, {
                     onError: (error) => {
-                      if (error instanceof SyncError) {
-                        const { code } = error;
-
-                        if (
-                          code === ErrorCode.OAUTH2_ACCOUNT_CANNOT_BE_DELETED
-                        ) {
-                          toast.error(t('oauth2.errors.cannot_be_deleted'));
-                        }
+                      if (
+                        error instanceof SyncError &&
+                        error.code ===
+                          ErrorCode.OAUTH2_ACCOUNT_CANNOT_BE_DELETED
+                      ) {
+                        toast.error(t('oauth2.errors.cannot_be_deleted'));
+                        return;
                       }
+
+                      toast.error(t('oauth2.errors.disconnect_failed'));
                     },
                   });
                 } else {
@@ -84,7 +101,7 @@ const AccountSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 });
 

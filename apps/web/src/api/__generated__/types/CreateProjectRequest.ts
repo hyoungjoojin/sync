@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { CreateProjectRequestJoinPolicy } from './CreateProjectRequestJoinPolicy';
 
 export interface CreateProjectRequest {
   /** 프로젝트 이름 */
@@ -17,4 +18,9 @@ export interface CreateProjectRequest {
   description?: string | null;
   /** 프로젝트 핸들 */
   handle: string;
+  /**
+   * 프로젝트 참여 정책 (미지정 시 INVITE)
+   * @nullable
+   */
+  joinPolicy?: CreateProjectRequestJoinPolicy;
 }

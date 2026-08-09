@@ -21,9 +21,12 @@ public class GetProjectResponseSnippets {
                 ProjectTeammateSummarySnippets.getProjectTeammate(Role.ADMIN),
                 ProjectTeammateSummarySnippets.getProjectTeammate(Role.MEMBER)))
         .hasMoreTeammates(false)
+        .isViewer(true)
         .role(Role.ADMIN)
-        .recentActivities(
-            List.of(new GetProjectResponse.Activity("1", "2024-01-01T00:00:00Z", "활동 내용")))
+        .isOwner(true)
+        .isFollowing(false)
+        .hasPendingInvitation(false)
+        .hasPendingJoinRequest(false)
         .build();
   }
 
@@ -41,21 +44,21 @@ public class GetProjectResponseSnippets {
             fieldWithPath("hasMoreTeammates")
                 .type(JsonFieldType.BOOLEAN)
                 .description("추가 팀원 존재 여부"),
+            fieldWithPath("isViewer").type(JsonFieldType.BOOLEAN).description("현재 사용자의 프로젝트 팀원 여부"),
             fieldWithPath("role")
                 .type(RestDocsUtils.ENUM_TYPE)
                 .optional()
                 .description("현재 사용자 역할")
                 .attributes(RestDocsUtils.getEnumAttributes(Role.class)),
-            fieldWithPath("recentActivities")
-                .type(JsonFieldType.ARRAY)
-                .description("최근 활동 목록")
-                .optional(),
-            fieldWithPath("recentActivities[].id").type(JsonFieldType.STRING).description("활동 ID"),
-            fieldWithPath("recentActivities[].timestamp")
-                .type(JsonFieldType.STRING)
-                .description("활동 시각"),
-            fieldWithPath("recentActivities[].text")
-                .type(JsonFieldType.STRING)
-                .description("활동 내용"));
+            fieldWithPath("isOwner").type(JsonFieldType.BOOLEAN).description("현재 사용자의 프로젝트 소유자 여부"),
+            fieldWithPath("isFollowing")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 프로젝트 팔로우 여부"),
+            fieldWithPath("hasPendingInvitation")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 대기 중인 초대 존재 여부"),
+            fieldWithPath("hasPendingJoinRequest")
+                .type(JsonFieldType.BOOLEAN)
+                .description("현재 사용자의 대기 중인 가입 요청 존재 여부"));
   }
 }

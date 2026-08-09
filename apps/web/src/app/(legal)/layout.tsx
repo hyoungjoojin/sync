@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { LinkButton } from '@/components/ui/button';
 import { Copyright } from '@/components/ui/copyright';
 import { Logo } from '@/components/ui/logo';
-import { isAuthenticated } from '@/lib/auth';
 import { getSession } from '@/lib/auth/session';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 interface LegalLayoutProps {
@@ -64,6 +64,11 @@ export default async function LegalLayout({ children }: LegalLayoutProps) {
               <li>
                 <Link href={ROUTES.PRIVACY()} className="hover:text-foreground">
                   {t('footer.legal.privacy')}
+                </Link>
+              </li>
+              <li>
+                <Link href={ROUTES.COOKIES()} className="hover:text-foreground">
+                  {t('footer.legal.cookies')}
                 </Link>
               </li>
             </ul>

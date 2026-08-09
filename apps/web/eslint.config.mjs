@@ -70,7 +70,9 @@ const eslintConfig = defineConfig([
           'target',
           'src', // image/asset paths, not translatable copy
           'variant',
+          'surface', // 게시물 카드 겉모습 ('card' | 'flat')
           'size',
+          'tone',
           'data-testid',
           'data-slot',
           'name',
@@ -87,7 +89,9 @@ const eslintConfig = defineConfig([
           'data-state',
           'attribute', // next-themes <ThemeProvider attribute="class">
           'defaultTheme', // next-themes <ThemeProvider defaultTheme="system">
+          'storageKey', // next-themes <ThemeProvider storageKey="sync-theme">
           'autoComplete',
+          'inputMode',
           'color', // badge/icon color variants (e.g. Phosphor icon color)
           'weight', // Phosphor icon weight ('fill' | 'regular' | 'bold')
           'answerCode', // <Console> demo code block content in marketing copy
@@ -101,6 +105,7 @@ const eslintConfig = defineConfig([
           // Brand names — never translated, regardless of where they appear
           'sync',
           'Google',
+          'GitHub',
         ],
       },
       'object-properties': {

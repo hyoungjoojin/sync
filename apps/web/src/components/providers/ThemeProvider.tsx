@@ -1,18 +1,22 @@
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
 
-import { getSession } from '@/lib/auth/session';
+import { getUserPreferences } from '@/api/__generated__/preferences/preferences';
 
 interface ThemeProviderProps {
   children?: React.ReactNode;
 }
 
 export default async function ThemeProvider({ children }: ThemeProviderProps) {
-  const session = await getSession();
+  // 비로그인 사용자는 401이므로 조회 실패는 정상 흐름이다.
+  const { data } = await getUserPreferences().catch(() => ({
+    data: { theme: 'light' },
+  }));
 
   return (
     <NextThemeProvider
       attribute="class"
-      defaultTheme={session?.user.theme || 'system'}
+      defaultTheme={data.theme || 'light'}
+      storageKey="sync-theme"
     >
       {children}
     </NextThemeProvider>

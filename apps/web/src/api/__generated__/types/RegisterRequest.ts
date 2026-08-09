@@ -8,6 +8,11 @@
 export interface RegisterRequest {
   /** Password */
   password: string;
+  /**
+   * 캡차 검증에 사용되는 토큰. 서버에 시크릿 키가 설정되지 않은 환경에서는 생략할 수 있습니다.
+   * @nullable
+   */
+  captchaToken?: string | null;
   /** Email */
   email: string;
 }

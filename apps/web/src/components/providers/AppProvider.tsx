@@ -1,5 +1,6 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
 
+import ChannelTalkProvider from './ChannelTalkProvider';
 import I18nProvider from './I18nProvider';
 import ModalProvider from './ModalProvider';
 import QueryProvider from './QueryProvider';
@@ -20,6 +21,7 @@ export default function AppProvider({ children }: AppProviderProps) {
             <QueryProvider>
               <TooltipProvider>{children}</TooltipProvider>
               <ModalProvider />
+              <ChannelTalkProvider />
             </QueryProvider>
           </StoreProvider>
         </WebSocketProvider>

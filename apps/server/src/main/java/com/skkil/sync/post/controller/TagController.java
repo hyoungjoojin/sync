@@ -7,8 +7,11 @@ import com.skkil.sync.post.dto.request.MergeTagsRequest;
 import com.skkil.sync.post.dto.request.UpdateTagRequest;
 import com.skkil.sync.post.dto.response.CreateTagResponse;
 import com.skkil.sync.post.dto.response.GetAllTagsResponse;
+import com.skkil.sync.post.dto.response.GetTagResponse;
 import com.skkil.sync.post.dto.response.GetTagsResponse;
 import com.skkil.sync.post.service.TagService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Validated
 public class TagController {
 
   private final TagService tagService;
@@ -36,8 +40,15 @@ public class TagController {
   public GetTagsResponse searchTags(
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestParam(required = false) String handle,
-      @RequestParam(required = true) String query) {
+      @RequestParam @NotBlank @Size(min = 1, max = 100) String query) {
     return tagService.searchTags(user.userId(), handle, query);
+  }
+
+  @GetMapping("/tags/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public GetTagResponse getTag(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
+    return new GetTagResponse(tagService.getTag(user == null ? null : user.userId(), id));
   }
 
   @GetMapping("/tags")

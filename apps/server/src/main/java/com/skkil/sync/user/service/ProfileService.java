@@ -71,7 +71,8 @@ public class ProfileService {
           "User {} has profile image with media ID {}, generating URL",
           userId,
           user.getProfileImage().getId());
-      profileImageUrl = mediaService.generatePublicGetUrl(user.getProfileImage()).toExternalForm();
+      profileImageUrl =
+          mediaService.generatePresignedGetUrl(user.getProfileImage()).toExternalForm();
     }
 
     boolean isFollowing = userRelationshipService.isFollowing(requesterId, userId);
@@ -119,10 +120,8 @@ public class ProfileService {
         user.getProfileImage().markAsDeleted();
       }
 
-      Media profileImage =
-          mediaService.getUnlinkedMedia(userId, Long.valueOf(request.profileImageId()));
+      Media profileImage = mediaService.linkMedia(userId, Long.valueOf(request.profileImageId()));
       user.setProfileImage(profileImage);
-      profileImage.markAsUploaded();
     }
 
     if (request.contacts() != null) {

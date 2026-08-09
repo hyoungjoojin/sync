@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { useSearchUsers } from '@/api/__generated__/user/user';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import { Card } from '@/components/ui/card';
 import {
   Empty,
@@ -62,12 +62,11 @@ export default function SearchUserResults({
       {visibleUsers.map((user) => (
         <Link key={user.handle} href={ROUTES.PROFILE(user.handle)}>
           <Card className="items-center gap-3 p-4 text-center transition-colors hover:bg-muted/50">
-            <Avatar className="size-14">
-              <AvatarImage src={user.profileImageUrl ?? undefined} />
-              <AvatarFallback>
-                {user.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <ProfileAvatar
+              name={user.name}
+              imageUrl={user.profileImageUrl}
+              className="size-14"
+            />
 
             <div>
               <p className="truncate text-sm font-semibold">{user.name}</p>

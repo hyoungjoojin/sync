@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import z from 'zod';
 
 import { useGetProjectHandleAvailability } from '@/api/__generated__/project/project';
+import { CreateProjectRequestJoinPolicy } from '@/api/__generated__/types';
 import { useCreateProject } from '@/components/feature/project/hooks/useCreateProject';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +45,7 @@ export default function CreateProjectPage() {
       }),
     description: z.string().optional(),
     isPublic: z.boolean(),
+    joinPolicy: z.enum(CreateProjectRequestJoinPolicy),
   });
 
   type CreateProjectFormValues = z.infer<typeof CreateProjectFormSchema>;
@@ -56,12 +58,27 @@ export default function CreateProjectPage() {
       handle: '',
       description: '',
       isPublic: true,
+      joinPolicy: CreateProjectRequestJoinPolicy.Invite,
     },
   });
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const handle = form.watch('handle');
+  const isPublic = form.watch('isPublic');
+  const joinPolicy = form.watch('joinPolicy');
   const debouncedHandle = useDebounce(handle, 500);
+
+  const spaceShape = isPublic
+    ? (`PUBLIC_${joinPolicy}` as const)
+    : ('PRIVATE_INVITE' as const);
+
+  const changeVisibility = (nextIsPublic: boolean) => {
+    form.setValue('isPublic', nextIsPublic);
+
+    if (!nextIsPublic) {
+      form.setValue('joinPolicy', CreateProjectRequestJoinPolicy.Invite);
+    }
+  };
 
   const HANDLE_REGEX = /^[a-zA-Z0-9_]+$/;
   const isHandleQueryable =
@@ -93,6 +110,7 @@ export default function CreateProjectPage() {
           handle: values.handle,
           description: values.description || null,
           isPublic: values.isPublic,
+          joinPolicy: values.joinPolicy,
         },
       },
       {
@@ -177,7 +195,7 @@ export default function CreateProjectPage() {
                   <FieldLabel>{t('form.visibility.label')}</FieldLabel>
                   <RadioGroup
                     value={field.value ? 'public' : 'private'}
-                    onValueChange={(v) => field.onChange(v === 'public')}
+                    onValueChange={(v) => changeVisibility(v === 'public')}
                     className="mt-1"
                   >
                     <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary">
@@ -206,6 +224,69 @@ export default function CreateProjectPage() {
                 </Field>
               )}
             />
+            {isPublic ? (
+              <Controller
+                name="joinPolicy"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>{t('form.join_policy.label')}</FieldLabel>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="mt-1"
+                    >
+                      {[
+                        CreateProjectRequestJoinPolicy.Open,
+                        CreateProjectRequestJoinPolicy.Request,
+                        CreateProjectRequestJoinPolicy.Invite,
+                      ].map((policy) => (
+                        <label
+                          key={policy}
+                          className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary"
+                        >
+                          <RadioGroupItem value={policy} className="mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium">
+                              {t(`form.join_policy.${policy}.label`)}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              {t(`form.join_policy.${policy}.description`)}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                    </RadioGroup>
+                  </Field>
+                )}
+              />
+            ) : (
+              <Field>
+                <FieldLabel>{t('form.join_policy.label')}</FieldLabel>
+                <div className="mt-1 rounded-lg border bg-muted/40 p-3">
+                  <p className="text-sm font-medium">
+                    {t('form.join_policy.INVITE.label')}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {t('form.join_policy.private_locked_description')}
+                  </p>
+                </div>
+              </Field>
+            )}
+            <div className="space-y-1 rounded-lg border border-primary/40 bg-primary/5 p-3">
+              <p className="text-muted-foreground text-xs">
+                {t('form.space_shape.label')}
+              </p>
+              <p className="text-sm font-medium">
+                {t(`form.space_shape.${spaceShape}.name`)}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {t(`form.space_shape.${spaceShape}.description`)}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {t(`form.space_shape.${spaceShape}.analogue`)}
+              </p>
+            </div>
           </FieldGroup>
         </div>
 

@@ -12,4 +12,5 @@ export interface ProjectInvitationPayload {
   actorName: string;
   projectHandle: string;
   projectName: string;
+  token: string;
 }

@@ -32,7 +32,7 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
   @Override
   public boolean hasPermission(
       AuthenticatedUser user, Long targetId, PermissionOperation permission) {
-    Post post = postRepository.findById(targetId).orElse(null);
+    Post post = postRepository.findByIdWithProject(targetId).orElse(null);
     if (post == null) {
       log.debug("Post with ID {} not found", targetId);
       return false;
@@ -55,23 +55,29 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
       return false;
     }
 
-    if (post.isPublished() && post.isPublic()) {
-      return true;
+    boolean isAuthor = user != null && user.userId().equals(post.getAuthor().getId());
+
+    // 프로젝트에 속하지 않은 개인 게시글: 기존 규칙(작성자 또는 공개)을 유지한다.
+    if (post.getProject() == null) {
+      if (!post.isPublished()) {
+        return isAuthor;
+      }
+      return post.isPublic() || isAuthor;
     }
 
-    if (user == null) {
-      return false;
+    // 워크스페이스(프로젝트) 게시글: 현재 프로젝트 팀원에게만 접근을 허용한다.
+    // 작성자라도 프로젝트에서 나가거나 추방되면(팀원 레코드 삭제) 접근 권한을 잃는다.
+    boolean isTeammate =
+        user != null
+            && teammateRepository
+                .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
+                .isPresent();
+
+    if (!post.isPublished()) {
+      return isTeammate;
     }
 
-    if (user.userId().equals(post.getAuthor().getId())) {
-      return true;
-    }
-
-    return post.isPublished()
-        && post.getProject() != null
-        && teammateRepository
-            .findByProjectIdAndUserId(post.getProject().getId(), user.userId())
-            .isPresent();
+    return post.getProject().isPublic() || isTeammate;
   }
 
   private boolean canEdit(AuthenticatedUser user, Post post) {
@@ -100,6 +106,10 @@ public class PostPermissionEvaluator implements CustomPermissionEvaluator<Long> 
     }
 
     if (post.getProject() == null) {
+      if (user.isAdmin()) {
+        return true;
+      }
+
       log.debug("User {} is not the author of post {}, cannot delete", user.userId(), post.getId());
       return false;
     }

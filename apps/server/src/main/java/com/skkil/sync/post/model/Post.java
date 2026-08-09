@@ -1,6 +1,7 @@
 package com.skkil.sync.post.model;
 
 import com.skkil.sync.common.domain.BaseEntity;
+import com.skkil.sync.media.model.Media;
 import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.exception.PostTagLimitExceededException;
 import com.skkil.sync.post.util.PostContentUtils;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "posts")
@@ -38,6 +40,10 @@ public class Post extends BaseEntity {
   @JoinColumn(name = "project_id", nullable = true)
   private Project project;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "cover_media_id")
+  private @Nullable Media coverMedia;
+
   @Column(name = "title")
   private String title;
 
@@ -49,12 +55,14 @@ public class Post extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private PostStatus status = PostStatus.PUBLISHED;
 
-  @Column(name = "scope", nullable = false)
-  @Enumerated(EnumType.STRING)
-  private PostScope scope = PostScope.PUBLIC;
+  @Column(name = "content", columnDefinition = "TEXT")
+  private @Nullable String jsonContent;
 
-  @Column(name = "content", columnDefinition = "TEXT", nullable = false)
-  private String content;
+  @Column(name = "markdown_content", columnDefinition = "TEXT")
+  private @Nullable String markdownContent;
+
+  @Column(name = "created_via_client_id")
+  private @Nullable String createdViaClientId;
 
   @Column(name = "summary", columnDefinition = "TEXT")
   private String summary;
@@ -62,8 +70,14 @@ public class Post extends BaseEntity {
   @Column(name = "like_count", nullable = false)
   private int likeCount = 0;
 
+  @Column(name = "comment_count", nullable = false)
+  private int commentCount = 0;
+
   @Column(name = "resolved", nullable = false)
   private boolean resolved = false;
+
+  @Column(name = "is_series_post", nullable = false)
+  private boolean isSeriesPost = false;
 
   @Column(name = "visibility", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -78,6 +92,9 @@ public class Post extends BaseEntity {
 
   @Column(name = "hidden_reason", columnDefinition = "TEXT")
   private String hiddenReason;
+
+  @Column(name = "pinned_at")
+  private Instant pinnedAt;
 
   @Column(name = "preview", columnDefinition = "TEXT", nullable = false)
   private String preview;
@@ -103,32 +120,63 @@ public class Post extends BaseEntity {
       User author,
       Project project,
       String title,
-      String content,
+      @Nullable String jsonContent,
+      @Nullable String markdownContent,
+      @Nullable String createdViaClientId,
       PostType type,
-      PostStatus status) {
+      PostStatus status,
+      @Nullable Media coverMedia) {
     this.slug = slug;
     this.author = author;
     this.project = project;
     this.title = title;
     this.type = type == null ? PostType.SHORT : type;
     this.status = status == null ? PostStatus.PUBLISHED : status;
-    this.scope = PostScope.fromProject(project);
-    this.content = content;
+    this.jsonContent = jsonContent;
+    this.markdownContent = markdownContent;
+    this.createdViaClientId = createdViaClientId;
+    this.coverMedia = coverMedia;
   }
 
-  public void updateContent(String content, String text, int mediaCount) {
-    this.content = content;
+  public void updateCoverMedia(@Nullable Media coverMedia) {
+    this.coverMedia = coverMedia;
+  }
+
+  /**
+   * Tiptap JSON 본문으로 갱신한다. 에이전트가 만든 Markdown 초안이라면 작성자가 에디터에서 처음 저장하는 순간 이 경로를 타면서 {@link
+   * #markdownContent} 가 비워지고, 그 뒤로는 다른 글과 구별되지 않는다.
+   */
+  public void updateJsonContent(String jsonContent, String text, int mediaCount) {
+    this.jsonContent = jsonContent;
+    this.markdownContent = null;
     this.preview = PostContentUtils.getPreview(text);
     this.mediaCount = mediaCount;
     this.wordCount = PostContentUtils.getWordCount(text);
   }
 
+  /**
+   * 에이전트가 보낸 Markdown 을 본문으로 삼는다. 서버는 Markdown 을 파싱하지 않으므로 미리보기와 단어 수도 원문을 그대로 넣어 계산한다({@link
+   * PostContentUtils} 는 임의의 평문에 대해 안전하다).
+   */
+  public void updateMarkdownContent(String markdownContent) {
+    this.jsonContent = null;
+    this.markdownContent = markdownContent;
+    this.preview = PostContentUtils.getPreview(markdownContent);
+    this.mediaCount = 0;
+    this.wordCount = PostContentUtils.getWordCount(markdownContent);
+  }
+
   public void update(
-      String title, PostType type, PostStatus status, String content, String text, int mediaCount) {
+      String title,
+      PostType type,
+      PostStatus status,
+      String jsonContent,
+      String text,
+      int mediaCount) {
     this.title = title;
     this.type = type;
     this.status = status;
-    updateContent(content, text, mediaCount);
+    updateJsonContent(jsonContent, text, mediaCount);
   }
 
   public void updateSummary(String summary) {
@@ -155,8 +203,12 @@ public class Post extends BaseEntity {
     return status == PostStatus.PUBLISHED;
   }
 
+  public PostScope getScope() {
+    return PostScope.fromProject(project);
+  }
+
   public boolean isPublic() {
-    return scope == PostScope.PUBLIC;
+    return getScope() == PostScope.PUBLIC;
   }
 
   public void hide(User reviewer, String reason) {
@@ -168,5 +220,25 @@ public class Post extends BaseEntity {
 
   public void resolve() {
     this.resolved = true;
+  }
+
+  public void markInSeries() {
+    this.isSeriesPost = true;
+  }
+
+  public void unmarkInSeries() {
+    this.isSeriesPost = false;
+  }
+
+  public boolean isPinned() {
+    return pinnedAt != null;
+  }
+
+  public void pin() {
+    this.pinnedAt = Instant.now();
+  }
+
+  public void unpin() {
+    this.pinnedAt = null;
   }
 }

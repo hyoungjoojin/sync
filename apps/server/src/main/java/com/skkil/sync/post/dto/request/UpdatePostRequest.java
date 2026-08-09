@@ -7,6 +7,7 @@ import com.skkil.sync.post.validator.ValidPublishablePostValidator.PublishablePo
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 @ValidPublishablePost
 public record UpdatePostRequest(
@@ -14,5 +15,8 @@ public record UpdatePostRequest(
     @NotNull PostType type,
     @NotNull PostStatus status,
     @Valid @NotNull PostContentRequest content,
-    List<String> tags)
+    List<String> tags,
+    List<Long> referencedPostIds,
+    @Nullable String coverMediaId,
+    @Nullable Boolean removeCover)
     implements PublishablePostRequest {}

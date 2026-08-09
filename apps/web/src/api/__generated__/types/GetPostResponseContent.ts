@@ -7,11 +7,21 @@
 import type { GetPostResponseContentMediaItem } from './GetPostResponseContentMediaItem';
 
 /**
- * Post Content
+ * 게시글 본문. summary.accessLevel 이 PREVIEW(유료 게이트)이면 이 필드 자체가 응답에서 빠진다
  */
 export type GetPostResponseContent = {
-  /** Post Content JSON */
-  json: string;
+  /**
+   * Markdown 본문 원문. format 이 MARKDOWN 일 때만 존재한다
+   * @nullable
+   */
+  markdown?: string | null;
+  /** 본문 형식. TIPTAP_JSON 이면 content.json 이, MARKDOWN 이면 content.markdown 이 채워진다. MARKDOWN 은 에이전트가 만든 미변환 초안에만 나타나며, 작성자가 에디터에서 처음 저장하면 TIPTAP_JSON 이 된다 */
+  format: string;
+  /**
+   * Tiptap JSON 본문. format 이 TIPTAP_JSON 일 때만 존재한다
+   * @nullable
+   */
+  json?: string | null;
   /** Media attached to the post */
   media: GetPostResponseContentMediaItem[];
 };

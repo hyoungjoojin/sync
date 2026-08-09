@@ -90,6 +90,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-restclient'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
+	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-session-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
@@ -103,7 +105,9 @@ dependencies {
 	implementation "io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:2.21.0-alpha"
 	implementation platform("org.springframework.ai:spring-ai-bom:2.0.0-M3")
 	implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
 	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
+	implementation 'org.springframework.ai:spring-ai-starter-mcp-server-webmvc'
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
 	implementation 'com.bucket4j:bucket4j_jdk17-postgresql:8.18.0'
 	implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0-RC1')
@@ -214,6 +218,13 @@ tasks.named('build') {
 tasks.named('test') {
 	outputs.dir snippetsDir
 	useJUnitPlatform()
+
+	// The agent beans are off by default in tests because @WebMvcTest slices pick
+	// up anything shaped like a Converter or WebMvcConfigurer and then fail on the
+	// service dependencies those beans pull in. AgentContextIntegrationTests turns
+	// both flags back on for a full context, so the wiring is still covered.
+	systemProperty 'app.agent.enabled', 'false'
+	systemProperty 'spring.ai.mcp.server.enabled', 'false'
 }
 
 
@@ -225,6 +236,8 @@ tasks.named('asciidoctor') {
 
 spotless {
 	java {
+		targetExclude("**/build/generated/**")
+
 		importOrder()
 		removeUnusedImports()
 		forbidWildcardImports()

@@ -4,6 +4,7 @@ import com.skkil.sync.post.dto.response.GetPostResponse;
 import com.skkil.sync.post.model.PostScope;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
+import com.skkil.sync.post.security.PostAccessLevel;
 import com.skkil.sync.project.dto.summary.ProjectSummary;
 import com.skkil.sync.user.dto.summary.UserSummary;
 import java.time.OffsetDateTime;
@@ -19,10 +20,15 @@ public record PostSummary(
     PostType type,
     PostStatus status,
     PostScope scope,
+    PostAccessLevel accessLevel,
     UserSummary author,
     @Nullable ProjectSummary project,
     boolean resolved,
+    boolean isSeriesPost,
+    @Nullable OffsetDateTime pinnedAt,
     boolean isAuthor,
+    boolean canDelete,
+    boolean canComment,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,
     Long likeCount,
@@ -33,4 +39,6 @@ public record PostSummary(
     String preview,
     List<GetPostResponse.Media> previewMedia,
     int mediaCount,
-    int wordCount) {}
+    int wordCount,
+    @Nullable String coverImageUrl,
+    @Nullable String createdViaClientName) {}

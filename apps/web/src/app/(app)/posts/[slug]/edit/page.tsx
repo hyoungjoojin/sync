@@ -8,10 +8,13 @@ import { toast } from 'sonner';
 import { useGetPostBySlug, useUpdatePost } from '@/api/__generated__/post/post';
 import PostEditor from '@/components/feature/post/editor/PostEditor';
 import { invalidatePostQueries } from '@/components/feature/post/hooks/postQueryKeys';
+import { useApplySeriesSelection } from '@/components/feature/post/hooks/useApplySeriesSelection';
+import { usePostSeriesMembership } from '@/components/feature/post/hooks/usePostSeriesMembership';
 import { PostStatus } from '@/components/feature/post/types/post';
 import { toPostSummary } from '@/components/feature/post/viewer/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 export default function EditPostPage() {
@@ -21,16 +24,19 @@ export default function EditPostPage() {
   const queryClient = useQueryClient();
   useAuthGuard();
 
+  const applySeries = useApplySeriesSelection();
   const { data, isPending, isError } = useGetPostBySlug(slug);
-  const { mutate: updatePost, isPending: isUpdating } = useUpdatePost({
-    mutation: {
-      onSuccess: () => invalidatePostQueries(queryClient),
-    },
-  });
+  const {
+    initialSeries,
+    initialSeriesMembership,
+    isPending: isSeriesPending,
+  } = usePostSeriesMembership(slug);
+  const { mutate: updatePost, isPending: isUpdating } = useUpdatePost();
 
   const post = data?.data;
 
-  if (isPending) {
+  // 에디터는 시리즈 초기값을 마운트 시점에 한 번만 읽으므로 시리즈 조회까지 기다린다.
+  if (isPending || isSeriesPending) {
     return <Skeleton className="h-96 w-full" />;
   }
 
@@ -68,9 +74,19 @@ export default function EditPostPage() {
       type={summary.type}
       summary={summary}
       content={content}
+      initialSeries={initialSeries}
       isSubmitting={isUpdating}
       project={editorProject}
-      onSubmit={({ title, type, status, tags, content }) => {
+      onSubmit={({
+        title,
+        type,
+        status,
+        tags,
+        series,
+        coverMediaId,
+        removeCover,
+        content,
+      }) => {
         updatePost(
           {
             postId: `${summary.id}`,
@@ -79,6 +95,8 @@ export default function EditPostPage() {
               type,
               status,
               tags,
+              coverMediaId,
+              removeCover,
               content: {
                 json: content.json,
                 text: content.text,
@@ -87,14 +105,45 @@ export default function EditPostPage() {
             },
           },
           {
-            onSuccess: () => {
+            onSuccess: async () => {
+              await applySeries({
+                slug: summary.slug,
+                projectHandle: summary.project?.handle ?? undefined,
+                selection: series,
+                initial: initialSeriesMembership,
+              });
+              invalidatePostQueries(queryClient);
               toast.success(t('messages.update-success'));
               if (status === PostStatus.PUBLISHED) {
                 router.push(detailPath);
                 router.refresh();
               }
             },
-            onError: () => {
+            onError: (error) => {
+              if (error instanceof SyncError) {
+                switch (error.code) {
+                  case ErrorCode.POST_NOT_FOUND:
+                    toast.error(t('messages.update-error-post-not-found'));
+                    return;
+                  case ErrorCode.MEDIA_NOT_FOUND:
+                    toast.error(t('messages.update-error-media-not-found'));
+                    return;
+                  case ErrorCode.MEDIA_NOT_UPLOADED:
+                    toast.error(t('messages.update-error-media-not-uploaded'));
+                    return;
+                  case ErrorCode.MEDIA_TOO_LARGE:
+                    toast.error(t('messages.update-error-media-too-large'));
+                    return;
+                  case ErrorCode.UNSUPPORTED_MEDIA_TYPE:
+                    toast.error(
+                      t('messages.update-error-unsupported-media-type'),
+                    );
+                    return;
+                  case ErrorCode.TAG_LIMIT_EXCEEDED:
+                    toast.error(t('messages.update-error-tag-limit-exceeded'));
+                    return;
+                }
+              }
               toast.error(t('messages.update-error'));
             },
           },

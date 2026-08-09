@@ -11,8 +11,9 @@ public record GetProjectResponse(
     ProjectSummary summary,
     List<ProjectTeammateSummary> teammates,
     boolean hasMoreTeammates,
+    boolean isViewer,
     Role role,
-    List<Activity> recentActivities) {
-
-  public record Activity(String id, String timestamp, String text) {}
-}
+    boolean isOwner,
+    boolean isFollowing,
+    boolean hasPendingInvitation,
+    boolean hasPendingJoinRequest) {}

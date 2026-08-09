@@ -16,8 +16,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,9 +40,13 @@ public class BucketConfig {
   private static final Duration AUTH_RATE_LIMIT_REFILL_PERIOD = Duration.ofMinutes(5);
 
   private final DataSource dataSource;
+  private final int trustedProxyCount;
 
-  public BucketConfig(DataSource dataSource) {
+  public BucketConfig(
+      DataSource dataSource,
+      @Value("${app.rate-limit.trusted-proxy-count}") int trustedProxyCount) {
     this.dataSource = dataSource;
+    this.trustedProxyCount = trustedProxyCount;
   }
 
   @Bean
@@ -55,13 +61,22 @@ public class BucketConfig {
 
   @Bean
   FilterRegistrationBean<RateLimitFilter> authRateLimitFilter() {
+    ClientIpResolver clientIpResolver = new ClientIpResolver(trustedProxyCount);
     FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>();
-    registration.setFilter(new RateLimitFilter(rateLimitProxyManager()));
+    registration.setFilter(
+        new RateLimitFilter(
+            rateLimitProxyManager(),
+            request -> request.getRequestURI() + ":" + clientIpResolver.resolve(request),
+            AUTH_RATE_LIMIT_CAPACITY,
+            AUTH_RATE_LIMIT_REFILL_PERIOD));
     registration.addUrlPatterns(
         "/auth/login",
         "/auth/register",
         "/auth/email-verification/send",
-        "/auth/email-verification/verify");
+        "/auth/email-verification/verify",
+        "/auth/password-reset/request",
+        "/auth/password-reset/confirm",
+        "/auth/password");
     registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
     return registration;
@@ -82,17 +97,27 @@ public class BucketConfig {
   private static class RateLimitFilter extends OncePerRequestFilter {
 
     private final ProxyManager<String> proxyManager;
+    private final Function<HttpServletRequest, String> keyResolver;
+    private final int capacity;
+    private final Duration refillPeriod;
     private final JsonMapper jsonMapper = new JsonMapper();
 
-    RateLimitFilter(ProxyManager<String> proxyManager) {
+    RateLimitFilter(
+        ProxyManager<String> proxyManager,
+        Function<HttpServletRequest, String> keyResolver,
+        int capacity,
+        Duration refillPeriod) {
       this.proxyManager = proxyManager;
+      this.keyResolver = keyResolver;
+      this.capacity = capacity;
+      this.refillPeriod = refillPeriod;
     }
 
     @Override
     protected void doFilterInternal(
         HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {
-      String key = request.getRequestURI() + ":" + request.getRemoteAddr();
+      String key = keyResolver.apply(request);
       Bucket bucket = proxyManager.getProxy(key, this::bucketConfiguration);
 
       ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
@@ -117,11 +142,7 @@ public class BucketConfig {
 
     private BucketConfiguration bucketConfiguration() {
       return BucketConfiguration.builder()
-          .addLimit(
-              limit ->
-                  limit
-                      .capacity(AUTH_RATE_LIMIT_CAPACITY)
-                      .refillGreedy(AUTH_RATE_LIMIT_CAPACITY, AUTH_RATE_LIMIT_REFILL_PERIOD))
+          .addLimit(limit -> limit.capacity(capacity).refillGreedy(capacity, refillPeriod))
           .build();
     }
   }

@@ -8,7 +8,7 @@ import {
 } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useUploadMedia } from '@/api/__generated__/media/media';
@@ -16,14 +16,17 @@ import { uploadFileToS3 } from '@/api/s3';
 import { Button } from '@/components/ui/button';
 import { FileInput } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/lib/tiptap-utils';
+import SyncError, { ErrorCode } from '@/lib/error';
+import { MAX_FILE_SIZE, cn } from '@/lib/tiptap-utils';
 
 import { NodeType } from '.';
+import { hasSupportedFileTransfer, takePendingFile } from '../media-drop';
 
 export type ImageNodeAttributes = {
   src: string | null;
   status: 'none' | 'loaded' | 'uploading' | 'uploaded' | 'error';
   mediaId: string | null;
+  pendingId: string | null;
 };
 
 const imageNodeSchema = {
@@ -43,6 +46,12 @@ const imageNodeSchema = {
         rendered: false,
       },
       mediaId: {
+        default: null,
+        parseHTML: (element: Element) => element.getAttribute('data-media-id'),
+        renderHTML: (attributes: Record<string, unknown>) =>
+          attributes.mediaId ? { 'data-media-id': attributes.mediaId } : {},
+      },
+      pendingId: {
         default: null,
         rendered: false,
       },
@@ -86,12 +95,13 @@ function ImageNodeComponent({
   selected,
   updateAttributes,
 }: NodeViewProps) {
-  const { src, status } = node.attrs as ImageNodeAttributes;
+  const { src, status, pendingId } = node.attrs as ImageNodeAttributes;
 
   const t = useTranslations('components.editor.image');
   const { mutateAsync: uploadImage } = useUploadMedia();
 
   const objectURLRef = useRef<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -101,60 +111,103 @@ function ImageNodeComponent({
     };
   }, []);
 
-  const handleFileUpload = (files: File[]) => {
-    const file = files[0];
-    if (!file) {
+  const handleFileUpload = useCallback(
+    (files: File[]) => {
+      const file = files[0];
+      if (!file) {
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(t('errors.max-size'));
+        updateAttributes({ status: 'error' });
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      objectURLRef.current = objectUrl;
+
+      updateAttributes({
+        src: objectUrl,
+        status: 'uploading',
+      });
+
+      uploadImage({
+        data: {
+          fileName: file.name,
+          fileSize: file.size,
+          mediaType: file.type,
+        },
+      })
+        .then(({ data: { mediaId, uploadUrl, contentType } }) => {
+          updateAttributes({
+            mediaId,
+          });
+
+          return uploadFileToS3({
+            uploadUrl,
+            file,
+            contentType,
+          });
+        })
+        .then(({ success }) => {
+          if (!success) {
+            throw new Error(t('errors.s3-upload-failed'));
+          }
+
+          updateAttributes({
+            status: 'uploaded',
+          });
+          toast.success(t('messages.upload-success'));
+        })
+        .catch((error) => {
+          if (error instanceof SyncError) {
+            switch (error.code) {
+              case ErrorCode.MEDIA_TOO_LARGE:
+                toast.error(t('errors.max-size'));
+                break;
+              case ErrorCode.UNSUPPORTED_MEDIA_TYPE:
+                toast.error(t('errors.unsupported-type'));
+                break;
+              default:
+                toast.error(t('errors.upload-failed'));
+            }
+          } else {
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : t('errors.upload-failed'),
+            );
+          }
+
+          updateAttributes({
+            status: 'error',
+          });
+        });
+    },
+    [t, updateAttributes, uploadImage],
+  );
+
+  useEffect(() => {
+    if (!pendingId) {
       return;
     }
 
-    const objectUrl = URL.createObjectURL(file);
-    objectURLRef.current = objectUrl;
+    const file = takePendingFile(pendingId);
 
-    updateAttributes({
-      src: objectUrl,
-      status: 'uploading',
+    // updateAttributes 는 ProseMirror 트랜잭션을 flushSync 로 반영하므로, 커밋 중인
+    // 이펙트에서 바로 부르면 React 가 렌더 도중의 flushSync 라며 막는다.
+    queueMicrotask(() => {
+      updateAttributes({ pendingId: null });
+
+      if (file) {
+        handleFileUpload([file]);
+      }
     });
-
-    uploadImage({
-      data: {
-        fileName: file.name,
-        fileSize: file.size,
-        mediaType: file.type,
-      },
-    })
-      .then(({ data: { mediaId, uploadUrl } }) => {
-        updateAttributes({
-          mediaId,
-        });
-
-        return uploadFileToS3({
-          uploadUrl,
-          file,
-        });
-      })
-      .then(({ success }) => {
-        if (!success) {
-          throw new Error(t('errors.s3-upload-failed'));
-        }
-
-        updateAttributes({
-          status: 'uploaded',
-        });
-        toast.success(t('messages.upload-success'));
-      })
-      .catch((error) => {
-        toast.error(
-          error instanceof Error ? error.message : t('errors.upload-failed'),
-        );
-
-        updateAttributes({
-          status: 'error',
-        });
-      });
-  };
+  }, [pendingId, updateAttributes, handleFileUpload]);
 
   return (
-    <NodeViewWrapper>
+    <NodeViewWrapper className="my-6">
       <div
         className={cn(
           'w-full rounded-lg overflow-hidden',
@@ -167,7 +220,27 @@ function ImageNodeComponent({
             onFileChange={handleFileUpload}
             maxFiles={1}
           >
-            <div className="flex w-full flex-col items-center justify-center gap-2 bg-muted py-10 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50 hover:text-foreground">
+            <div
+              onDragEnter={(event) => {
+                if (hasSupportedFileTransfer(event.dataTransfer)) {
+                  setIsDragOver(true);
+                }
+              }}
+              onDragLeave={(event) => {
+                if (
+                  !event.currentTarget.contains(
+                    event.relatedTarget as HTMLElement | null,
+                  )
+                ) {
+                  setIsDragOver(false);
+                }
+              }}
+              onDrop={() => setIsDragOver(false)}
+              className={cn(
+                'flex w-full flex-col items-center justify-center gap-2 bg-muted py-10 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50 hover:text-foreground',
+                isDragOver && 'ring-2 ring-inset ring-primary/60',
+              )}
+            >
               <ImageIcon className="size-8" />
               <span className="text-sm font-medium">
                 {t('placeholders.upload')}
@@ -228,7 +301,7 @@ function ReadOnlyImageNodeComponent({ node }: NodeViewProps) {
   const t = useTranslations('components.editor.image');
 
   return (
-    <NodeViewWrapper>
+    <NodeViewWrapper className="my-6">
       <div className="w-full overflow-hidden rounded-lg">
         <div className="relative aspect-video w-full">
           {src && (

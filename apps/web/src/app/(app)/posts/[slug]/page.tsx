@@ -1,16 +1,31 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { getGetPostCommentsInfiniteQueryOptions } from '@/api/__generated__/comment/comment';
-import { getGetPostBySlugQueryOptions } from '@/api/__generated__/post/post';
-import type { PostType } from '@/components/feature/post/types/post';
+import { getGetPostBySlugQueryKey } from '@/api/__generated__/post/post';
+import { COMMENT_PAGE_SIZE } from '@/components/feature/post/constants';
+import {
+  PostContentFormat,
+  type PostType,
+} from '@/components/feature/post/types/post';
 import { PostCard } from '@/components/feature/post/viewer/PostCard';
-import PostComments, {
-  COMMENT_PAGE_SIZE,
-} from '@/components/feature/post/viewer/PostComments';
+import PostComments from '@/components/feature/post/viewer/PostComments';
+import { PostProvider } from '@/components/feature/post/viewer/PostContext';
+import { PostSeriesCard } from '@/components/feature/post/viewer/PostSeriesCard';
+import { PostTableOfContents } from '@/components/feature/post/viewer/PostTableOfContents';
+import { RelatedPosts } from '@/components/feature/post/viewer/RelatedPosts';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import SyncError, { ErrorCode } from '@/lib/error';
+import { getPostBySlugCached } from '@/lib/post-query';
 import { getQueryClient } from '@/lib/query';
+import {
+  NON_INDEXABLE_METADATA,
+  buildPostJsonLd,
+  createPostMetadata,
+  isPostIndexable,
+} from '@/lib/seo';
 import ROUTES from '@/util/routes';
 
 interface PostProps {
@@ -19,23 +34,62 @@ interface PostProps {
   }>;
 }
 
+export async function generateMetadata({
+  params,
+}: PostProps): Promise<Metadata> {
+  const { slug } = await params;
+  const t = await getTranslations('metadata');
+
+  try {
+    const { data: post } = await getPostBySlugCached(slug);
+
+    // 프로젝트 게시물은 프로젝트 경로가 정규 URL이며,
+    // createPostMetadata가 post.project.handle을 보고 canonical을 계산한다.
+    return createPostMetadata(post.summary, t('description'));
+  } catch {
+    return NON_INDEXABLE_METADATA;
+  }
+}
+
 export default async function Post({ params }: PostProps) {
   const { slug } = await params;
 
   const queryClient = getQueryClient();
   let commentsEnabled = false;
+  let postId: number | undefined;
   let postType: PostType | undefined;
+  let isPostAuthor = false;
+  let canComment = false;
+  let requiresMembership = false;
+  let jsonLd: Record<string, unknown> | null = null;
 
   try {
-    const { data: post } = await queryClient.fetchQuery(
-      getGetPostBySlugQueryOptions(slug),
-    );
+    const response = await getPostBySlugCached(slug);
+    const post = response.data;
+
+    queryClient.setQueryData(getGetPostBySlugQueryKey(slug), response);
 
     commentsEnabled = post.summary.status === 'PUBLISHED';
+    postId = post.summary.id;
     postType = post.summary.type as PostType;
+    isPostAuthor = post.summary.isAuthor;
+    canComment = post.summary.canComment;
+    requiresMembership = post.summary.scope === 'WORKSPACE';
+
+    // 아직 변환되지 않은 Markdown 초안은 이 화면(Tiptap 전용 뷰어)이 그릴 수 없다. 작성자가
+    // 편집 화면을 한 번도 열지 않은 채 링크로 바로 들어온 경우이므로 편집 화면으로 보낸다.
+    // 초안은 애초에 작성자 외에는 조회되지 않으므로(서버 쿼리에서 걸러진다) 보안 장치가 아니라
+    // 화면이 깨지지 않게 하는 방어선이다.
+    if (post.content?.format === PostContentFormat.MARKDOWN) {
+      redirect(ROUTES.POST_EDIT(slug));
+    }
 
     if (post.summary.project?.handle) {
       redirect(ROUTES.PROJECT_POST(post.summary.project.handle, slug));
+    }
+
+    if (isPostIndexable(post.summary)) {
+      jsonLd = buildPostJsonLd(post.summary, ROUTES.POST(slug));
     }
   } catch (error) {
     if (error instanceof SyncError) {
@@ -69,14 +123,34 @@ export default async function Post({ params }: PostProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <TwoColumnLayout
-        main={<PostCard slug={slug} />}
-        side={
-          commentsEnabled && postType ? (
-            <PostComments slug={slug} postType={postType} />
-          ) : null
-        }
-      />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <PostProvider>
+        <TwoColumnLayout
+          main={<PostCard slug={slug} />}
+          side={
+            <div className="flex flex-col gap-6">
+              <PostTableOfContents />
+              <PostSeriesCard slug={slug} />
+              {commentsEnabled && postType && postId !== undefined ? (
+                <PostComments
+                  slug={slug}
+                  postId={postId}
+                  postType={postType}
+                  isPostAuthor={isPostAuthor}
+                  canComment={canComment}
+                  requiresMembership={requiresMembership}
+                />
+              ) : null}
+            </div>
+          }
+        />
+      </PostProvider>
+      <RelatedPosts slug={slug} />
     </HydrationBoundary>
   );
 }

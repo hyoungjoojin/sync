@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { GetPostResponseSummaryAccessLevel } from './GetPostResponseSummaryAccessLevel';
 import type { GetPostResponseSummaryAuthor } from './GetPostResponseSummaryAuthor';
 import type { GetPostResponseSummaryPreviewMediaItem } from './GetPostResponseSummaryPreviewMediaItem';
 import type { GetPostResponseSummaryProject } from './GetPostResponseSummaryProject';
@@ -18,12 +19,11 @@ import type { GetPostResponseSummaryType } from './GetPostResponseSummaryType';
 export type GetPostResponseSummary = {
   /** 게시물 내용의 일반 텍스트 미리보기 */
   preview: string;
-  /** 게시물 본문의 단어 수 */
-  wordCount: number;
-  /** Whether the current user bookmarked this post */
-  bookmarked: boolean;
-  /** 작성자 정보 */
-  author: GetPostResponseSummaryAuthor;
+  /**
+   * 게시물 커버 이미지 URL (없으면 없음)
+   * @nullable
+   */
+  coverImageUrl?: string | null;
   /** 소속 프로젝트 정보 */
   project?: GetPostResponseSummaryProject;
   /** Number of Likes */
@@ -37,28 +37,52 @@ export type GetPostResponseSummary = {
   title?: string | null;
   /** Whether the current user liked this post */
   liked: boolean;
-  /** 게시물에 달린 태그 목록 */
-  tags: GetPostResponseSummaryTagsItem[];
-  /** Number of Comments */
-  commentCount: number;
   /** Whether the requesting user is the author of this post */
   isAuthor: boolean;
+  /**
+   * 게시글이 프로젝트 대시보드에 고정된 시각 (고정되지 않은 경우 없음)
+   * @nullable
+   */
+  pinnedAt?: string | null;
   /** Creation Timestamp */
   createdAt: string;
   /** 게시글 공개 범위 */
   scope: GetPostResponseSummaryScope;
   /** 게시물에 첨부된 전체 미디어 수 */
   mediaCount: number;
+  /** 요청자가 이 게시글을 삭제할 수 있는지 여부 (작성자, 플랫폼 관리자(개인 게시글), 프로젝트 관리자(프로젝트 게시글)) */
+  canDelete: boolean;
+  /** 요청자가 이 게시글에 댓글을 작성할 수 있는지 여부 (프로젝트 게시글은 팀원만 가능) */
+  canComment: boolean;
   /** Post ID */
   id: number;
-  /** 미리보기용 첨부 미디어 목록 (최대 2개) */
-  previewMedia: GetPostResponseSummaryPreviewMediaItem[];
   /** Post Slug */
   slug: string;
   /** Last Updated Timestamp */
   updatedAt: string;
   /** Whether the question post has been resolved */
   resolved: boolean;
+  /** 게시물 본문의 단어 수 */
+  wordCount: number;
+  /** 요청자의 열람 수준 (FULL: 본문까지 열람, PREVIEW: 유료 게이트로 본문 잠김) */
+  accessLevel: GetPostResponseSummaryAccessLevel;
+  /**
+   * 이 글을 만든 에이전트 클라이언트의 이름. 사람이 직접 쓴 글에는 없다
+   * @nullable
+   */
+  createdViaClientName?: string | null;
+  /** Whether the current user bookmarked this post */
+  bookmarked: boolean;
+  /** 작성자 정보 */
+  author: GetPostResponseSummaryAuthor;
+  /** 게시물에 달린 태그 목록 */
+  tags: GetPostResponseSummaryTagsItem[];
+  /** Number of Comments */
+  commentCount: number;
+  /** 게시글이 어떤 시리즈에 속해 있는지 여부 */
+  isSeriesPost: boolean;
+  /** 미리보기용 첨부 이미지 목록 (최대 3개). 이미지가 아닌 첨부 파일은 포함되지 않는다 */
+  previewMedia: GetPostResponseSummaryPreviewMediaItem[];
   /** Post Status */
   status: GetPostResponseSummaryStatus;
 };

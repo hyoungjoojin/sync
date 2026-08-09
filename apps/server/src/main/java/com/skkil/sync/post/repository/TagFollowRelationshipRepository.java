@@ -1,8 +1,9 @@
 package com.skkil.sync.post.repository;
 
 import com.skkil.sync.post.model.TagFollowRelationship;
-import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,7 +13,7 @@ public interface TagFollowRelationshipRepository
     extends JpaRepository<TagFollowRelationship, Long> {
 
   @EntityGraph(attributePaths = {"tag"})
-  List<TagFollowRelationship> findByFollowerId(Long followerId);
+  Page<TagFollowRelationship> findByFollowerId(Long followerId, Pageable pageable);
 
   @Query("SELECT r.tag.id FROM TagFollowRelationship r WHERE r.follower.id = :followerId")
   Set<Long> findTagIdsByFollowerId(Long followerId);

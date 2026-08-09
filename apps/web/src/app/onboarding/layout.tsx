@@ -1,13 +1,23 @@
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { TwoColumnFullPageLayout } from '@/components/layout/TwoColumnLayout';
-import { isOnboarded } from '@/lib/auth';
+import {
+  BRAND_ART,
+  TwoColumnFullPageLayout,
+} from '@/components/layout/TwoColumnLayout';
 import { requireSession } from '@/lib/auth/guards';
+import { isOnboarded } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 interface OnboardingLayoutProps {
   children?: React.ReactNode;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('pages.onboarding');
+
+  return { title: t('metaTitle') };
 }
 
 export default async function OnboardingLayout({
@@ -25,6 +35,7 @@ export default async function OnboardingLayout({
     <TwoColumnFullPageLayout
       brandTitle={t('title')}
       brandDescription={t('description')}
+      artSrc={BRAND_ART.onboarding}
     >
       {children}
     </TwoColumnFullPageLayout>

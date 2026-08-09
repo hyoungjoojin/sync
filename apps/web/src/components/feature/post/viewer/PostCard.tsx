@@ -1,37 +1,37 @@
 'use client';
 
-import { CheckCircleIcon, ClockIcon } from '@phosphor-icons/react';
-import type { Editor } from '@tiptap/react';
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useGetPostBySlug } from '@/api/__generated__/post/post';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ROUTES from '@/util/routes';
 
 import { PostType } from '../types/post';
-import { PostBody } from './components/PostBody';
-import { PostCardActions } from './components/PostCardActions';
-import { PostPreviewBody } from './components/PostPreviewBody';
-import { PostTagChips } from './components/PostTagChips';
-import { PostViewHeader } from './components/PostViewHeader';
+import { LongPostCard } from './cards/LongPostCard';
+import { LongPostPreviewCard } from './cards/LongPostPreviewCard';
+import { QuestionPostCard } from './cards/QuestionPostCard';
+import { QuestionPostPreviewCard } from './cards/QuestionPostPreviewCard';
+import { ShortPostCard } from './cards/ShortPostCard';
+import { ShortPostPreviewCard } from './cards/ShortPostPreviewCard';
+import type {
+  PostDetailCardProps,
+  PostPreviewCardTypeProps,
+  PostPreviewSurface,
+} from './cards/types';
 import PostRenderErrorBoundary from './error/PostRenderErrorBoundary';
 import { useReadOnlyPostEditor } from './hooks/useReadOnlyPostEditor';
 import {
-  type PostPreviewMedia,
-  type PostProjectSummary,
   type PostSummary,
   type PostViewSource,
   toPostViewSource,
 } from './types';
 import { normalizePostContent } from './utils/normalizePostContent';
-import {
-  type ReviewStatus,
-  getMockReviewStatus,
-} from './utils/placeholderData';
 
-const WORDS_PER_MINUTE = 200;
+function resolvePostPath(summary: PostSummary) {
+  return summary.project?.handle
+    ? ROUTES.PROJECT_POST(summary.project.handle, summary.slug)
+    : ROUTES.POST(summary.slug);
+}
 
 // ---- PostCard: detail view, loads its own data by slug ----
 
@@ -55,359 +55,83 @@ export function PostCard({ slug }: PostCardProps) {
 
 function PostCardBySource({ source }: { source: PostViewSource }) {
   const { summary, content } = source;
-  const editor = useReadOnlyPostEditor(normalizePostContent(content));
-  const postPath = summary.project?.handle
-    ? ROUTES.PROJECT_POST(summary.project.handle, summary.slug)
-    : ROUTES.POST(summary.slug);
+  const editor = useReadOnlyPostEditor(
+    normalizePostContent(content),
+    summary.slug,
+  );
 
-  const typeCardProps: TypePostCardProps = { summary, editor, postPath };
+  const props: PostDetailCardProps = {
+    summary,
+    editor,
+    postPath: resolvePostPath(summary),
+    // 유료 게이트로 본문이 빠진 응답에서는 요약의 미리보기 텍스트로 대체한다.
+    lockedPreview: content === undefined ? summary.preview : undefined,
+  };
 
   switch (summary.type) {
     case PostType.QUESTION:
-      return <QuestionTypePostCard {...typeCardProps} />;
+      return <QuestionPostCard {...props} />;
     case PostType.LONG:
-      return <LongTypePostCard {...typeCardProps} />;
+      return <LongPostCard {...props} />;
     case PostType.SHORT:
     default:
-      return <ShortTypePostCard {...typeCardProps} />;
+      return <ShortPostCard {...props} />;
   }
-}
-
-interface TypePostCardProps {
-  summary: PostSummary;
-  editor: Editor | null;
-  postPath: string;
-}
-
-function ShortTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <PostViewHeader
-          summary={summary}
-          postPath={postPath}
-          variant="detail"
-        />
-      </CardHeader>
-
-      <CardContent className="space-y-3">
-        {summary.title && (
-          <h3 className="text-lg font-semibold">{summary.title}</h3>
-        )}
-        <PostBody editor={editor} />
-        <PostCardActions
-          postId={summary.id}
-          liked={summary.liked}
-          likeCount={summary.likeCount}
-          commentCount={summary.commentCount}
-          bookmarked={summary.bookmarked}
-        />
-        <PostTagChips tags={summary.tags} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function LongTypePostCard({ summary, editor, postPath }: TypePostCardProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <PostViewHeader
-          summary={summary}
-          postPath={postPath}
-          variant="detail"
-        />
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {summary.title && (
-          <h3 className="text-lg font-semibold">{summary.title}</h3>
-        )}
-        <PostBody editor={editor} className="line-clamp-4" />
-        <PostCardActions
-          postId={summary.id}
-          liked={summary.liked}
-          likeCount={summary.likeCount}
-          commentCount={summary.commentCount}
-          bookmarked={summary.bookmarked}
-        />
-        <PostTagChips tags={summary.tags} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function QuestionTypePostCard({
-  summary,
-  editor,
-  postPath,
-}: TypePostCardProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <PostViewHeader
-          summary={summary}
-          postPath={postPath}
-          variant="detail"
-        />
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {summary.title && (
-          <h3 className="text-lg font-semibold">{summary.title}</h3>
-        )}
-        <PostBody editor={editor} />
-        <PostCardActions
-          postId={summary.id}
-          liked={summary.liked}
-          likeCount={summary.likeCount}
-          commentCount={summary.commentCount}
-          bookmarked={summary.bookmarked}
-        />
-        <PostTagChips tags={summary.tags} />
-      </CardContent>
-    </Card>
-  );
 }
 
 // ---- PostPreviewCard: feed view, data injected by PostList ----
 
 export interface PostPreviewCardProps {
   summary: PostSummary;
+  /**
+   * 카드가 부모의 높이를 가득 채우도록 한다(`h-full`). 관련 게시물처럼 여러 카드를
+   * 한 행/캐러셀에 나란히 배치해 높이를 맞춰야 할 때 사용한다. 부모가
+   * stretch(그리드/flex 기본값)일 때 모든 카드가 가장 큰 카드 높이에 맞춰진다.
+   */
+  fillHeight?: boolean;
+  /** 목록에 이어 붙는 자리라면 `flat`. 기본값은 낱개로 떠 있는 `card`. */
+  surface?: PostPreviewSurface;
 }
 
-export function PostPreviewCard({ summary }: PostPreviewCardProps) {
+export function PostPreviewCard({
+  summary,
+  fillHeight,
+  surface = 'card',
+}: PostPreviewCardProps) {
   return (
     <PostRenderErrorBoundary>
-      <PostPreviewCardBySummary summary={summary} />
+      <PostPreviewCardBySummary
+        summary={summary}
+        fillHeight={fillHeight}
+        surface={surface}
+      />
     </PostRenderErrorBoundary>
   );
 }
 
-function PostPreviewCardBySummary({ summary }: PostPreviewCardProps) {
+function PostPreviewCardBySummary({
+  summary,
+  fillHeight,
+  surface = 'card',
+}: PostPreviewCardProps) {
   const router = useRouter();
+  const postPath = resolvePostPath(summary);
 
-  const postPath = summary.project?.handle
-    ? ROUTES.PROJECT_POST(summary.project.handle, summary.slug)
-    : ROUTES.POST(summary.slug);
-
-  const typePreviewCardProps: TypePostPreviewCardProps = {
+  const props: PostPreviewCardTypeProps = {
     summary,
     postPath,
+    fillHeight,
+    surface,
     onClick: () => router.push(postPath),
-    reviewStatus: getMockReviewStatus(summary.id),
   };
 
   switch (summary.type) {
     case PostType.QUESTION:
-      return <QuestionTypePostPreviewCard {...typePreviewCardProps} />;
+      return <QuestionPostPreviewCard {...props} />;
     case PostType.LONG:
-      return <LongTypePostPreviewCard {...typePreviewCardProps} />;
+      return <LongPostPreviewCard {...props} />;
     case PostType.SHORT:
     default:
-      return <ShortTypePostPreviewCard {...typePreviewCardProps} />;
+      return <ShortPostPreviewCard {...props} />;
   }
-}
-
-interface TypePostPreviewCardProps {
-  summary: PostSummary;
-  postPath: string;
-  onClick: () => void;
-  reviewStatus: ReviewStatus;
-}
-
-function ReviewStatusIndicator({ status }: { status: ReviewStatus }) {
-  const t = useTranslations('components.post.viewer');
-
-  if (status === 'verified') {
-    return (
-      <span className="flex items-center gap-1 text-xs font-medium text-success-text">
-        <CheckCircleIcon weight="fill" />
-        {t('reviewStatus.verified')}
-      </span>
-    );
-  }
-
-  if (status === 'verify-soon') {
-    return (
-      <span className="flex items-center gap-1 text-xs font-medium text-warning-text">
-        <ClockIcon />
-        {t('reviewStatus.verify-soon')}
-      </span>
-    );
-  }
-
-  return null;
-}
-
-function ShortTypePostPreviewCard({
-  summary,
-  postPath,
-  onClick,
-  reviewStatus,
-}: TypePostPreviewCardProps) {
-  return (
-    <Card onClick={onClick}>
-      <CardHeader>
-        <PostViewHeader
-          summary={summary}
-          postPath={postPath}
-          variant="preview"
-        />
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {summary.title && (
-          <h3 className="text-lg font-semibold">{summary.title}</h3>
-        )}
-        <PostPreviewBody preview={summary.preview} />
-
-        <div className="flex items-center justify-between">
-          <ReviewStatusIndicator status={reviewStatus} />
-          <PostCardActions
-            postId={summary.id}
-            liked={summary.liked}
-            likeCount={summary.likeCount}
-            commentCount={summary.commentCount}
-            bookmarked={summary.bookmarked}
-          />
-        </div>
-
-        <PostTagChips tags={summary.tags} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function LongTypePostPreviewCard({
-  summary,
-  postPath,
-  onClick,
-  reviewStatus,
-}: TypePostPreviewCardProps) {
-  return (
-    <Card onClick={onClick}>
-      <CardHeader>
-        <PostViewHeader
-          summary={summary}
-          postPath={postPath}
-          variant="preview"
-        />
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <ArticlePreviewMedia
-          previewMedia={summary.previewMedia}
-          wordCount={summary.wordCount}
-          project={summary.project}
-        />
-
-        {summary.title && (
-          <h3 className="text-lg font-semibold">{summary.title}</h3>
-        )}
-        <PostPreviewBody preview={summary.preview} className="line-clamp-6" />
-
-        <div className="flex items-center justify-between">
-          <ReviewStatusIndicator status={reviewStatus} />
-          <PostCardActions
-            postId={summary.id}
-            liked={summary.liked}
-            likeCount={summary.likeCount}
-            commentCount={summary.commentCount}
-            bookmarked={summary.bookmarked}
-          />
-        </div>
-
-        <PostTagChips tags={summary.tags} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function QuestionTypePostPreviewCard({
-  summary,
-  postPath,
-  onClick,
-}: TypePostPreviewCardProps) {
-  const t = useTranslations('components.post.viewer');
-
-  return (
-    <Card onClick={onClick}>
-      <CardContent className="flex gap-4">
-        <div className="flex w-14 shrink-0 flex-col items-center gap-2 text-center">
-          <div>
-            <p className="text-lg font-semibold">{summary.likeCount}</p>
-            <p className="text-muted-foreground text-xs">{t('votes')}</p>
-          </div>
-          <div className="rounded-md border px-2 py-1">
-            <p className="text-sm font-semibold">{summary.commentCount}</p>
-            <p className="text-muted-foreground text-xs">{t('answers')}</p>
-          </div>
-        </div>
-
-        <div className="min-w-0 flex-1 space-y-3">
-          <PostViewHeader
-            summary={summary}
-            postPath={postPath}
-            variant="preview"
-          />
-
-          {summary.resolved && (
-            <span className="text-xs font-medium text-success-text">
-              {t('answered')}
-            </span>
-          )}
-
-          {summary.title && (
-            <h3 className="text-lg font-semibold">{summary.title}</h3>
-          )}
-          <PostPreviewBody preview={summary.preview} />
-
-          <div className="flex items-center justify-between">
-            <PostCardActions
-              postId={summary.id}
-              liked={summary.liked}
-              likeCount={summary.likeCount}
-              commentCount={summary.commentCount}
-              bookmarked={summary.bookmarked}
-            />
-            <PostTagChips tags={summary.tags} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ArticlePreviewMedia({
-  previewMedia,
-  wordCount,
-  project,
-}: {
-  previewMedia: PostPreviewMedia[];
-  wordCount: number;
-  project?: PostProjectSummary;
-}) {
-  const t = useTranslations('components.post.viewer');
-  const readingMinutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
-  // TODO: no category field on posts yet — falls back to the project name,
-  // or a generic label.
-  const category = project?.name?.toUpperCase() ?? t('article');
-  const thumbnail = previewMedia[0];
-
-  return (
-    <div
-      className="relative flex h-32 items-end rounded-lg bg-gradient-to-br from-primary/20 to-success-tint bg-cover bg-center p-4"
-      style={
-        thumbnail ? { backgroundImage: `url(${thumbnail.url})` } : undefined
-      }
-    >
-      <span className="absolute top-3 right-3 rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium">
-        {t('minRead', { minutes: readingMinutes })}
-      </span>
-      <span className="text-xs font-semibold tracking-wide text-primary">
-        {category}
-      </span>
-    </div>
-  );
 }

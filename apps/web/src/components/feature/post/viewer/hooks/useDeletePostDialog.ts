@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { useDeletePost } from '@/components/feature/post/hooks/useDeletePost';
+import SyncError, { ErrorCode } from '@/lib/error';
 
 export function useDeletePostDialog(
   postId: number,
@@ -27,7 +28,15 @@ export function useDeletePostDialog(
             router.refresh();
           }
         },
-        onError: () => {
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.POST_NOT_FOUND
+          ) {
+            toast.error(tDelete('messages.not-found'));
+            return;
+          }
+
           toast.error(tDelete('messages.error'));
         },
       },

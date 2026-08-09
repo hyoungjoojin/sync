@@ -9,15 +9,51 @@
     margin-top: 0;
   }
 
-  /* List styles */
+  /*
+   * 목록 스타일.
+   * Tailwind preflight가 `ul, ol { list-style: none }`으로 마커를 지우므로
+   * 여기서 다시 살려준다. 중첩 단계별 마커도 브라우저 기본값처럼 직접 지정한다.
+   */
   ul,
   ol {
     padding: 0 1rem;
     margin: 1.25rem 1rem 1.25rem 0.4rem;
+    list-style-position: outside;
 
     li p {
       margin-top: 0.25em;
       margin-bottom: 0.25em;
+    }
+
+    /* 중첩 목록은 바깥 목록의 항목 안에 들어가므로 상하 여백을 줄인다. */
+    ul,
+    ol {
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  ul:not([data-type='taskList']) {
+    list-style-type: disc;
+
+    ul:not([data-type='taskList']) {
+      list-style-type: circle;
+
+      ul:not([data-type='taskList']) {
+        list-style-type: square;
+      }
+    }
+  }
+
+  ol {
+    list-style-type: decimal;
+
+    ol {
+      list-style-type: lower-alpha;
+
+      ol {
+        list-style-type: lower-roman;
+      }
     }
   }
 
@@ -29,14 +65,15 @@
   h5,
   h6 {
     line-height: 1.1;
-    margin-top: 2.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
     text-wrap: pretty;
   }
 
   h1,
   h2 {
-    margin-top: 3.5rem;
-    margin-bottom: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
   }
 
   h1 {
@@ -66,20 +103,120 @@
     padding: 0.25em 0.3em;
   }
 
+  /*
+   * 코드 블록은 code-block.tsx의 NodeView가 배경/여백/헤더를 담당한다.
+   * 여기서는 폰트와 code 리셋만 적용하고, 토큰 색상은 아래 `.hljs-*`에서 처리한다.
+   */
   pre {
-    background: var(--black);
-    border-radius: calc(var(--radius) - 4px);
-    color: var(--white);
     font-family: 'JetBrainsMono', monospace;
-    margin: 1.5rem 0;
-    padding: 0.75rem 1rem;
+    margin: 0;
 
     code {
       background: none;
       color: inherit;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       padding: 0;
     }
+  }
+
+  /* 링크 */
+  a {
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* 할 일 목록 (체크박스) */
+  ul[data-type='taskList'] {
+    list-style: none;
+    margin: 1.25rem 0;
+    padding: 0;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      > label {
+        flex: 0 0 auto;
+        margin-top: 0.2rem;
+        user-select: none;
+      }
+
+      > div {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+
+    input[type='checkbox'] {
+      cursor: pointer;
+    }
+
+    li[data-checked='true'] > div {
+      color: var(--muted-foreground);
+      text-decoration: line-through;
+    }
+  }
+
+  /* 표 */
+  .tableWrapper {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    table-layout: fixed;
+    width: 100%;
+
+    td,
+    th {
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+      min-width: 3rem;
+      padding: 0.5rem 0.75rem;
+      position: relative;
+      vertical-align: top;
+
+      > * {
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+    }
+
+    th {
+      background-color: var(--secondary);
+      font-weight: 600;
+      text-align: left;
+    }
+
+    /* 선택된 셀 강조 */
+    .selectedCell::after {
+      background: color-mix(in oklab, var(--primary) 15%, transparent);
+      content: '';
+      inset: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    /* 열 너비 조절 핸들 */
+    .column-resize-handle {
+      background-color: var(--primary);
+      bottom: -1px;
+      pointer-events: none;
+      position: absolute;
+      right: -1px;
+      top: 0;
+      width: 2px;
+    }
+  }
+
+  &.resize-cursor {
+    cursor: col-resize;
   }
 
   blockquote {

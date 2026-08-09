@@ -12,11 +12,22 @@ import type { GetCommentsResponseCommentsNodesItemContentAuthor } from './GetCom
 export type GetCommentsResponseCommentsNodesItemContent = {
   /** Creation timestamp */
   createdAt: string;
+  /** Whether the author is the post author */
+  isPostAuthor: boolean;
   /** Is deleted */
   isDeleted: boolean;
-  author?: GetCommentsResponseCommentsNodesItemContentAuthor;
+  /** Comment author */
+  author: GetCommentsResponseCommentsNodesItemContentAuthor;
+  /** Is accepted */
+  isAccepted: boolean;
+  /** Whether the requester can delete this comment */
+  canDelete: boolean;
+  /** Like count */
+  likeCount: number;
   /** Comment ID */
   id: number;
+  /** Whether the requester liked this comment */
+  liked: boolean;
   /**
    * Comment content
    * @nullable

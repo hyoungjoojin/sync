@@ -1,8 +1,16 @@
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { requireOnboardedSession } from '@/lib/auth/guards';
 
 import ExploreProjects from './_components/ExploreProjects';
+import TrendingProjectPosts from './_components/TrendingProjectPosts';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('pages.explore.projects');
+
+  return { title: t('title') };
+}
 
 export default async function ExploreProjectsPage() {
   await requireOnboardedSession();
@@ -16,7 +24,10 @@ export default async function ExploreProjectsPage() {
         <p className="text-muted-foreground text-sm">{t('description')}</p>
       </div>
 
-      <ExploreProjects />
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <ExploreProjects />
+        <TrendingProjectPosts />
+      </div>
     </div>
   );
 }

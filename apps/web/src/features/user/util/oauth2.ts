@@ -6,6 +6,9 @@ function getClientId(provider: OAuth2Provider) {
     case 'GOOGLE':
       return 'google';
 
+    case 'GITHUB':
+      return 'github';
+
     default:
       return provider;
   }

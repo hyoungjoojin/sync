@@ -1,21 +1,29 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getGetProjectByHandleQueryOptions } from '@/api/__generated__/project/project';
 import SyncError, { ErrorCode } from '@/lib/error';
 import { getQueryClient } from '@/lib/query';
 
-import WorkspaceSettingsView from './_components/WorkspaceSettingsView';
+import ProjectSettingsView from './_components/ProjectSettingsView';
 
-interface WorkspaceSettingsPageProps {
+interface ProjectSettingsPageProps {
   params: Promise<{
     handle: string;
   }>;
 }
 
-export default async function WorkspaceSettingsPage({
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('pages.projects.project.settings.project');
+
+  return { title: t('heading') };
+}
+
+export default async function ProjectSettingsPage({
   params,
-}: WorkspaceSettingsPageProps) {
+}: ProjectSettingsPageProps) {
   const { handle } = await params;
 
   const queryClient = getQueryClient();
@@ -33,7 +41,7 @@ export default async function WorkspaceSettingsPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <WorkspaceSettingsView />
+      <ProjectSettingsView />
     </HydrationBoundary>
   );
 }

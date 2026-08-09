@@ -16,9 +16,9 @@ import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.common.security.WithAuthenticatedUserSecurityContextFactory;
 import com.skkil.sync.config.SecurityConfig;
-import com.skkil.sync.post.dto.response.SearchPostsResponse;
+import com.skkil.sync.post.dto.response.GetPostsResponse;
 import com.skkil.sync.post.service.PostSearchService;
-import com.skkil.sync.post.snippets.SearchPostsResponseSnippets;
+import com.skkil.sync.post.snippets.GetPostsResponseSnippets;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class PostSearchControllerTests {
   void searchPosts() throws Exception {
     AuthenticatedUser user = WithAuthenticatedUserSecurityContextFactory.getAuthenticatedUser();
     String query = "test query";
-    SearchPostsResponse response = SearchPostsResponseSnippets.getSearchPostsResponse();
+    GetPostsResponse response = GetPostsResponseSnippets.getGetPostsResponse();
 
     when(postSearchService.searchPosts(eq(user.userId()), eq(query), isNull()))
         .thenReturn(response);
@@ -64,7 +64,7 @@ class PostSearchControllerTests {
                     .tag("post")
                     .summary("Search Posts")
                     .description("Search Posts by query string")
-                    .responseSchema(schema("SearchPostsResponse")),
+                    .responseSchema(schema("GetPostsResponse")),
                 null,
                 null,
                 Function.identity(),
@@ -73,7 +73,7 @@ class PostSearchControllerTests {
                     parameterWithName("projectHandle")
                         .description("프로젝트로 검색 범위 제한 (선택)")
                         .optional()),
-                SearchPostsResponseSnippets.getSearchPostsResponseFields()));
+                GetPostsResponseSnippets.getPostsResponseFields("검색 결과 게시글 목록")));
   }
 
   @Test

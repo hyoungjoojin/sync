@@ -1,4 +1,4 @@
-export type OAuth2Provider = 'GOOGLE';
+export type OAuth2Provider = 'GOOGLE' | 'GITHUB';
 
 export interface Profile {
   id: string;

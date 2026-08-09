@@ -1,6 +1,8 @@
 package com.skkil.sync.post.service;
 
 import com.skkil.sync.media.model.Media;
+import com.skkil.sync.media.service.domain.MediaDomainService;
+import com.skkil.sync.post.constants.PostConstants;
 import com.skkil.sync.post.dto.request.CreatePostRequest;
 import com.skkil.sync.post.dto.request.CreateProjectPostRequest;
 import com.skkil.sync.post.dto.request.PostContentRequest;
@@ -12,6 +14,7 @@ import com.skkil.sync.post.event.PostContentChangedEvent;
 import com.skkil.sync.post.event.PostPublishedEvent;
 import com.skkil.sync.post.exception.InvalidPostPublishRequestException;
 import com.skkil.sync.post.exception.PostNotFoundException;
+import com.skkil.sync.post.exception.PostPinLimitExceededException;
 import com.skkil.sync.post.model.Post;
 import com.skkil.sync.post.model.PostStatus;
 import com.skkil.sync.post.model.PostType;
@@ -35,8 +38,10 @@ public class PostService {
 
   private final UserDomainService userDomainService;
   private final ProjectDomainService projectDomainService;
+  private final MediaDomainService mediaDomainService;
 
   private final TagService tagService;
+  private final PostReferenceService postReferenceService;
   private final PostContentMediaService contentMediaService;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -45,13 +50,17 @@ public class PostService {
   public PostService(
       UserDomainService userDomainService,
       ProjectDomainService projectDomainService,
+      MediaDomainService mediaDomainService,
       TagService tagService,
+      PostReferenceService postReferenceService,
       PostContentMediaService contentMediaService,
       PostRepository postRepository,
       ApplicationEventPublisher eventPublisher) {
     this.userDomainService = userDomainService;
     this.projectDomainService = projectDomainService;
+    this.mediaDomainService = mediaDomainService;
     this.tagService = tagService;
+    this.postReferenceService = postReferenceService;
     this.contentMediaService = contentMediaService;
     this.postRepository = postRepository;
     this.eventPublisher = eventPublisher;
@@ -67,6 +76,8 @@ public class PostService {
         request.content(),
         request.tags(),
         List.of(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
         null);
   }
 
@@ -84,6 +95,8 @@ public class PostService {
         request.content(),
         request.tags(),
         request.projectTags(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
         project);
   }
 
@@ -95,6 +108,8 @@ public class PostService {
       PostContentRequest content,
       List<String> tags,
       @Nullable List<String> projectTags,
+      @Nullable List<Long> referencedPostIds,
+      @Nullable String coverMediaId,
       @Nullable Project project) {
     status = status == null ? PostStatus.PUBLISHED : status;
     projectTags = projectTags == null ? List.of() : projectTags;
@@ -105,6 +120,8 @@ public class PostService {
     List<Media> mediaFiles =
         contentMediaService.resolveMediaFilesForCreate(authorId, content.mediaIds());
 
+    Media coverMedia = type == PostType.LONG ? resolveCover(authorId, coverMediaId) : null;
+
     Post.PostBuilder postBuilder =
         Post.builder()
             .slug(slug)
@@ -112,21 +129,73 @@ public class PostService {
             .type(type)
             .status(status)
             .title(title)
-            .content(content.json());
+            .jsonContent(content.json())
+            .coverMedia(coverMedia);
     if (project != null) {
       postBuilder.project(project);
     }
     Post post = postBuilder.build();
 
-    post.updateContent(content.json(), content.text(), mediaFiles.size());
+    post.updateJsonContent(content.json(), content.text(), mediaFiles.size());
+
+    return new CreatePostResponse(
+        persistNewPost(
+                post, project, tags, projectTags, referencedPostIds, mediaFiles, content.text())
+            .getSlug());
+  }
+
+  @Transactional
+  Post createMarkdownDraft(
+      Long authorId,
+      @Nullable String title,
+      PostType type,
+      String bodyMarkdown,
+      List<String> tags,
+      List<String> projectTags,
+      @Nullable Project project,
+      String createdViaClientId) {
+    User author = userDomainService.getUserReference(authorId);
+    String slug = PostSlugGenerator.generate(author, title);
+
+    Post.PostBuilder postBuilder =
+        Post.builder()
+            .slug(slug)
+            .author(author)
+            .type(type)
+            .status(PostStatus.DRAFT)
+            .title(title)
+            .createdViaClientId(createdViaClientId);
+    if (project != null) {
+      postBuilder.project(project);
+    }
+    Post post = postBuilder.build();
+
+    post.updateMarkdownContent(bodyMarkdown);
+
+    return persistNewPost(post, project, tags, projectTags, null, List.of(), bodyMarkdown);
+  }
+
+  /**
+   * 새 게시글을 저장하고 그 뒤에 따라붙는 처리(태그, 미디어, 참조, 이벤트)를 수행한다. Tiptap 본문 경로와 Markdown 초안 경로가 공유하는 부분이며, 두
+   * 경로의 차이는 여기 도달하기 전까지의 본문 구성뿐이다.
+   */
+  private Post persistNewPost(
+      Post post,
+      @Nullable Project project,
+      List<String> tags,
+      List<String> projectTags,
+      @Nullable List<Long> referencedPostIds,
+      List<Media> mediaFiles,
+      String contentText) {
     tagService.addTagsToPost(post, project, tags, projectTags);
 
-    post = postRepository.save(post);
-    contentMediaService.savePostMediaFiles(post, mediaFiles);
+    Post saved = postRepository.save(post);
+    contentMediaService.savePostMediaFiles(saved, mediaFiles);
+    postReferenceService.replaceReferences(saved, referencedPostIds);
 
-    applyPublishSideEffects(post, false, content.text());
+    applyPublishSideEffects(saved, false, contentText);
 
-    return new CreatePostResponse(post.getSlug());
+    return saved;
   }
 
   @Transactional
@@ -141,7 +210,10 @@ public class PostService {
         request.status(),
         request.content(),
         request.tags(),
-        List.of());
+        List.of(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
+        request.removeCover());
   }
 
   @Transactional
@@ -157,7 +229,10 @@ public class PostService {
         request.status(),
         request.content(),
         request.tags(),
-        request.projectTags());
+        request.projectTags(),
+        request.referencedPostIds(),
+        request.coverMediaId(),
+        request.removeCover());
   }
 
   private Post getPostById(Long postId) {
@@ -190,7 +265,10 @@ public class PostService {
       PostStatus status,
       PostContentRequest content,
       List<String> tags,
-      List<String> projectTags) {
+      List<String> projectTags,
+      @Nullable List<Long> referencedPostIds,
+      @Nullable String coverMediaId,
+      @Nullable Boolean removeCover) {
     if (post.isPublished() && status == PostStatus.DRAFT) {
       throw new InvalidPostPublishRequestException("Published posts cannot be reverted to draft.");
     }
@@ -200,11 +278,36 @@ public class PostService {
         contentMediaService.resolveMediaFilesForUpdate(
             post.getAuthor().getId(), post.getId(), content.mediaIds());
 
+    Media coverMedia =
+        type == PostType.LONG
+            ? resolveUpdatedCover(post.getAuthor().getId(), post, coverMediaId, removeCover)
+            : null;
+
     post.update(title, type, status, content.json(), content.text(), mediaFiles.size());
+    post.updateCoverMedia(coverMedia);
     tagService.replaceTags(post, tags, projectTags);
+    postReferenceService.replaceReferences(post, referencedPostIds);
     contentMediaService.replaceMediaFiles(post, mediaFiles);
 
     applyPublishSideEffects(post, wasPublished, content.text());
+  }
+
+  private @Nullable Media resolveCover(Long requesterId, @Nullable String coverMediaId) {
+    if (coverMediaId == null) {
+      return null;
+    }
+    return mediaDomainService.linkMedia(requesterId, Long.valueOf(coverMediaId));
+  }
+
+  private @Nullable Media resolveUpdatedCover(
+      Long requesterId, Post post, @Nullable String coverMediaId, @Nullable Boolean removeCover) {
+    if (Boolean.TRUE.equals(removeCover)) {
+      return null;
+    }
+    if (coverMediaId != null) {
+      return mediaDomainService.linkMedia(requesterId, Long.valueOf(coverMediaId));
+    }
+    return post.getCoverMedia();
   }
 
   /**
@@ -231,6 +334,29 @@ public class PostService {
         postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
     post.updateSummary(request.summary());
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
+  public void pinPost(Long postId, String handle) {
+    Project project = projectDomainService.getProjectByHandle(handle);
+    Post post = requirePost(postId, project);
+    if (post.isPinned()) {
+      return;
+    }
+    if (postRepository.countByProjectAndPinnedAtIsNotNull(project)
+        >= PostConstants.MAX_PINNED_POSTS_PER_PROJECT) {
+      throw new PostPinLimitExceededException();
+    }
+    post.pin();
+  }
+
+  @Transactional
+  @PreAuthorize("hasPermission(#handle, 'PROJECT', 'EDIT')")
+  public void unpinPost(Long postId, String handle) {
+    Project project = projectDomainService.getProjectByHandle(handle);
+    Post post = requirePost(postId, project);
+    post.unpin();
   }
 
   @Transactional

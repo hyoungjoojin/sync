@@ -4,6 +4,7 @@ import com.skkil.sync.common.integration.email.EmailService;
 import com.skkil.sync.common.integration.email.dto.EmailMessage;
 import com.skkil.sync.user.constant.EmailVerificationConstants;
 import com.skkil.sync.user.dto.request.VerifyEmailRequest;
+import com.skkil.sync.user.dto.response.SendVerificationEmailResponse;
 import com.skkil.sync.user.exception.EmailAlreadyVerifiedException;
 import com.skkil.sync.user.exception.EmailVerificationTokenExpiredException;
 import com.skkil.sync.user.exception.EmailVerificationTokenInvalidException;
@@ -16,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -30,22 +32,25 @@ public class EmailVerificationService {
   private final EmailService emailService;
   private final SpringTemplateEngine templateEngine;
   private final Random random;
+  private final String frontendBaseUrl;
 
   public EmailVerificationService(
       UserRepository userRepository,
       EmailVerificationTokenRepository tokenRepository,
       EmailService emailService,
-      SpringTemplateEngine templateEngine)
+      SpringTemplateEngine templateEngine,
+      @Value("${app.frontend.base-url}") String frontendBaseUrl)
       throws NoSuchAlgorithmException {
     this.userRepository = userRepository;
     this.tokenRepository = tokenRepository;
     this.emailService = emailService;
     this.templateEngine = templateEngine;
     this.random = SecureRandom.getInstanceStrong();
+    this.frontendBaseUrl = frontendBaseUrl;
   }
 
   @Transactional
-  public void sendVerificationEmail(Long userId) {
+  public SendVerificationEmailResponse sendVerificationEmail(Long userId) {
     User user =
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -75,6 +80,7 @@ public class EmailVerificationService {
     context.setVariable("token", token.getToken());
     context.setVariable(
         "expirationMinutes", EmailVerificationConstants.EMAIL_VERIFICATION_TOKEN_TTL.toMinutes());
+    context.setVariable("frontendBaseUrl", frontendBaseUrl);
 
     EmailMessage email =
         EmailMessage.builder()
@@ -84,7 +90,16 @@ public class EmailVerificationService {
             .build();
 
     log.debug("Sending email verification to user {}", userId);
-    emailService.sendMessage(email);
+    emailService
+        .sendMessage(email)
+        .exceptionally(
+            e -> {
+              log.error("Failed to send verification email to user {}", userId, e);
+              return null;
+            });
+
+    return new SendVerificationEmailResponse(
+        token.getExpiresAt(), EmailVerificationConstants.EMAIL_VERIFICATION_TOKEN_TTL.toSeconds());
   }
 
   @Transactional

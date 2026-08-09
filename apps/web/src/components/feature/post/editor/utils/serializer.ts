@@ -4,6 +4,7 @@ import { JSONContent } from '@tiptap/react';
 import { GetPostResponseContentMediaItem } from '@/api/__generated__/types';
 
 import { NodeType } from '../extensions/nodes';
+import { FileNodeAttributes } from '../extensions/nodes/file';
 import { ImageNodeAttributes } from '../extensions/nodes/image';
 
 type Media = {
@@ -51,8 +52,34 @@ function serializeNode(node: JSONContent): {
       };
     }
 
+    case NodeType.File: {
+      const { mediaId, showPreview } = node.attrs as FileNodeAttributes;
+
+      return {
+        node: {
+          ...node,
+          attrs: {
+            mediaId,
+            showPreview: showPreview === true,
+          },
+        },
+        media: mediaId ? [{ id: mediaId }] : [],
+      };
+    }
+
+    // 표 셀이나 인용구처럼 다른 노드를 품을 수 있는 노드는 그 안에 있는
+    // 이미지도 미디어 목록에 올라와야 하므로 자식까지 내려간다.
     default: {
-      return { node, media: [] };
+      if (!node.content) {
+        return { node, media: [] };
+      }
+
+      const children = node.content.map((child) => serializeNode(child));
+
+      return {
+        node: { ...node, content: children.map((child) => child.node) },
+        media: children.flatMap((child) => child.media),
+      };
     }
   }
 }
@@ -104,8 +131,42 @@ function deserializeNode(
       };
     }
 
+    case NodeType.File: {
+      const { mediaId } = node.attrs as FileNodeAttributes;
+
+      const item = mediaId ? mediaById.get(mediaId) : undefined;
+
+      if (!item) {
+        return null;
+      }
+
+      return {
+        ...node,
+        attrs: {
+          ...node.attrs,
+          mediaId,
+          url: item.url ?? null,
+          fileName: item.fileName ?? null,
+          fileSize: item.fileSize ?? null,
+          mediaType: item.mediaType ?? null,
+          status: 'uploaded',
+        },
+      };
+    }
+
     default: {
-      return node;
+      if (!node.content) {
+        return node;
+      }
+
+      const children = node.content
+        .map((child) => deserializeNode(child, mediaById))
+        .filter((child): child is JSONContent => child !== null);
+
+      return {
+        ...node,
+        content: children.length === 0 ? [{ type: 'paragraph' }] : children,
+      };
     }
   }
 }

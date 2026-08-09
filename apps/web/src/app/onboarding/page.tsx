@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import { useGetAuthenticatedUser } from '@/api/__generated__/profile/profile';
 import { useOnboardProfile } from '@/components/feature/profile/hooks/useOnboardProfile';
 import { Button } from '@/components/ui/button';
+import { ModalType } from '@/constants/modal';
+import { useModal } from '@/hooks/store';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 import { EmailVerificationStep } from './_components/EmailVerificationStep';
@@ -57,6 +60,7 @@ export default function Onboarding() {
   const t = useTranslations('pages.onboarding');
 
   const router = useRouter();
+  const { openModal } = useModal();
   const { data: profile, isPending: isProfilePending } =
     useGetAuthenticatedUser();
 
@@ -68,9 +72,14 @@ export default function Onboarding() {
     [profile],
   );
 
-  const contentRef = useRef<OnboardingStepContentRef | null>(null);
+  const contentRefs = useRef<Map<number, OnboardingStepContentRef | null>>(
+    new Map(),
+  );
 
   const [stepIndex, setStep] = useState(0);
+  const [visitedSteps, setVisitedSteps] = useState<Set<number>>(
+    () => new Set([0]),
+  );
   const [state, setState] = useState({
     isPending: false,
     isValid: true,
@@ -78,9 +87,21 @@ export default function Onboarding() {
 
   const { mutate: onboardProfile, isPending: isFinishing } = useOnboardProfile({
     onSuccess: async () => {
+      openModal(ModalType.PROMOTIONS);
       router.replace(ROUTES.HOME());
     },
-    onError: () => {
+    onError: (error) => {
+      if (error instanceof SyncError) {
+        switch (error.code) {
+          case ErrorCode.HANDLE_NOT_SET:
+            toast.error(t('errors.handle_not_set'));
+            return;
+          case ErrorCode.EMAIL_NOT_VERIFIED:
+            toast.error(t('errors.email_not_verified'));
+            return;
+        }
+      }
+
       toast.error(t('errors.finish'));
     },
   });
@@ -93,7 +114,9 @@ export default function Onboarding() {
   );
 
   const previousButtonClickHandler = () => {
-    setStep(stepIndex - 1);
+    const targetStep = stepIndex - 1;
+    setVisitedSteps((prev) => new Set(prev).add(targetStep));
+    setStep(targetStep);
     setState({
       isPending: false,
       isValid: true,
@@ -107,20 +130,21 @@ export default function Onboarding() {
         isValid: true,
       });
 
-      if (contentRef.current) {
-        contentRef.current.submit(() => {
-          setStep(stepIndex + 1);
-          setState({
-            isPending: false,
-            isValid: true,
-          });
-        });
-      } else {
-        setStep(stepIndex + 1);
+      const advance = () => {
+        const targetStep = stepIndex + 1;
+        setVisitedSteps((prev) => new Set(prev).add(targetStep));
+        setStep(targetStep);
         setState({
           isPending: false,
           isValid: true,
         });
+      };
+
+      const currentRef = contentRefs.current.get(stepIndex);
+      if (currentRef) {
+        currentRef.submit(advance);
+      } else {
+        advance();
       }
     }
   };
@@ -158,9 +182,30 @@ export default function Onboarding() {
           </p>
         </div>
 
-        {step?.content ? (
-          <step.content ref={contentRef} onStateChange={handleStateChange} />
-        ) : null}
+        {steps.map((s, index) => {
+          if (!s.content || !visitedSteps.has(index)) {
+            return null;
+          }
+
+          const StepContent = s.content;
+
+          return (
+            <div key={s.id} className={index === stepIndex ? '' : 'hidden'}>
+              <StepContent
+                ref={(el) => {
+                  if (el) {
+                    contentRefs.current.set(index, el);
+                  } else {
+                    contentRefs.current.delete(index);
+                  }
+                }}
+                onStateChange={
+                  index === stepIndex ? handleStateChange : () => {}
+                }
+              />
+            </div>
+          );
+        })}
 
         <div className="flex justify-end gap-4">
           {stepIndex > 0 && (

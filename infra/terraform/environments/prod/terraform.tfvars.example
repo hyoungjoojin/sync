@@ -1,0 +1,77 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values.
+# Secrets here end up in Terraform state — treat this file, and the state
+# backend, accordingly (state bucket should be private + encrypted).
+
+postgres_password = "changeme"
+
+google_client_id     = "changeme"
+google_client_secret = "changeme"
+
+github_client_id     = "changeme"
+github_client_secret = "changeme"
+
+# Gmail SMTP: mail_username is the sending Gmail address, mail_password is a
+# 16-character App Password (Google Account > Security > App passwords —
+# requires 2-Step Verification), not the account login password.
+mail_username = "changeme"
+mail_password = "changeme"
+
+slack_webhook_url = ""
+
+# Channel Talk user data encryption key (채널 설정 > 보안 및 개발 > 유저 데이터
+# 암호화). Signs the SDK member hash. Empty means the messenger only ever
+# boots anonymously — conversations will not attach to user accounts.
+channel_talk_secret_key = ""
+
+# Channel Talk plugin key (채널 설정 > 설치 관리). Baked into the web image at
+# build time as NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY. Empty means the widget
+# never loads at all, regardless of channel_talk_secret_key above.
+channel_talk_plugin_key = ""
+
+# Captcha keys (currently Google reCAPTCHA v3). secret_key verifies tokens
+# server-side; site_key is baked into the web image at build time as
+# NEXT_PUBLIC_CAPTCHA_SITE_KEY. They must be set together — the server
+# requires a token once its secret key is non-blank, but the client only
+# executes captcha when the site key is present. Setting one without the
+# other breaks every registration request. Leave both empty to skip captcha
+# entirely.
+captcha_secret_key = ""
+captcha_site_key   = ""
+
+# Platform ADMIN account, seeded by AdminSeeder on server boot. Leave both empty
+# to run with no platform admin at all.
+#
+# If the account for admin_email already registered through normal signup, it is
+# promoted and admin_password is ignored — so you can leave the password empty
+# and sign up first instead of shipping a password in Terraform state.
+admin_email    = ""
+admin_password = ""
+
+# OpenAI API key, used for post embeddings (AI_EMBEDDING_PROVIDER). Leave
+# empty until AI is deliberately enabled in prod — see infra/ops/deploy.sh.
+openai_api_key = ""
+
+# RSA keypair signing agent OAuth2 access tokens (app.agent.rsa-private-key /
+# app.agent.rsa-public-key). Leave empty and the server falls back to an
+# ephemeral key generated at boot — every restart then invalidates every
+# issued agent token, and a second instance can't validate tokens the first
+# one signed. Generate a real pair once and keep it stable across deploys:
+#
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
+#     -out agent_private_key.pem
+#   openssl rsa -pubout -in agent_private_key.pem -out agent_public_key.pem
+#
+# Paste each PEM file's contents below (heredoc keeps the newlines the parser
+# expects), then delete the local .pem files — they only need to exist in
+# Terraform state and Secrets Manager from here on.
+agent_rsa_private_key = <<-EOT
+-----BEGIN PRIVATE KEY-----
+changeme
+-----END PRIVATE KEY-----
+EOT
+
+agent_rsa_public_key = <<-EOT
+-----BEGIN PUBLIC KEY-----
+changeme
+-----END PUBLIC KEY-----
+EOT

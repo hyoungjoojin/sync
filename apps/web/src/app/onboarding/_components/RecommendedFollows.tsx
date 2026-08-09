@@ -4,12 +4,12 @@ import { useTranslations } from 'next-intl';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 import { useGetUserRecommendations } from '@/api/__generated__/user/user';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
 import {
   useFollowUser,
   useFollowedRecommendedUserIds,
   useUnfollowUser,
 } from '@/components/feature/user/hooks/useFollowUser';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -25,8 +25,12 @@ export const RecommendedFollows = forwardRef<
 
   const { data, isPending } = useGetUserRecommendations();
   const followedIds = useFollowedRecommendedUserIds();
-  const { mutate: followUser } = useFollowUser();
-  const { mutate: unfollowUser } = useUnfollowUser();
+  const { mutate: followUser } = useFollowUser({
+    invalidateUserRecommendations: false,
+  });
+  const { mutate: unfollowUser } = useUnfollowUser({
+    invalidateUserRecommendations: false,
+  });
 
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
@@ -98,11 +102,11 @@ export const RecommendedFollows = forwardRef<
             }}
             className="animate-in fade-in slide-in-from-bottom-1 duration-300 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted/60"
           >
-            <Avatar size="lg">
-              <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                {user.summary.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <ProfileAvatar
+              name={user.summary.name}
+              imageUrl={user.summary.profileImageUrl}
+              size="lg"
+            />
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">

@@ -5,9 +5,11 @@ import { ModalType } from '@/constants/modal';
 export type AuthRequiredIntent =
   | 'like'
   | 'bookmark'
+  | 'collection'
   | 'comment'
   | 'follow'
-  | 'write';
+  | 'write'
+  | 'join';
 
 export interface AuthRequiredModalPayload {
   intent: AuthRequiredIntent;
@@ -17,6 +19,7 @@ export interface AuthRequiredModalPayload {
 export type ModalPayload = {
   [ModalType.SETTINGS]: undefined;
   [ModalType.AUTH_REQUIRED]: AuthRequiredModalPayload;
+  [ModalType.PROMOTIONS]: undefined;
 };
 
 export interface ModalState {

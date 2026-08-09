@@ -4,10 +4,12 @@ import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.docume
 import static com.epages.restdocs.apispec.Schema.schema;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,7 +19,9 @@ import com.skkil.sync.common.config.TestSecurityConfig;
 import com.skkil.sync.common.security.WithAuthenticatedUser;
 import com.skkil.sync.config.SecurityConfig;
 import com.skkil.sync.user.dto.request.VerifyEmailRequest;
+import com.skkil.sync.user.dto.response.SendVerificationEmailResponse;
 import com.skkil.sync.user.service.EmailVerificationService;
+import java.time.Instant;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,22 +55,34 @@ class EmailVerificationControllerTests {
   @DisplayName("[sendVerificationEmail] API 문서화 테스트")
   @WithAuthenticatedUser(id = 1L)
   void sendVerificationEmail() throws Exception {
+    SendVerificationEmailResponse response =
+        new SendVerificationEmailResponse(Instant.parse("2026-07-16T00:10:00Z"), 600L);
+    when(emailVerificationService.sendVerificationEmail(1L)).thenReturn(response);
+
     mockMvc
         .perform(
             post("/auth/email-verification/send")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNoContent())
+        .andExpect(status().isOk())
         .andDo(
             document(
                 "SendVerificationEmail",
                 ResourceSnippetParameters.builder()
                     .tag("auth")
                     .summary("Send Verification Email")
-                    .description("로그인한 사용자에게 이메일 인증 코드를 발송합니다."),
+                    .description("로그인한 사용자에게 이메일 인증 코드를 발송합니다.")
+                    .responseSchema(schema(SendVerificationEmailResponse.class.getSimpleName())),
                 preprocessRequest(modifyHeaders().set("Content-Type", "application/json")),
                 null,
-                Function.identity()));
+                Function.identity(),
+                responseFields(
+                    fieldWithPath("expiresAt")
+                        .type(JsonFieldType.STRING)
+                        .description("인증 코드가 만료되는 시각"),
+                    fieldWithPath("validForSeconds")
+                        .type(JsonFieldType.NUMBER)
+                        .description("인증 코드의 유효 시간(초)"))));
 
     verify(emailVerificationService).sendVerificationEmail(eq(1L));
   }

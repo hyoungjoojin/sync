@@ -11,4 +11,5 @@ public record TagSummary(
     Long postCount,
     Long followerCount,
     @Nullable String projectHandle,
-    boolean isFollowing) {}
+    boolean isFollowing,
+    boolean verified) {}

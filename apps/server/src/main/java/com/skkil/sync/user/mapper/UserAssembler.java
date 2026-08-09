@@ -33,7 +33,7 @@ public class UserAssembler {
   public Map<Long, UserSummary> toUserSummaries(List<Long> userIds) {
     List<User> users = userRepository.findAllById(userIds);
     Map<Long, URL> profileImageUrls =
-        mediaDomainService.generatePublicGetUrls(users, User::getProfileImage);
+        mediaDomainService.generatePresignedGetUrls(users, User::getProfileImage);
 
     return users.stream()
         .collect(
@@ -43,7 +43,7 @@ public class UserAssembler {
 
   public List<UserSummary> toUserSummariesInOrder(List<User> users) {
     Map<Long, URL> profileImageUrls =
-        mediaDomainService.generatePublicGetUrls(users, User::getProfileImage);
+        mediaDomainService.generatePresignedGetUrls(users, User::getProfileImage);
 
     return users.stream().map(user -> toUserSummary(user, profileImageUrls)).toList();
   }

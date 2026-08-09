@@ -26,7 +26,10 @@ import type {
 
 import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
-import type { GetBookmarkedPostsParams, GetPostsResponse } from '../types';
+import type {
+  GetBookmarkedPostsParams,
+  PaginatedGetPostsResponse,
+} from '../types';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -49,7 +52,7 @@ const withQueryKey = <T extends object, K>(
 };
 
 export type getBookmarkedPostsResponse200 = {
-  data: GetPostsResponse;
+  data: PaginatedGetPostsResponse;
   status: 200;
 };
 

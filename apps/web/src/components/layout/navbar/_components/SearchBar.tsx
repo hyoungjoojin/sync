@@ -2,7 +2,7 @@
 
 import { MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { useProjectContextHandle } from '@/hooks/use-project-context';
 import ROUTES from '@/util/routes';
 
 interface SearchBarProps {
@@ -20,17 +21,12 @@ interface SearchBarProps {
 export default function SearchBar({ variant }: SearchBarProps) {
   const t = useTranslations('components.navigation');
   const router = useRouter();
-  const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const projectHandleMatch = pathname.match(/^\/projects\/([^/]+)/)?.[1];
-  const projectHandle =
-    projectHandleMatch && projectHandleMatch !== 'new'
-      ? projectHandleMatch
-      : undefined;
+  const projectHandle = useProjectContextHandle();
 
   useEffect(() => {
     if (isExpanded) {

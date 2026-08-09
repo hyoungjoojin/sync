@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useMounted } from '@/hooks/use-mounted';
-import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 import NotificationsButton from './_components/NotificationsButton';
@@ -31,9 +31,17 @@ export default function TopNavigationBar({
 }
 
 function LeftSection({ showSidebarTrigger }: { showSidebarTrigger: boolean }) {
+  // Same `mounted` gating as `RightSection` below — SSR always renders the
+  // logged-out state, so this avoids a hydration mismatch once the session
+  // resolves client-side.
+  const mounted = useMounted();
+  const { data: session, isPending } = useSession();
+  const showTrigger =
+    showSidebarTrigger && mounted && !isPending && isAuthenticated(session);
+
   return (
     <div className="flex items-center gap-2 min-w-0">
-      {showSidebarTrigger && <SidebarTrigger className="md:hidden" />}
+      {showTrigger && <SidebarTrigger className="md:hidden" />}
       <Link href={ROUTES.HOME()}>
         <Logo />
       </Link>
@@ -58,16 +66,17 @@ function RightSection() {
 
   return (
     <div className="flex items-center gap-1">
-      <>
-        <div className="hidden md:block">
-          <SearchBar variant="desktop" />
-        </div>
-        <div className="md:hidden">
-          <SearchBar variant="mobile" />
-        </div>
-      </>
-
-      {isAuthenticated(session) && <NotificationsButton />}
+      {isAuthenticated(session) && (
+        <>
+          <div className="hidden md:block">
+            <SearchBar variant="desktop" />
+          </div>
+          <div className="md:hidden">
+            <SearchBar variant="mobile" />
+          </div>
+          <NotificationsButton />
+        </>
+      )}
 
       {isAuthenticated(session) ? (
         <UserAvatar />

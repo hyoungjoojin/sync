@@ -2,12 +2,13 @@ package com.skkil.sync.post.service;
 
 import com.skkil.sync.common.util.pagination.dto.request.CursorPaginationRequest;
 import com.skkil.sync.common.util.pagination.service.PaginationService;
-import com.skkil.sync.post.dto.response.GetPostsResponse;
+import com.skkil.sync.post.dto.response.PaginatedGetPostsResponse;
 import com.skkil.sync.post.mapper.PostAssembler;
 import com.skkil.sync.post.repository.PostBookmarkRepository;
 import com.skkil.sync.post.repository.PostQueryRepository;
 import com.skkil.sync.post.repository.pagination.BookmarkedPostCursorPaginationProvider;
 import org.jspecify.annotations.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostBookmarkService {
 
   private final PostBookmarkRepository postBookmarkRepository;
-  private final PostDomainService postDomainService;
   private final PostQueryRepository postQueryRepository;
   private final PostAssembler postAssembler;
   private final BookmarkedPostCursorPaginationProvider paginationProvider;
@@ -23,13 +23,11 @@ public class PostBookmarkService {
 
   public PostBookmarkService(
       PostBookmarkRepository postBookmarkRepository,
-      PostDomainService postDomainService,
       PostQueryRepository postQueryRepository,
       PostAssembler postAssembler,
       BookmarkedPostCursorPaginationProvider paginationProvider,
       PaginationService paginationService) {
     this.postBookmarkRepository = postBookmarkRepository;
-    this.postDomainService = postDomainService;
     this.postQueryRepository = postQueryRepository;
     this.postAssembler = postAssembler;
     this.paginationProvider = paginationProvider;
@@ -37,18 +35,20 @@ public class PostBookmarkService {
   }
 
   @Transactional
+  @PreAuthorize("hasPermission(#postId, 'POST', 'READ')")
   public void bookmarkPost(Long userId, Long postId) {
-    postDomainService.getPublicPublishedPost(postId);
     postBookmarkRepository.insertIfAbsent(userId, postId);
   }
 
   @Transactional
+  @PreAuthorize("hasPermission(#postId, 'POST', 'READ')")
   public void unbookmarkPost(Long userId, Long postId) {
     postBookmarkRepository.deleteByUser_IdAndPost_Id(userId, postId);
   }
 
   @Transactional(readOnly = true)
-  public GetPostsResponse getBookmarkedPosts(
+  @PreAuthorize("#projectHandle == null or hasPermission(#projectHandle, 'PROJECT', 'READ')")
+  public PaginatedGetPostsResponse getBookmarkedPosts(
       Long userId, @Nullable String projectHandle, CursorPaginationRequest pagination) {
     var page =
         paginationService.paginate(
@@ -57,6 +57,6 @@ public class PostBookmarkService {
             pagination);
     var bookmarkedPosts = postAssembler.toPostResponses(page, userId);
 
-    return new GetPostsResponse(bookmarkedPosts);
+    return new PaginatedGetPostsResponse(bookmarkedPosts);
   }
 }

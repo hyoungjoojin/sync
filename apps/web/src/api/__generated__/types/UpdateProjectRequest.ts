@@ -4,6 +4,7 @@
  * sync
  * OpenAPI spec version: 0.0.1
  */
+import type { UpdateProjectRequestJoinPolicy } from './UpdateProjectRequestJoinPolicy';
 
 export interface UpdateProjectRequest {
   /**
@@ -11,6 +12,11 @@ export interface UpdateProjectRequest {
    * @nullable
    */
   website?: string | null;
+  /**
+   * 프로젝트 이름
+   * @nullable
+   */
+  name?: string | null;
   /**
    * 프로젝트 아이콘 제거 여부
    * @nullable
@@ -22,8 +28,18 @@ export interface UpdateProjectRequest {
    */
   description?: string | null;
   /**
+   * 프로젝트 핸들
+   * @nullable
+   */
+  handle?: string | null;
+  /**
    * 프로젝트 아이콘으로 설정할 미디어 ID
    * @nullable
    */
   iconMediaId?: string | null;
+  /**
+   * 프로젝트 참여 정책
+   * @nullable
+   */
+  joinPolicy?: UpdateProjectRequestJoinPolicy;
 }

@@ -61,15 +61,18 @@ public class NotificationProcessorService {
     }
 
     Notification notification = createNotification(event);
-    NotificationSummary notificationSummary = toDto(notification);
 
     NotificationChannel channel = channels.get(ChannelType.IN_APP);
     if (channel == null) {
-      throw new IllegalStateException("No channel found for type: " + ChannelType.IN_APP);
+      log.debug(
+          "No channel available for type {}; notification {} is stored but not pushed.",
+          ChannelType.IN_APP,
+          notification.getId());
+      return;
     }
 
     log.debug("Sending notification {} via channel {}", notification.getId(), ChannelType.IN_APP);
-    channel.send(event.getRecipientId(), notificationSummary);
+    channel.send(event.getRecipientId(), toDto(notification));
   }
 
   private Notification createNotification(NotificationEvent event) {
@@ -99,6 +102,6 @@ public class NotificationProcessorService {
       return Map.of();
     }
 
-    return mediaDomainService.generatePublicGetUrls(List.of(actor), User::getProfileImage);
+    return mediaDomainService.generatePresignedGetUrls(List.of(actor), User::getProfileImage);
   }
 }

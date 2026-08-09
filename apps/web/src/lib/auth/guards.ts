@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 
 import ROUTES from '@/util/routes';
 
-import { isAuthenticated, isOnboarded } from './index';
 import { getSession } from './session';
+import { isAuthenticated, isOnboarded } from './utils';
 
 /**
  * 비로그인 사용자는 항상 /about 으로 보낸다는 정책의 단일 기준점.

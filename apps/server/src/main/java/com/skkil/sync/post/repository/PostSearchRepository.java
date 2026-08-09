@@ -22,8 +22,8 @@ public interface PostSearchRepository extends Repository<PostEmbedding, Long> {
           LEFT JOIN projects pr ON pr.id = p.project_id
           WHERE p.visibility = 'VISIBLE'
           AND p.status = 'PUBLISHED'
-          AND ((:projectHandle IS NULL AND p.scope = 'PUBLIC')
-            OR (:projectHandle IS NOT NULL AND p.scope = 'WORKSPACE' AND pr.handle = :projectHandle))
+          AND ((:projectHandle IS NULL AND p.project_id IS NULL)
+            OR (:projectHandle IS NOT NULL AND p.project_id IS NOT NULL AND pr.handle = :projectHandle))
           ORDER BY pe.embedding <=> :embedding
           LIMIT :n
           """,
@@ -40,13 +40,31 @@ public interface PostSearchRepository extends Repository<PostEmbedding, Long> {
           LEFT JOIN projects pr ON pr.id = r.project_id
           WHERE r.visibility = 'VISIBLE'
           AND r.status = 'PUBLISHED'
-          AND ((:projectHandle IS NULL AND r.scope = 'PUBLIC')
-            OR (:projectHandle IS NOT NULL AND r.scope = 'WORKSPACE' AND pr.handle = :projectHandle))
-          AND r.content ILIKE '%' || :query || '%'
-          ORDER BY similarity(r.content, :query) DESC
+          AND ((:projectHandle IS NULL AND r.project_id IS NULL)
+            OR (:projectHandle IS NOT NULL AND r.project_id IS NOT NULL AND pr.handle = :projectHandle))
+          AND NOT EXISTS (
+            SELECT 1 FROM unnest(regexp_split_to_array(trim(:query), '\\s+')) AS term
+            WHERE r.title NOT ILIKE '%' || term || '%' AND r.content NOT ILIKE '%' || term || '%'
+          )
+          ORDER BY GREATEST(similarity(r.title, :query), similarity(r.content, :query)) DESC
           LIMIT :n
           """,
       nativeQuery = true)
   List<Long> findTopNByFullTextSearch(
       @Param("query") String query, @Param("projectHandle") @Nullable String projectHandle, int n);
+
+  @Query(
+      value =
+          """
+          SELECT pe.post_id FROM post_embeddings pe
+          JOIN posts p ON p.id = pe.post_id
+          WHERE p.visibility = 'VISIBLE'
+          AND p.status = 'PUBLISHED'
+          AND pe.post_id <> :postId
+          ORDER BY pe.embedding <=> :embedding
+          LIMIT :n
+          """,
+      nativeQuery = true)
+  List<Long> findTopNRelatedByEmbedding(
+      @Param("embedding") Vector embedding, @Param("postId") Long postId, int n);
 }

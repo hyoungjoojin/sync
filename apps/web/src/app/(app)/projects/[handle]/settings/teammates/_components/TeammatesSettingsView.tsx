@@ -1,23 +1,55 @@
 'use client';
 
-import { PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
+import { CheckIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import {
   useGetProjectByHandle,
   useGetProjectInvitations,
+  useGetProjectJoinRequests,
   useGetProjectTeammates,
 } from '@/api/__generated__/project/project';
 import {
   GetProjectResponseRole,
+  type GetProjectTeammatesResponseTeammatesItem,
   GetProjectTeammatesResponseTeammatesItemRole,
+  UpdateTeammateRequestRole,
 } from '@/api/__generated__/types';
+import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
+import { ProfileHoverCard } from '@/components/feature/profile/ProfileHoverCard';
 import { useCancelProjectInvitation } from '@/components/feature/project/hooks/useProjectInvitation';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  useApproveJoinRequest,
+  useDeclineJoinRequest,
+} from '@/components/feature/project/hooks/useProjectJoinRequest';
+import {
+  ProjectOwnerCannotBeModifiedError,
+  useRemoveProjectTeammate,
+  useUpdateProjectTeammate,
+} from '@/components/feature/project/hooks/useProjectTeammate';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Table,
@@ -27,6 +59,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
+import ROUTES from '@/util/routes';
 
 import AddTeammateDropdown from './AddTeammateDropdown';
 
@@ -42,6 +77,7 @@ export default function TeammatesSettingsView() {
   };
 
   const { handle } = useParams<{ handle: string }>();
+  const { data: session } = useSession();
   const { data: teammatesData, isPending: isTeammatesPending } =
     useGetProjectTeammates(handle);
   const { data: projectData } = useGetProjectByHandle(handle);
@@ -49,8 +85,13 @@ export default function TeammatesSettingsView() {
 
   const isAdmin = projectData?.data.role === GetProjectResponseRole.Admin;
 
+  const { data: joinRequestsData } = useGetProjectJoinRequests(handle, {
+    query: { enabled: isAdmin },
+  });
+
   const teammates = teammatesData?.data.teammates ?? [];
   const invitations = invitationsData?.data.invitations ?? [];
+  const joinRequests = joinRequestsData?.data.joinRequests ?? [];
 
   return (
     <div className="space-y-6">
@@ -84,53 +125,17 @@ export default function TeammatesSettingsView() {
           </TableHeader>
           <TableBody>
             {teammates.map((teammate) => (
-              <TableRow key={teammate.user.handle} className="border-0">
-                <TableCell className="border-l-0">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage
-                        src={teammate.user.profileImageUrl ?? undefined}
-                      />
-                      <AvatarFallback>
-                        {teammate.user.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {teammate.user.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        @{teammate.user.handle}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="border-l-0">
-                  <Badge variant="outline">{ROLE_LABEL[teammate.role]}</Badge>
-                </TableCell>
-                <TableCell className="border-l-0">
-                  {isAdmin && (
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={t('actions.edit-role')}
-                        onClick={() => toast.info(t('messages.unsupported'))}
-                      >
-                        <PencilSimpleIcon className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={t('actions.remove')}
-                        onClick={() => toast.info(t('messages.unsupported'))}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
+              <TeammateRow
+                key={teammate.user.handle}
+                projectHandle={handle}
+                teammate={teammate}
+                canManage={
+                  isAdmin &&
+                  session != null &&
+                  teammate.user.handle !== session.user.handle
+                }
+                roleLabel={ROLE_LABEL}
+              />
             ))}
 
             {isAdmin &&
@@ -143,10 +148,175 @@ export default function TeammatesSettingsView() {
                   handle={invitation.invitee.handle}
                 />
               ))}
+
+            {isAdmin &&
+              joinRequests.map((request) => (
+                <JoinRequestRow
+                  key={request.id}
+                  projectHandle={handle}
+                  requestId={request.id}
+                  name={request.requester.name}
+                  handle={request.requester.handle}
+                  profileImageUrl={request.requester.profileImageUrl}
+                />
+              ))}
           </TableBody>
         </Table>
       )}
     </div>
+  );
+}
+
+function TeammateRow({
+  projectHandle,
+  teammate,
+  canManage,
+  roleLabel,
+}: {
+  projectHandle: string;
+  teammate: GetProjectTeammatesResponseTeammatesItem;
+  canManage: boolean;
+  roleLabel: Record<GetProjectTeammatesResponseTeammatesItemRole, string>;
+}) {
+  const t = useTranslations('pages.projects.project.settings.teammates');
+  const { mutate: updateTeammate, isPending: isUpdating } =
+    useUpdateProjectTeammate();
+  const { mutate: removeTeammate, isPending: isRemoving } =
+    useRemoveProjectTeammate();
+  const isPending = isUpdating || isRemoving;
+
+  const handleError = (error: unknown, fallbackMessage: string) => {
+    if (error instanceof ProjectOwnerCannotBeModifiedError) {
+      toast.error(t('messages.owner-protected'));
+      return;
+    }
+
+    if (
+      error instanceof SyncError &&
+      (error.code === ErrorCode.TEAMMATE_NOT_FOUND ||
+        error.code === ErrorCode.PROJECT_NOT_FOUND)
+    ) {
+      toast.error(t('messages.not-found'));
+      return;
+    }
+
+    toast.error(fallbackMessage);
+  };
+
+  const onRoleChange = (value: string) => {
+    const role = value as UpdateTeammateRequestRole;
+    if (role === teammate.role) {
+      return;
+    }
+
+    updateTeammate(
+      {
+        handle: projectHandle,
+        teammateHandle: teammate.user.handle,
+        data: { role },
+      },
+      {
+        onSuccess: () => toast.success(t('messages.update-success')),
+        onError: (error) => handleError(error, t('messages.update-error')),
+      },
+    );
+  };
+
+  const onRemove = () => {
+    removeTeammate(
+      {
+        handle: projectHandle,
+        teammateHandle: teammate.user.handle,
+      },
+      {
+        onSuccess: () => toast.success(t('messages.remove-success')),
+        onError: (error) => handleError(error, t('messages.remove-error')),
+      },
+    );
+  };
+
+  return (
+    <TableRow className="border-0">
+      <TableCell className="border-l-0">
+        <div className="flex items-center gap-3">
+          <ProfileHoverCard
+            handle={teammate.user.handle}
+            name={teammate.user.name}
+            imageUrl={teammate.user.profileImageUrl ?? undefined}
+          />
+          <Link href={ROUTES.PROFILE(teammate.user.handle)}>
+            <p className="text-sm font-medium">{teammate.user.name}</p>
+            <p className="text-xs text-muted-foreground">
+              @{teammate.user.handle}
+            </p>
+          </Link>
+        </div>
+      </TableCell>
+      <TableCell className="border-l-0">
+        {canManage ? (
+          <Select
+            value={teammate.role}
+            disabled={isPending}
+            onValueChange={onRoleChange}
+          >
+            <SelectTrigger size="sm" aria-label={t('actions.edit-role')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(UpdateTeammateRequestRole).map((role) => (
+                <SelectItem key={role} value={role}>
+                  {roleLabel[role]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Badge variant="outline">{roleLabel[teammate.role]}</Badge>
+        )}
+      </TableCell>
+      <TableCell className="border-l-0">
+        {canManage && (
+          <div className="flex items-center justify-end">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('actions.remove')}
+                  disabled={isPending}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t('remove-dialog.title')}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('remove-dialog.description', {
+                      name: teammate.user.name,
+                    })}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    {t('remove-dialog.cancel')}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    disabled={isRemoving}
+                    onClick={onRemove}
+                  >
+                    {t('remove-dialog.confirm')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -175,7 +345,15 @@ function PendingInvitationRow({
         onSuccess: () => {
           toast.success(t('messages.cancel-success'));
         },
-        onError: () => {
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            (error.code === ErrorCode.PROJECT_INVITATION_NOT_FOUND ||
+              error.code === ErrorCode.PROJECT_NOT_FOUND)
+          ) {
+            toast.error(t('messages.cancel-not-found'));
+            return;
+          }
           toast.error(t('messages.cancel-error'));
         },
       },
@@ -186,9 +364,7 @@ function PendingInvitationRow({
     <TableRow className="border-0">
       <TableCell className="border-l-0">
         <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar name={name} imageUrl={undefined} />
           <div>
             <p className="text-sm font-medium">{name}</p>
             <p className="text-xs text-muted-foreground">@{handle}</p>
@@ -208,6 +384,107 @@ function PendingInvitationRow({
             onClick={onCancel}
           >
             <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function JoinRequestRow({
+  projectHandle,
+  requestId,
+  name,
+  handle,
+  profileImageUrl,
+}: {
+  projectHandle: string;
+  requestId: number;
+  name: string;
+  handle: string;
+  profileImageUrl?: string | null;
+}) {
+  const t = useTranslations('pages.projects.project.settings.teammates');
+
+  const { mutate: approveRequest, isPending: isApproving } =
+    useApproveJoinRequest();
+  const { mutate: declineRequest, isPending: isDeclining } =
+    useDeclineJoinRequest();
+  const isPending = isApproving || isDeclining;
+
+  const onApprove = () => {
+    approveRequest(
+      { handle: projectHandle, requestId: requestId.toString() },
+      {
+        onSuccess: () => toast.success(t('messages.approve-success')),
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            (error.code === ErrorCode.PROJECT_JOIN_REQUEST_NOT_FOUND ||
+              error.code === ErrorCode.PROJECT_NOT_FOUND)
+          ) {
+            toast.error(t('messages.approve-not-found'));
+            return;
+          }
+          toast.error(t('messages.approve-error'));
+        },
+      },
+    );
+  };
+
+  const onDecline = () => {
+    declineRequest(
+      { handle: projectHandle, requestId: requestId.toString() },
+      {
+        onSuccess: () => toast.success(t('messages.decline-success')),
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            (error.code === ErrorCode.PROJECT_JOIN_REQUEST_NOT_FOUND ||
+              error.code === ErrorCode.PROJECT_NOT_FOUND)
+          ) {
+            toast.error(t('messages.decline-not-found'));
+            return;
+          }
+          toast.error(t('messages.decline-error'));
+        },
+      },
+    );
+  };
+
+  return (
+    <TableRow className="border-0">
+      <TableCell className="border-l-0">
+        <div className="flex items-center gap-3">
+          <ProfileAvatar name={name} imageUrl={profileImageUrl} />
+          <div>
+            <p className="text-sm font-medium">{name}</p>
+            <p className="text-xs text-muted-foreground">@{handle}</p>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="border-l-0">
+        <Badge variant="secondary">{t('status.join-requested')}</Badge>
+      </TableCell>
+      <TableCell className="border-l-0">
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('actions.approve-request')}
+            disabled={isPending}
+            onClick={onApprove}
+          >
+            <CheckIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('actions.decline-request')}
+            disabled={isPending}
+            onClick={onDecline}
+          >
+            <XIcon className="h-4 w-4" />
           </Button>
         </div>
       </TableCell>

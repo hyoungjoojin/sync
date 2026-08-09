@@ -219,4 +219,60 @@ class PostControllerTests {
                 Function.identity(),
                 pathParameters(parameterWithName("postId").description("Post ID"))));
   }
+
+  @Test
+  @DisplayName("[pinPost] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void pinPost() throws Exception {
+    String handle = "project-handle";
+    Long postId = 1L;
+
+    doNothing().when(postService).pinPost(eq(postId), eq(handle));
+
+    mockMvc
+        .perform(
+            post("/projects/{handle}/posts/{postId}/pin", handle, postId).with(csrf().asHeader()))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "PinPost",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Pin Post")
+                    .description("프로젝트 관리자가 게시글을 프로젝트 대시보드에 고정합니다."),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(
+                    parameterWithName("handle").description("프로젝트 핸들"),
+                    parameterWithName("postId").description("Post ID"))));
+  }
+
+  @Test
+  @DisplayName("[unpinPost] API 문서화 테스트")
+  @WithAuthenticatedUser
+  void unpinPost() throws Exception {
+    String handle = "project-handle";
+    Long postId = 1L;
+
+    doNothing().when(postService).unpinPost(eq(postId), eq(handle));
+
+    mockMvc
+        .perform(
+            delete("/projects/{handle}/posts/{postId}/pin", handle, postId).with(csrf().asHeader()))
+        .andExpect(status().isNoContent())
+        .andDo(
+            document(
+                "UnpinPost",
+                ResourceSnippetParameters.builder()
+                    .tag("post")
+                    .summary("Unpin Post")
+                    .description("프로젝트 관리자가 게시글의 고정을 해제합니다."),
+                null,
+                null,
+                Function.identity(),
+                pathParameters(
+                    parameterWithName("handle").description("프로젝트 핸들"),
+                    parameterWithName("postId").description("Post ID"))));
+  }
 }

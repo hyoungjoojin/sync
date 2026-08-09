@@ -5,14 +5,16 @@ import {
   CompassIcon,
   FileTextIcon,
   HouseIcon,
+  NotePencilIcon,
   PencilSimpleIcon,
   PlusIcon,
+  StackSimpleIcon,
   TagIcon,
   TrendUpIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { useSearchMyProjects } from '@/api/__generated__/project/project';
@@ -32,11 +34,12 @@ import {
 } from '@/components/ui/sidebar';
 import { useMounted } from '@/hooks/use-mounted';
 import { useRequireAuth } from '@/hooks/use-require-auth';
-import { isAuthenticated } from '@/lib/auth';
 import { useSession } from '@/lib/auth/client';
+import { isAuthenticated } from '@/lib/auth/utils';
 import ROUTES from '@/util/routes';
 
 import SidebarCloseButton from './SidebarCloseButton';
+import SupportButton from './SupportButton';
 
 const MAX_VISIBLE_PROJECTS = 5;
 
@@ -67,23 +70,43 @@ const nav = [
   },
 ] as const;
 
-const yours = [
-  {
-    labelKey: 'nav.drafts',
-    href: ROUTES.DRAFTS(),
-    icon: FileTextIcon,
-    authenticated: true,
-  },
-  {
-    // Reuses `components.navigation.menu.bookmarks` — same bookmarks concept
-    // already translated for the top navigation bar.
-    labelKey: 'menu.bookmarks',
-    namespace: 'navigation' as const,
-    href: ROUTES.BOOKMARKS(),
-    icon: BookmarkSimpleIcon,
-    authenticated: true,
-  },
-] as const;
+// These link into the profile page's own tabs (?tab=drafts/bookmarks/collections),
+// so their `href` depends on the current user's handle and is built in the
+// component once the session is known — see `buildYours` below.
+const buildYours = (handle: string | null) =>
+  [
+    {
+      labelKey: 'nav.my-posts',
+      href: handle ? ROUTES.PROFILE(handle) : ROUTES.LOGIN(),
+      tab: undefined as string | undefined,
+      icon: NotePencilIcon,
+      authenticated: true,
+    },
+    {
+      labelKey: 'nav.drafts',
+      href: handle ? ROUTES.PROFILE_DRAFTS(handle) : ROUTES.LOGIN(),
+      tab: 'drafts',
+      icon: FileTextIcon,
+      authenticated: true,
+    },
+    {
+      // Reuses `components.navigation.menu.bookmarks` — same bookmarks concept
+      // already translated for the top navigation bar.
+      labelKey: 'menu.bookmarks',
+      namespace: 'navigation' as const,
+      href: handle ? ROUTES.PROFILE_BOOKMARKS(handle) : ROUTES.LOGIN(),
+      tab: 'bookmarks',
+      icon: BookmarkSimpleIcon,
+      authenticated: true,
+    },
+    {
+      labelKey: 'nav.collections',
+      href: handle ? ROUTES.PROFILE_COLLECTIONS(handle) : ROUTES.LOGIN(),
+      tab: 'collections',
+      icon: StackSimpleIcon,
+      authenticated: true,
+    },
+  ] as const;
 
 const footer = [
   { labelKey: 'privacy', href: ROUTES.PRIVACY() },
@@ -96,23 +119,28 @@ export default function PersonalSidebarContent() {
   const tNav = useTranslations('components.navigation');
   const tFooter = useTranslations('components.footer');
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [query] = useState('');
   const { requireAuth } = useRequireAuth();
 
   // `useSession` can resolve synchronously from its client-side cache before
-  // hydration, while SSR always renders a logged-out state. Gating on
-  // `mounted` keeps the first client render identical to the server-rendered
-  // HTML so the project list doesn't shift Radix's useId-based ids and cause
-  // a hydration mismatch.
+  // hydration, while SSR always renders a logged-out state. Gating the whole
+  // logged-in subtree on `mounted` keeps the first client render identical to
+  // the server-rendered HTML, so neither the extra nodes nor Radix's
+  // useId-based ids diverge and cause a hydration mismatch.
   const mounted = useMounted();
 
   const { data: session } = useSession();
+  const showProjects = mounted && isAuthenticated(session);
+  const handle = mounted ? (session?.user.handle ?? null) : null;
+  const yours = buildYours(handle);
+
   const { data } = useSearchMyProjects(
     { query },
-    { query: { enabled: mounted && !!session } },
+    { query: { enabled: showProjects } },
   );
 
-  const projects = mounted ? (data?.data.projects ?? []) : [];
+  const projects = data?.data.projects ?? [];
 
   return (
     <>
@@ -193,9 +221,12 @@ export default function PersonalSidebarContent() {
             <SidebarMenu>
               {yours.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive =
+                  !!handle &&
+                  pathname === ROUTES.PROFILE(handle) &&
+                  (searchParams.get('tab') ?? undefined) === item.tab;
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={item.labelKey}>
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link
                         href={item.href}
@@ -224,7 +255,7 @@ export default function PersonalSidebarContent() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAuthenticated(session) && (
+        {showProjects && (
           <>
             <SidebarSeparator />
             <SidebarGroup>
@@ -280,6 +311,10 @@ export default function PersonalSidebarContent() {
           </>
         )}
       </SidebarContent>
+
+      <div className="px-2">
+        <SupportButton />
+      </div>
 
       <SidebarFooter className="p-4">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-sidebar-foreground/60">

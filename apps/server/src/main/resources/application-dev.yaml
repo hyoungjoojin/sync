@@ -1,9 +1,9 @@
 app:
   seed:
     enabled: true
-    account:
-      email: test@example.com
-      password: password1234!
+  admin:
+    email: test@example.com
+    password: password1234!
 
 spring:
   cloud:

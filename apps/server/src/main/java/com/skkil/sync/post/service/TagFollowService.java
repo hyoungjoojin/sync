@@ -1,6 +1,8 @@
 package com.skkil.sync.post.service;
 
-import com.skkil.sync.post.dto.response.GetTagsResponse;
+import com.skkil.sync.common.util.pagination.dto.request.OffsetPaginationRequest;
+import com.skkil.sync.common.util.pagination.service.PaginationService;
+import com.skkil.sync.post.dto.response.GetFollowedTagsResponse;
 import com.skkil.sync.post.exception.TagNotFoundException;
 import com.skkil.sync.post.mapper.TagMapper;
 import com.skkil.sync.post.model.Tag;
@@ -25,18 +27,21 @@ public class TagFollowService {
   private final UserDomainService userDomainService;
   private final TagFollowRelationshipRepository tagFollowRelationshipRepository;
   private final TagMapper tagMapper;
+  private final PaginationService paginationService;
 
   public TagFollowService(
       TagRepository tagRepository,
       UserRepository userRepository,
       UserDomainService userDomainService,
       TagFollowRelationshipRepository tagFollowRelationshipRepository,
-      TagMapper tagMapper) {
+      TagMapper tagMapper,
+      PaginationService paginationService) {
     this.tagRepository = tagRepository;
     this.userRepository = userRepository;
     this.userDomainService = userDomainService;
     this.tagFollowRelationshipRepository = tagFollowRelationshipRepository;
     this.tagMapper = tagMapper;
+    this.paginationService = paginationService;
   }
 
   @Transactional
@@ -79,18 +84,19 @@ public class TagFollowService {
   }
 
   @Transactional(readOnly = true)
-  public GetTagsResponse getFollowedTags(String userHandle) {
+  public GetFollowedTagsResponse getFollowedTags(
+      String userHandle, OffsetPaginationRequest pagination) {
     log.debug("Retrieving tags followed by user {}", userHandle);
 
     User user = userDomainService.getUserByHandle(userHandle);
     Set<Long> followedTagIds = tagFollowRelationshipRepository.findTagIdsByFollowerId(user.getId());
 
-    var tags =
-        tagFollowRelationshipRepository.findByFollowerId(user.getId()).stream()
-            .map(TagFollowRelationship::getTag)
-            .map(tag -> tagMapper.toTagSummary(tag, followedTagIds))
-            .toList();
+    var page =
+        paginationService.paginate(
+            pageable -> tagFollowRelationshipRepository.findByFollowerId(user.getId(), pageable),
+            pagination);
 
-    return new GetTagsResponse(tags);
+    return new GetFollowedTagsResponse(
+        page.map(relationship -> tagMapper.toTagSummary(relationship.getTag(), followedTagIds)));
   }
 }

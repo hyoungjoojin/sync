@@ -21,7 +21,14 @@ import {
 import type { GetPostReportsResponseReportsContentItem } from '@/api/__generated__/types/GetPostReportsResponseReportsContentItem';
 import { ReportPostRequestReason } from '@/api/__generated__/types/ReportPostRequestReason';
 import { ReviewPostReportRequestResolution } from '@/api/__generated__/types/ReviewPostReportRequestResolution';
+import { ReadOnlyCodeBlockNode } from '@/components/feature/post/editor/extensions/nodes/code';
+import { ReadOnlyEmbedNode } from '@/components/feature/post/editor/extensions/nodes/embed';
 import { ImageNode } from '@/components/feature/post/editor/extensions/nodes/image';
+import { ReadOnlyTableNode } from '@/components/feature/post/editor/extensions/nodes/table';
+import {
+  TaskItemNode,
+  TaskListNode,
+} from '@/components/feature/post/editor/extensions/nodes/tasks';
 import { deserialize } from '@/components/feature/post/editor/utils/serializer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,6 +57,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 const PAGE_SIZE = '20';
@@ -81,6 +89,22 @@ export default function AdminPostReportsPage() {
     });
   };
 
+  const handleReviewError = async (error: unknown) => {
+    if (error instanceof SyncError) {
+      switch (error.code) {
+        case ErrorCode.POST_REPORT_NOT_FOUND:
+          toast.error(t('messages.not-found-error'));
+          await invalidateReports();
+          return;
+        case ErrorCode.POST_REPORT_ALREADY_REVIEWED:
+          toast.error(t('messages.already-reviewed-error'));
+          await invalidateReports();
+          return;
+      }
+    }
+    toast.error(t('messages.review-error'));
+  };
+
   const dismissReport = (report: GetPostReportsResponseReportsContentItem) => {
     reviewPostReport(
       {
@@ -96,9 +120,7 @@ export default function AdminPostReportsPage() {
           toast.success(t('messages.dismiss-success'));
           await invalidateReports();
         },
-        onError: () => {
-          toast.error(t('messages.review-error'));
-        },
+        onError: handleReviewError,
       },
     );
   };
@@ -125,9 +147,7 @@ export default function AdminPostReportsPage() {
           setHiddenReason('');
           await invalidateReports();
         },
-        onError: () => {
-          toast.error(t('messages.review-error'));
-        },
+        onError: handleReviewError,
       },
     );
   };
@@ -350,7 +370,15 @@ function formatDate(value: string) {
 
 function PostContentPreview({ content }: { content: string }) {
   const editor = useEditor({
-    extensions: [StarterKit, ImageNode],
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      ReadOnlyCodeBlockNode,
+      TaskListNode,
+      TaskItemNode,
+      ImageNode,
+      ReadOnlyEmbedNode,
+      ReadOnlyTableNode,
+    ],
     content: toEditorContent(content),
     editable: false,
     immediatelyRender: false,

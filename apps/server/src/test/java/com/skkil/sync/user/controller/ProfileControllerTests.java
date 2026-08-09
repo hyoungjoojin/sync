@@ -198,6 +198,7 @@ class ProfileControllerTests {
             .followingCount(5L)
             .isOnboarded(true)
             .isEmailVerified(true)
+            .hasPassword(true)
             .isAuthenticatedUser(false)
             .build();
 
@@ -246,6 +247,10 @@ class ProfileControllerTests {
         fieldWithPath("isEmailVerified")
             .type(JsonFieldType.BOOLEAN)
             .description("Is Email Verified (본인 프로필 조회 시에만 포함, 그 외에는 null)")
+            .optional(),
+        fieldWithPath("hasPassword")
+            .type(JsonFieldType.BOOLEAN)
+            .description("비밀번호 설정 여부 (본인 프로필 조회 시에만 포함, 그 외에는 null)")
             .optional(),
         fieldWithPath("isAuthenticatedUser")
             .type(JsonFieldType.BOOLEAN)

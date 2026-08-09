@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import ROUTES from '@/util/routes';
 
+import NotificationActions from './NotificationActions';
+
 interface NotificationItemProps {
   notification: GetNotificationsResponseNotificationsContentItem;
   onRead: (id: number) => void;
@@ -37,31 +39,40 @@ export default function NotificationItem({
     </div>
   );
 
-  const className = cn(
-    'block w-full rounded-md px-3 py-2 text-left hover:bg-muted',
-    status === 'UNREAD' && 'bg-muted/50',
-  );
+  const triggerClassName = 'block w-full text-left';
 
-  if (!href) {
-    return (
-      <button
-        type="button"
-        className={className}
-        onClick={() => onRead(notification.id)}
-      >
-        {body}
-      </button>
-    );
-  }
-
+  // 액션 버튼은 링크 안에 중첩할 수 없어(앵커 내부 인터랙티브 요소) 이동 영역과
+  // 형제로 배치한다.
   return (
-    <Link
-      href={href}
-      className={className}
-      onClick={() => onRead(notification.id)}
+    <div
+      className={cn(
+        'rounded-md px-3 py-2 hover:bg-muted',
+        status === 'UNREAD' && 'bg-muted/50',
+      )}
     >
-      {body}
-    </Link>
+      {href ? (
+        <Link
+          href={href}
+          className={triggerClassName}
+          onClick={() => onRead(notification.id)}
+        >
+          {body}
+        </Link>
+      ) : (
+        <button
+          type="button"
+          className={triggerClassName}
+          onClick={() => onRead(notification.id)}
+        >
+          {body}
+        </button>
+      )}
+
+      <NotificationActions
+        notification={notification}
+        onSettled={() => onRead(notification.id)}
+      />
+    </div>
   );
 }
 
@@ -90,6 +101,45 @@ function resolve(
         href: ROUTES.PROJECT_INVITATIONS(),
         message: t('PROJECT_INVITATION', {
           name: payload.actorName,
+          project: payload.projectName,
+        }),
+      };
+    case 'PROJECT_INVITATION_ACCEPTED':
+      return {
+        href: ROUTES.PROJECT_SETTINGS_TEAMMATES(payload.projectHandle),
+        message: t('PROJECT_INVITATION_ACCEPTED', {
+          name: payload.actorName,
+          project: payload.projectName,
+        }),
+      };
+    case 'PROJECT_INVITATION_DECLINED':
+      return {
+        href: ROUTES.PROJECT_SETTINGS_TEAMMATES(payload.projectHandle),
+        message: t('PROJECT_INVITATION_DECLINED', {
+          name: payload.actorName,
+          project: payload.projectName,
+        }),
+      };
+    case 'PROJECT_JOIN_REQUEST':
+      return {
+        href: ROUTES.PROJECT_SETTINGS_TEAMMATES(payload.projectHandle),
+        message: t('PROJECT_JOIN_REQUEST', {
+          name: payload.actorName,
+          project: payload.projectName,
+        }),
+      };
+    case 'PROJECT_JOIN_REQUEST_APPROVED':
+      return {
+        href: ROUTES.PROJECT(payload.projectHandle),
+        message: t('PROJECT_JOIN_REQUEST_APPROVED', {
+          name: payload.actorName,
+          project: payload.projectName,
+        }),
+      };
+    case 'PROJECT_JOIN_REQUEST_DECLINED':
+      return {
+        href: ROUTES.PROJECT_JOIN_REQUESTS(),
+        message: t('PROJECT_JOIN_REQUEST_DECLINED', {
           project: payload.projectName,
         }),
       };

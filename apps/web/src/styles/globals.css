@@ -9,13 +9,17 @@
 
 @import 'react-calendar-heatmap/dist/styles.css';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *):not(:is(.light, .light *)));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --font-sans:
+    var(--font-pretendard), -apple-system, BlinkMacSystemFont, system-ui,
+    Roboto, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), var(--font-pretendard), ui-monospace,
+    'SFMono-Regular', Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -75,10 +79,13 @@
 
   --color-type-short: var(--type-short);
   --color-type-short-tint: var(--type-short-tint);
+  --color-type-short-text: var(--type-short-text);
   --color-type-question: var(--type-question);
   --color-type-question-tint: var(--type-question-tint);
+  --color-type-question-text: var(--type-question-text);
   --color-type-long: var(--type-long);
   --color-type-long-tint: var(--type-long-tint);
+  --color-type-long-text: var(--type-long-text);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -91,7 +98,10 @@
   --shadow-popover: var(--shadow-popover);
 }
 
-:root {
+:root,
+.light {
+  color-scheme: light;
+
   /* ── Brand · Evergreen ─────────────────────────────── */
   --evergreen-50: #e9f7f1;
   --evergreen-100: #c6ecdd;
@@ -143,10 +153,13 @@
   /* ── Categorical — post types ──────────────────────── */
   --type-short: #8a9099;
   --type-short-tint: #eef0f2;
+  --type-short-text: #565d66;
   --type-question: #4c8fd6;
   --type-question-tint: #e7f0fa;
+  --type-question-text: #2c6494;
   --type-long: #8b72e0;
   --type-long-tint: #efebfb;
+  --type-long-text: #5b43ad;
 
   /* ── Shape · spacing · elevation · type ────────────── */
   --radius-sm: 6px;
@@ -168,13 +181,6 @@
   --shadow-md: 0 4px 12px rgba(16, 18, 20, 0.08);
   --shadow-popover: 0 8px 24px rgba(16, 18, 20, 0.12);
   --focus-ring: 0 0 0 3px rgba(11, 122, 91, 0.45);
-  --font-mono:
-    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-sans:
-    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, Roboto, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic',
-    sans-serif;
-
   /* ── shadcn semantic mapping ────────────────────────── */
   --background: var(--surface-canvas);
   --foreground: var(--text-primary);
@@ -204,6 +210,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   /* ── Surfaces (dark) ───────────────────────────────── */
   --surface-canvas: #0b0c0e;
   --surface-raised: #16181c;
@@ -234,8 +242,11 @@
 
   /* ── Categorical (dark) ────────────────────────────── */
   --type-short-tint: #1d2024;
+  --type-short-text: #a7aeb7;
   --type-question-tint: #122234;
+  --type-question-text: #7fb4e8;
   --type-long-tint: #1f1a33;
+  --type-long-text: #b3a1f0;
 
   /* ── Shadows (dark) ─────────────────────────────────── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -269,5 +280,144 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: var(--radius-full);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+  }
+}
+
+/*
+ * 랜딩 페이지(`/about`)는 스크롤바를 항상 완전히 숨긴다.
+ * 히어로(`HeroSection`)가 평평한 단색이 아니라 애니메이션 그라데이션(`HeroFlow`)이라
+ * 색을 맞추는 접근이 근본적으로 불가능하다: 네이티브 스크롤바 거터는 페이지에 실제
+ * 렌더링된 내용을 비쳐 보여줄 수 없는 브라우저 크롬 영역이라, 아무리 정확한 단색을
+ * 채워도 움직이는 그라데이션과는 계속 어긋나 보인다. 그래서 트랙/엄지 색상을 맞추는
+ * 대신 스크롤바 자체를 없앤다.
+ *
+ * `(marketing)/about`은 자체 `layout.tsx`가 없어 `<html>`을 렌더링하는 루트
+ * 레이아웃(`src/app/layout.tsx`)과 분리돼 있고, 중첩 레이아웃은 조상 `<html>`에
+ * 속성을 얹을 방법이 없다. 대신 `:has()`로 히어로(`#landing-hero`, `HeroSection.tsx`)가
+ * 문서 안에 있는지로 라우트를 구분한다 — 이 id는 `/about`에서만 렌더링된다.
+ */
+html:has(#landing-hero) {
+  scrollbar-width: none;
+}
+
+html:has(#landing-hero)::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * 코드 블록 문법 강조 (highlight.js / lowlight) 토큰 색상.
+ * GitHub 라이트/다크 테마 기반. `.dark` 클래스로 전환된다.
+ */
+@layer base {
+  :root {
+    --hljs-comment: #6a737d;
+    --hljs-keyword: #d73a49;
+    --hljs-string: #032f62;
+    --hljs-number: #005cc5;
+    --hljs-title: #6f42c1;
+    --hljs-attr: #005cc5;
+    --hljs-type: #22863a;
+    --hljs-tag: #22863a;
+    --hljs-meta: #6a737d;
+  }
+
+  .dark {
+    --hljs-comment: #8b949e;
+    --hljs-keyword: #ff7b72;
+    --hljs-string: #a5d6ff;
+    --hljs-number: #79c0ff;
+    --hljs-title: #d2a8ff;
+    --hljs-attr: #79c0ff;
+    --hljs-type: #7ee787;
+    --hljs-tag: #7ee787;
+    --hljs-meta: #8b949e;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    color: var(--hljs-comment);
+    font-style: italic;
+  }
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-doctag,
+  .hljs-name {
+    color: var(--hljs-keyword);
+  }
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-addition {
+    color: var(--hljs-string);
+  }
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet,
+  .hljs-link {
+    color: var(--hljs-number);
+  }
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-section {
+    color: var(--hljs-title);
+  }
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-variable,
+  .hljs-template-variable {
+    color: var(--hljs-attr);
+  }
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-class .hljs-title,
+  .hljs-selector-class {
+    color: var(--hljs-type);
+  }
+  .hljs-tag,
+  .hljs-selector-id {
+    color: var(--hljs-tag);
+  }
+  .hljs-meta,
+  .hljs-deletion {
+    color: var(--hljs-meta);
+  }
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  .hljs-strong {
+    font-weight: 600;
+  }
+}
+
+@layer base {
+  .grecaptcha-badge {
+    visibility: hidden;
   }
 }

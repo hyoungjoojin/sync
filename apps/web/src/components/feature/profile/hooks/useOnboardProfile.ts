@@ -4,16 +4,16 @@ import {
   getGetAuthenticatedUserQueryKey,
   useOnboardProfile as useOnboardProfileMutation,
 } from '@/api/__generated__/profile/profile';
-import { useSession } from '@/lib/auth/client';
+import { getGetUserRecommendationsQueryKey } from '@/api/__generated__/user/user';
+import SyncError from '@/lib/error';
 
 interface UseOnboardProfileOptions {
   onSuccess?: () => void;
-  onError?: () => void;
+  onError?: (error: SyncError) => void;
 }
 
 export function useOnboardProfile(options?: UseOnboardProfileOptions) {
   const queryClient = useQueryClient();
-  const { refetch: refetchSession } = useSession();
 
   return useOnboardProfileMutation({
     mutation: {
@@ -22,7 +22,9 @@ export function useOnboardProfile(options?: UseOnboardProfileOptions) {
           queryKey: getGetAuthenticatedUserQueryKey(),
         });
 
-        await refetchSession();
+        queryClient.removeQueries({
+          queryKey: getGetUserRecommendationsQueryKey(),
+        });
 
         options?.onSuccess?.();
       },

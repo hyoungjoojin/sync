@@ -6,9 +6,10 @@ import {
   useCreateComment as useCreateCommentMutation,
 } from '@/api/__generated__/comment/comment';
 
-import { COMMENT_PAGE_SIZE } from '../viewer/PostComments';
+import { COMMENT_PAGE_SIZE } from '../constants';
+import { applyCommentCountToCache } from './postCache';
 
-export function useCreateComment() {
+export function useCreateComment(postId: number) {
   const queryClient = useQueryClient();
 
   return useCreateCommentMutation({
@@ -33,6 +34,8 @@ export function useCreateComment() {
             pageParams: previous.pageParams.slice(0, 1),
           };
         });
+
+        applyCommentCountToCache(queryClient, postId, 1);
 
         await queryClient.invalidateQueries({ queryKey: commentsQueryKey });
       },

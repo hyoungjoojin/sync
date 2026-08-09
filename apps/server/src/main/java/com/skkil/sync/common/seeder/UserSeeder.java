@@ -1,5 +1,6 @@
 package com.skkil.sync.common.seeder;
 
+import com.skkil.sync.user.constant.Role;
 import com.skkil.sync.user.dto.request.RegisterRequest;
 import com.skkil.sync.user.model.User;
 import com.skkil.sync.user.repository.UserRepository;
@@ -23,10 +24,12 @@ class UserSeeder {
       String handle,
       String fullName,
       String profession,
-      String bio) {
-    User user = authService.registerUser(new RegisterRequest(email, password));
+      String bio,
+      Role role) {
+    User user = authService.registerUser(new RegisterRequest(email, password, null));
     user.updateHandle(handle);
     user.updateFields(fullName, profession, bio);
+    user.setRole(role);
     user.onboard();
     return userRepository.save(user);
   }

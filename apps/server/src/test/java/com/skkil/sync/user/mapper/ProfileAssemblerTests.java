@@ -42,6 +42,38 @@ class ProfileAssemblerTests {
     assertThat(response.isEmailVerified()).isNull();
   }
 
+  @Test
+  @DisplayName("[toGetProfileResponse] 비밀번호가 설정된 본인 프로필은 hasPassword가 true다")
+  void toGetProfileResponse_authenticatedUserWithPassword_hasPasswordIsTrue() {
+    User user = createOnboardedUser();
+    user.setHashedPassword("hashedPassword");
+
+    GetProfileResponse response = profileAssembler.toGetProfileResponse(user, null, false, true);
+
+    assertThat(response.hasPassword()).isTrue();
+  }
+
+  @Test
+  @DisplayName("[toGetProfileResponse] OAuth2 전용 본인 프로필은 hasPassword가 false다")
+  void toGetProfileResponse_authenticatedOAuthOnlyUser_hasPasswordIsFalse() {
+    User user = createOnboardedUser();
+
+    GetProfileResponse response = profileAssembler.toGetProfileResponse(user, null, false, true);
+
+    assertThat(response.hasPassword()).isFalse();
+  }
+
+  @Test
+  @DisplayName("[toGetProfileResponse] 타인 프로필 조회 시 hasPassword는 null이다")
+  void toGetProfileResponse_otherUser_hidesHasPassword() {
+    User user = createOnboardedUser();
+    user.setHashedPassword("hashedPassword");
+
+    GetProfileResponse response = profileAssembler.toGetProfileResponse(user, null, false, false);
+
+    assertThat(response.hasPassword()).isNull();
+  }
+
   private static User createOnboardedUser() {
     User user = new User(1L);
     user.updateHandle("testuser1");

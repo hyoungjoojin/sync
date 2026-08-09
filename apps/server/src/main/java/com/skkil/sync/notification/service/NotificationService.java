@@ -41,7 +41,7 @@ public class NotificationService {
             pageable -> notificationRepository.findByUser(userId, pageable), pagination);
 
     var actorProfileImageUrls =
-        mediaDomainService.generatePublicGetUrls(
+        mediaDomainService.generatePresignedGetUrls(
             page.content(),
             notification -> {
               var actor = notification.getActor();

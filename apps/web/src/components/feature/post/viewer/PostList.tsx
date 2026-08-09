@@ -28,9 +28,11 @@ interface PostListProps {
   isError?: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  isFetchNextPageError?: boolean;
   fetchNextPage: () => void;
   empty?: ReactNode;
   error?: ReactNode;
+  nextPageError?: ReactNode;
   end?: ReactNode;
   skeletonCount?: number;
 }
@@ -41,9 +43,11 @@ export default function PostList({
   isError,
   hasNextPage,
   isFetchingNextPage,
+  isFetchNextPageError = false,
   fetchNextPage,
   empty = <DefaultEmpty />,
   error,
+  nextPageError,
   end,
   skeletonCount = 3,
 }: PostListProps) {
@@ -54,10 +58,21 @@ export default function PostList({
   });
 
   useEffect(() => {
-    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+    if (
+      entry?.isIntersecting &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetchNextPageError
+    ) {
       fetchNextPage();
     }
-  }, [entry?.isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [
+    entry?.isIntersecting,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+  ]);
 
   if (isPending) {
     return (
@@ -78,10 +93,17 @@ export default function PostList({
   }
 
   return (
-    <div className="space-y-4">
-      {items.map((item) => (
-        <PostPreviewCard key={item.id} summary={item} />
-      ))}
+    <div>
+      {/* 카드를 띄우는 대신 가는 선으로만 글을 나눈다. 구분선은 카드가 아니라
+          바깥 래퍼에 긋는다 — Tailwind 의 `divide-y` 는 `:where()` 로 감싼
+          0순위 규칙이라, 카드에 걸린 `border-0` 에 그대로 덮인다. */}
+      <div className="divide-hairline-strong divide-y">
+        {items.map((item) => (
+          <div key={item.id}>
+            <PostPreviewCard summary={item} surface="flat" />
+          </div>
+        ))}
+      </div>
 
       <div ref={ref} className="py-4">
         {isFetchingNextPage && (
@@ -89,6 +111,7 @@ export default function PostList({
             <Spinner />
           </div>
         )}
+        {isFetchNextPageError && nextPageError}
       </div>
 
       {!hasNextPage && end}

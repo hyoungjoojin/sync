@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useSession } from '@/lib/auth/client';
+import SyncError, { ErrorCode } from '@/lib/error';
 import ROUTES from '@/util/routes';
 
 interface LoginFormProps {
@@ -72,9 +73,25 @@ export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
             return;
           }
 
-          router.replace(redirectTo ?? ROUTES.HOME());
+          // redirectTo 는 에이전트 OAuth 흐름이 되돌아갈 /oauth2/authorize 처럼 Next 가 아니라
+          // 서버가 처리하는 경로일 수 있다. 클라이언트 라우터로는 그런 경로를 열 수 없으므로
+          // 통째로 이동한다.
+          if (redirectTo) {
+            window.location.replace(redirectTo);
+            return;
+          }
+
+          router.replace(ROUTES.HOME());
         },
-        onError: () => {
+        onError: (error) => {
+          if (
+            error instanceof SyncError &&
+            error.code === ErrorCode.NETWORK_ERROR
+          ) {
+            toast.error(t('errors.network'));
+            return;
+          }
+
           toast.error(t('errors.invalid-credentials'));
         },
       },
@@ -141,6 +158,14 @@ export default function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
             <Button className="w-full" type="submit">
               {t('submit.label')}
             </Button>
+
+            <LinkButton
+              className="w-full"
+              variant="link"
+              href={ROUTES.FORGOT_PASSWORD()}
+            >
+              {t('links.forgot_password.label')}
+            </LinkButton>
 
             <LinkButton
               className="w-full"

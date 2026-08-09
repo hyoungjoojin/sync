@@ -10,6 +10,8 @@ export interface UploadMediaResponse {
   uploadUrl: string;
   /** Media ID */
   mediaId: string;
+  /** Content-Type header the upload must send, signed into the URL */
+  contentType: string;
   /** Expiration Time */
   expiresAt: string;
 }
