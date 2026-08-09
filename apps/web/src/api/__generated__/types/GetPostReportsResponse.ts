@@ -7,5 +7,6 @@
 import type { GetPostReportsResponseReports } from './GetPostReportsResponseReports';
 
 export interface GetPostReportsResponse {
-  reports?: GetPostReportsResponseReports;
+  /** Paginated Result */
+  reports: GetPostReportsResponseReports;
 }

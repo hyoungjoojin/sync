@@ -7,5 +7,6 @@
 import type { GetFollowedTagsResponseTags } from './GetFollowedTagsResponseTags';
 
 export interface GetFollowedTagsResponse {
-  tags?: GetFollowedTagsResponseTags;
+  /** Paginated Result */
+  tags: GetFollowedTagsResponseTags;
 }

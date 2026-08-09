@@ -7,6 +7,9 @@
 import type { GetNotificationsResponseNotificationsContentItem } from './GetNotificationsResponseNotificationsContentItem';
 import type { GetNotificationsResponseNotificationsPageInfo } from './GetNotificationsResponseNotificationsPageInfo';
 
+/**
+ * Paginated Result
+ */
 export type GetNotificationsResponseNotifications = {
   /** Page Info */
   pageInfo: GetNotificationsResponseNotificationsPageInfo;

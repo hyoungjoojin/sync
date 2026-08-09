@@ -7,6 +7,9 @@
 import type { GetFollowedTagsResponseTagsContentItem } from './GetFollowedTagsResponseTagsContentItem';
 import type { GetFollowedTagsResponseTagsPageInfo } from './GetFollowedTagsResponseTagsPageInfo';
 
+/**
+ * Paginated Result
+ */
 export type GetFollowedTagsResponseTags = {
   /** Page Info */
   pageInfo: GetFollowedTagsResponseTagsPageInfo;

@@ -9,5 +9,6 @@ import type { GetNotificationsResponseNotifications } from './GetNotificationsRe
 export interface GetNotificationsResponse {
   /** Total unread notification count */
   unreadCount: number;
-  notifications?: GetNotificationsResponseNotifications;
+  /** Paginated Result */
+  notifications: GetNotificationsResponseNotifications;
 }
