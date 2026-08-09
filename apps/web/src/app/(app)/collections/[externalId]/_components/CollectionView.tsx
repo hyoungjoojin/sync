@@ -118,7 +118,13 @@ export default function CollectionView({ externalId }: { externalId: string }) {
       {
         onSuccess: () => {
           toast.success(t('messages.delete-success'));
-          router.push(ROUTES.COLLECTIONS());
+          if (isWorkspace && projectHandle) {
+            router.push(ROUTES.PROJECT_COLLECTIONS(projectHandle));
+          } else if (session?.user.handle) {
+            router.push(ROUTES.PROFILE_COLLECTIONS(session.user.handle));
+          } else {
+            router.push(ROUTES.HOME());
+          }
         },
         onError: (error) => {
           if (

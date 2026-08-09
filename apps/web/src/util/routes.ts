@@ -6,8 +6,6 @@ const ROUTES = {
   EXPLORE_TRENDING: () => '/explore/trending',
   EXPLORE_PROJECTS: () => '/explore/projects',
   EXPLORE_TAGS: () => '/explore/tags',
-  DRAFTS: () => '/posts/drafts',
-  MY_POSTS: () => '/posts/my',
   LOGIN: () => '/auth/login',
   REGISTER: () => '/auth/register',
   FORGOT_PASSWORD: () => '/auth/forgot-password',
@@ -68,13 +66,20 @@ const ROUTES = {
   PROJECTS: () => '/projects',
   PROJECT_INVITATIONS: () => '/projects/invitations',
   PROJECT_JOIN_REQUESTS: () => '/projects/join-requests',
-  BOOKMARKS: () => '/bookmarks',
-  COLLECTIONS: () => '/collections',
   COLLECTION: (externalId: string) => `/collections/${externalId}`,
   COOKIES: () => '/cookies',
-  PROFILE: (handle: string) => `/@${handle}`,
+  PROFILE: (handle: string, params?: { tab?: string }) => {
+    const base = `/@${handle}`;
+    if (!params?.tab) return base;
+    return `${base}?${new URLSearchParams({ tab: params.tab }).toString()}`;
+  },
   PROFILE_FOLLOWERS: (handle: string) => ROUTES.PROFILE(handle) + '/followers',
   PROFILE_FOLLOWING: (handle: string) => ROUTES.PROFILE(handle) + '/following',
+  PROFILE_DRAFTS: (handle: string) => ROUTES.PROFILE(handle, { tab: 'drafts' }),
+  PROFILE_BOOKMARKS: (handle: string) =>
+    ROUTES.PROFILE(handle, { tab: 'bookmarks' }),
+  PROFILE_COLLECTIONS: (handle: string) =>
+    ROUTES.PROFILE(handle, { tab: 'collections' }),
   SEARCH: (query?: string, projectHandle?: string) => {
     if (!query) return '/search';
     const params = new URLSearchParams({ q: query });
