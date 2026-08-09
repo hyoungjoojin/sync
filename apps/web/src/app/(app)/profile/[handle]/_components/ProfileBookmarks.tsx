@@ -16,7 +16,7 @@ import {
 
 const BOOKMARKED_POST_PAGE_SIZE = '30';
 
-export default function BookmarkedPosts() {
+export default function ProfileBookmarks() {
   const t = useTranslations('pages.bookmarks');
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =

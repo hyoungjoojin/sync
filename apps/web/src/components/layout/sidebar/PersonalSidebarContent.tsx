@@ -14,7 +14,7 @@ import {
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { useSearchMyProjects } from '@/api/__generated__/project/project';
@@ -70,35 +70,43 @@ const nav = [
   },
 ] as const;
 
-const yours = [
-  {
-    labelKey: 'nav.my-posts',
-    href: ROUTES.MY_POSTS(),
-    icon: NotePencilIcon,
-    authenticated: true,
-  },
-  {
-    labelKey: 'nav.drafts',
-    href: ROUTES.DRAFTS(),
-    icon: FileTextIcon,
-    authenticated: true,
-  },
-  {
-    // Reuses `components.navigation.menu.bookmarks` — same bookmarks concept
-    // already translated for the top navigation bar.
-    labelKey: 'menu.bookmarks',
-    namespace: 'navigation' as const,
-    href: ROUTES.BOOKMARKS(),
-    icon: BookmarkSimpleIcon,
-    authenticated: true,
-  },
-  {
-    labelKey: 'nav.collections',
-    href: ROUTES.COLLECTIONS(),
-    icon: StackSimpleIcon,
-    authenticated: true,
-  },
-] as const;
+// These link into the profile page's own tabs (?tab=drafts/bookmarks/collections),
+// so their `href` depends on the current user's handle and is built in the
+// component once the session is known — see `buildYours` below.
+const buildYours = (handle: string | null) =>
+  [
+    {
+      labelKey: 'nav.my-posts',
+      href: handle ? ROUTES.PROFILE(handle) : ROUTES.LOGIN(),
+      tab: undefined as string | undefined,
+      icon: NotePencilIcon,
+      authenticated: true,
+    },
+    {
+      labelKey: 'nav.drafts',
+      href: handle ? ROUTES.PROFILE_DRAFTS(handle) : ROUTES.LOGIN(),
+      tab: 'drafts',
+      icon: FileTextIcon,
+      authenticated: true,
+    },
+    {
+      // Reuses `components.navigation.menu.bookmarks` — same bookmarks concept
+      // already translated for the top navigation bar.
+      labelKey: 'menu.bookmarks',
+      namespace: 'navigation' as const,
+      href: handle ? ROUTES.PROFILE_BOOKMARKS(handle) : ROUTES.LOGIN(),
+      tab: 'bookmarks',
+      icon: BookmarkSimpleIcon,
+      authenticated: true,
+    },
+    {
+      labelKey: 'nav.collections',
+      href: handle ? ROUTES.PROFILE_COLLECTIONS(handle) : ROUTES.LOGIN(),
+      tab: 'collections',
+      icon: StackSimpleIcon,
+      authenticated: true,
+    },
+  ] as const;
 
 const footer = [
   { labelKey: 'privacy', href: ROUTES.PRIVACY() },
@@ -111,6 +119,7 @@ export default function PersonalSidebarContent() {
   const tNav = useTranslations('components.navigation');
   const tFooter = useTranslations('components.footer');
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [query] = useState('');
   const { requireAuth } = useRequireAuth();
 
@@ -123,6 +132,8 @@ export default function PersonalSidebarContent() {
 
   const { data: session } = useSession();
   const showProjects = mounted && isAuthenticated(session);
+  const handle = mounted ? (session?.user.handle ?? null) : null;
+  const yours = buildYours(handle);
 
   const { data } = useSearchMyProjects(
     { query },
@@ -210,9 +221,12 @@ export default function PersonalSidebarContent() {
             <SidebarMenu>
               {yours.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive =
+                  !!handle &&
+                  pathname === ROUTES.PROFILE(handle) &&
+                  (searchParams.get('tab') ?? undefined) === item.tab;
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={item.labelKey}>
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link
                         href={item.href}

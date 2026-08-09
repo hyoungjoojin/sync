@@ -14,6 +14,7 @@ import type { GetPostResponseContent } from '@/api/__generated__/types';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button, LinkButton } from '@/components/ui/button';
+import { useSession } from '@/lib/auth/client';
 import { ErrorCode } from '@/lib/error';
 import { isContentPlaceholderVisible } from '@/lib/tiptap-utils';
 import { cn } from '@/lib/utils';
@@ -120,6 +121,7 @@ export default function PostEditor({
   const t = useTranslations('components.editor');
   const locale = useLocale();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const postId = summary?.id;
   const slug = summary?.slug;
@@ -407,7 +409,9 @@ export default function PostEditor({
   const backHref = isDraft
     ? project?.handle
       ? ROUTES.PROJECT_DRAFTS(project.handle)
-      : ROUTES.DRAFTS()
+      : session?.user.handle
+        ? ROUTES.PROFILE_DRAFTS(session.user.handle)
+        : ROUTES.HOME()
     : project?.handle && slug
       ? ROUTES.PROJECT_POST(project.handle, slug)
       : slug
@@ -599,7 +603,11 @@ export default function PostEditor({
           <div className="border-t pt-4">
             <PostDeleteButton
               postId={postId}
-              redirectTo={ROUTES.DRAFTS()}
+              redirectTo={
+                session?.user.handle
+                  ? ROUTES.PROFILE_DRAFTS(session.user.handle)
+                  : ROUTES.HOME()
+              }
               className="w-full"
             />
           </div>

@@ -9,13 +9,13 @@ interface ThemeProviderProps {
 export default async function ThemeProvider({ children }: ThemeProviderProps) {
   // 비로그인 사용자는 401이므로 조회 실패는 정상 흐름이다.
   const { data } = await getUserPreferences().catch(() => ({
-    data: { theme: 'system' },
+    data: { theme: 'light' },
   }));
 
   return (
     <NextThemeProvider
       attribute="class"
-      defaultTheme={data.theme || 'system'}
+      defaultTheme={data.theme || 'light'}
       storageKey="sync-theme"
     >
       {children}

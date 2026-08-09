@@ -21,7 +21,7 @@ const ThemeSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
   const { data: preferences } = useGetUserPreferences();
 
   const { theme: previewedTheme, setTheme: setPreviewedTheme } = useTheme();
-  const persistedThemeRef = useRef('system');
+  const persistedThemeRef = useRef('light');
   const hasInitializedRef = useRef(false);
 
   const { mutate: updateUserPreferences } = useUpdateUserPreferences();
@@ -74,7 +74,7 @@ const ThemeSettings = forwardRef<SettingsCategoryRef>(({}, ref) => {
       <div>
         <SettingsSubTitle>{t('theme.label')}</SettingsSubTitle>
         <RadioGroup
-          defaultValue="system"
+          defaultValue="light"
           value={previewedTheme}
           onValueChange={setPreviewedTheme}
         >

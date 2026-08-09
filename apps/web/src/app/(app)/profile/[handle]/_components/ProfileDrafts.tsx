@@ -17,15 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAuthGuard } from '@/hooks/use-auth-guard';
 import ROUTES from '@/util/routes';
 
 type TypeFilter = 'ALL' | PostType;
 
 const PAGE_SIZE = '50';
 
-export default function DraftPostsPage() {
-  useAuthGuard();
+export default function ProfileDrafts() {
   const t = useTranslations('pages.posts.drafts');
   const tPost = useTranslations('components.post');
 
@@ -61,7 +59,7 @@ export default function DraftPostsPage() {
     data?.pages.flatMap((page) => page.data.posts?.nodes ?? []) ?? [];
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-8">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <NotePencilIcon className="size-5 text-muted-foreground" />
@@ -119,6 +117,6 @@ export default function DraftPostsPage() {
           />
         }
       />
-    </main>
+    </div>
   );
 }
