@@ -2,13 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -146,16 +140,6 @@ export const EmailVerificationStep = forwardRef<
   const formattedRemainingTime = `${Math.floor(remainingSeconds / 60)}:${String(
     remainingSeconds % 60,
   ).padStart(2, '0')}`;
-
-  const hasAutoSentRef = useRef(false);
-
-  useEffect(() => {
-    if (isProfilePending || isVerified || hasAutoSentRef.current) {
-      return;
-    }
-    hasAutoSentRef.current = true;
-    sendVerificationEmail();
-  }, [isProfilePending, isVerified, sendVerificationEmail]);
 
   const sendClickHandler = () => {
     setError(null);
