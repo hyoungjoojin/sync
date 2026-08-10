@@ -66,7 +66,7 @@ export default function ProfileTabs({ handle }: ProfileTabsProps) {
 
   return (
     <Tabs value={tab} onValueChange={tabChangeHandler}>
-      <TabsList variant="line">
+      <TabsList variant="line" className="mb-4">
         <TabsTrigger value="posts">{t('posts.label')}</TabsTrigger>
         <TabsTrigger value="questions">{t('tabs.questions.label')}</TabsTrigger>
         <TabsTrigger value="collections">

@@ -10,7 +10,6 @@ import {
   PlusIcon,
   StackSimpleIcon,
   TagIcon,
-  TrendUpIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -48,12 +47,6 @@ const nav = [
     labelKey: 'nav.home',
     href: ROUTES.HOME(),
     icon: HouseIcon,
-    authenticated: false,
-  },
-  {
-    labelKey: 'nav.trending-posts',
-    href: ROUTES.EXPLORE_TRENDING(),
-    icon: TrendUpIcon,
     authenticated: false,
   },
   {

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { useGetUserCollections } from '@/api/__generated__/collection/collection';
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
 import { CollectionGrid } from '@/components/feature/collection/CollectionGrid';
@@ -12,6 +14,7 @@ interface ProfileCollectionsProps {
 export default function ProfileCollections({
   handle,
 }: ProfileCollectionsProps) {
+  const t = useTranslations('pages.collections');
   const { data: session } = useSession();
   const { data: profile } = useGetProfileByHandle(handle);
 
@@ -26,6 +29,8 @@ export default function ProfileCollections({
 
   return (
     <CollectionGrid
+      title={t('title')}
+      description={t('description')}
       collections={collections}
       isPending={isPending}
       canCreate={isOwnProfile}

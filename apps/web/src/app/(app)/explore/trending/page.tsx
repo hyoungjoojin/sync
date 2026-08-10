@@ -18,7 +18,7 @@ export default async function ExploreTrendingPage() {
   const t = await getTranslations('pages.explore');
 
   return (
-    <div className="mx-auto space-y-6 px-4 py-8">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <p className="text-muted-foreground text-sm">{t('description')}</p>

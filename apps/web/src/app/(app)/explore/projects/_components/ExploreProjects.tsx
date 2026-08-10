@@ -120,7 +120,7 @@ export default function ExploreProjects() {
         <li key={project.handle}>
           <Link
             href={ROUTES.PROJECT(project.handle)}
-            className="group hover:bg-muted/50 -mx-3 flex items-center gap-4 rounded-lg px-3 py-4 transition-colors"
+            className="group hover:bg-muted/50 -mx-3 flex items-center gap-3 rounded-lg px-3 py-4 transition-colors sm:gap-4"
           >
             <ProjectAvatar
               name={project.name}
@@ -154,7 +154,7 @@ export default function ExploreProjects() {
             </div>
 
             <div
-              className="border-hairline text-muted-foreground group-hover:border-hairline-strong flex w-14 shrink-0 flex-col items-center gap-0.5 rounded-lg border px-2 py-1.5 transition-colors"
+              className="text-muted-foreground flex shrink-0 items-center gap-1 transition-colors sm:border-hairline sm:group-hover:border-hairline-strong sm:w-14 sm:flex-col sm:gap-0.5 sm:rounded-lg sm:border sm:px-2 sm:py-1.5"
               title={t('follower-count', { count: project.followerCount })}
             >
               <UsersIcon className="size-4" />

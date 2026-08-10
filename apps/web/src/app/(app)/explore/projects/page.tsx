@@ -18,13 +18,13 @@ export default async function ExploreProjectsPage() {
   const t = await getTranslations('pages.explore.projects');
 
   return (
-    <div className="mx-auto space-y-6 px-4 py-8">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <p className="text-muted-foreground text-sm">{t('description')}</p>
       </div>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8">
         <ExploreProjects />
         <TrendingProjectPosts />
       </div>

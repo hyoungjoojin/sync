@@ -1,6 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 import { useGetProjectByHandle } from '@/api/__generated__/project/project';
 import { Copyright } from '@/components/ui/copyright';
@@ -13,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuSkeleton,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMounted } from '@/hooks/use-mounted';
@@ -26,8 +28,10 @@ import ProjectSidebarContent from './ProjectSidebarContent';
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams().toString();
   const isAdmin = pathname.startsWith('/admin');
   const handle = useProjectContextHandle();
+  const { setOpenMobile } = useSidebar();
 
   // Same `mounted` gating used elsewhere for session-dependent rendering
   // (e.g. `PersonalSidebarContent`, `TopNavigationBar`) — SSR always renders
@@ -39,6 +43,12 @@ export default function AppSidebar() {
   const { isPending, isError } = useGetProjectByHandle(handle ?? '', {
     query: { enabled: !!handle && !isAdmin },
   });
+
+  // Sidebar navigation renders as a full-screen sheet on mobile, so it should
+  // dismiss itself once a link actually navigates somewhere.
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, searchParams, setOpenMobile]);
 
   if (!mounted || isSessionPending || !isAuthenticated(session)) {
     return null;

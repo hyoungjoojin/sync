@@ -21,11 +21,18 @@
       },
       "feed": {
         "title": "홈",
-        "description": "팔로우하는 사람, 프로젝트, 태그의 소식입니다.",
+        "description": "인기 게시물과 팔로우하는 사람의 소식을 확인해보세요.",
         "empty": {
-          "title": "팔로우한 사용자의 포스트가 없습니다",
-          "description": "더 많은 사용자를 팔로우하면 여기에 포스트가 모입니다.",
-          "explore": "인기 게시물 보기"
+          "following": {
+            "title": "팔로우한 사용자의 포스트가 없습니다",
+            "description": "더 많은 사용자를 팔로우하면 여기에 포스트가 모입니다.",
+            "explore": "인기 게시물 보기"
+          },
+          "trending": {
+            "title": "아직 게시물이 없어요",
+            "description": "첫 번째 게시물을 작성해보세요.",
+            "write": "게시물 작성하기"
+          }
         },
         "error": {
           "title": "피드를 불러오지 못했어요",
@@ -37,10 +44,8 @@
           "retry": "다시 시도"
         },
         "tabs": {
-          "all": "전체",
-          "shorts": "TIL",
-          "articles": "블로그",
-          "questions": "질문"
+          "trending": "인기",
+          "following": "팔로잉"
         }
       },
       "trending-tags": {
@@ -250,10 +255,8 @@
       },
       "drafts": {
         "title": "내 초안",
+        "description": "아직 발행하지 않은 글을 모아 보여드려요.",
         "new-post": "새 글",
-        "filters": {
-          "all-types": "모든 타입"
-        },
         "empty": {
           "title": "저장된 초안이 없습니다",
           "description": "초안으로 저장한 글이 이곳에 표시됩니다.",
@@ -2172,7 +2175,6 @@
         "support": "문의하기",
         "nav": {
           "home": "홈",
-          "trending-posts": "인기 게시물",
           "explore-projects": "프로젝트 탐색",
           "tags": "태그",
           "drafts": "초안",

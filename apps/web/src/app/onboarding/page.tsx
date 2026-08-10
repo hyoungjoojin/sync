@@ -31,6 +31,7 @@ type StepDefinition = {
   content: ReturnType<
     typeof forwardRef<OnboardingStepContentRef, OnboardingStepContentProps>
   > | null;
+  disabled?: boolean;
 };
 
 const allSteps: StepDefinition[] = [
@@ -41,10 +42,14 @@ const allSteps: StepDefinition[] = [
   {
     id: 'tags',
     content: TagFollowStep,
+    // Disabled: too few tags exist yet for tag selection to be useful.
+    disabled: true,
   },
   {
     id: 'follow',
     content: RecommendedFollows,
+    // Disabled: too few users exist yet for follow suggestions to be useful.
+    disabled: true,
   },
   {
     id: 'email-verification',
@@ -67,7 +72,9 @@ export default function Onboarding() {
   const steps = useMemo(
     () =>
       allSteps.filter(
-        (s) => s.id !== 'email-verification' || !profile?.data.isEmailVerified,
+        (s) =>
+          !s.disabled &&
+          (s.id !== 'email-verification' || !profile?.data.isEmailVerified),
       ),
     [profile],
   );
