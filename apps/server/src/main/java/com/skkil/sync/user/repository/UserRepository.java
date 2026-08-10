@@ -74,4 +74,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
       LIMIT 10
       """)
   List<User> searchUsers(String query);
+
+  @Query(
+      """
+      SELECT u FROM User u
+      WHERE LOWER(u.handle) = LOWER(:query)
+        OR LOWER(u.email) = LOWER(:query)
+        OR LOWER(u.handle) LIKE LOWER(CONCAT('%', :query, '%'))
+        OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :query, '%'))
+        OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))
+      ORDER BY
+        CASE
+          WHEN LOWER(u.handle) = LOWER(:query) THEN 0
+          WHEN LOWER(u.email) = LOWER(:query) THEN 1
+          ELSE 2
+        END,
+        u.createdAt DESC
+      LIMIT 1
+      """)
+  Optional<User> searchUserForAdmin(String query);
 }

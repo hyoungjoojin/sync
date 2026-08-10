@@ -38,6 +38,20 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
       """
       SELECT p
       FROM Project p
+      WHERE LOWER(p.handle) = LOWER(:query)
+      OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+      OR LOWER(p.handle) LIKE LOWER(CONCAT('%', :query, '%'))
+      ORDER BY
+        CASE WHEN LOWER(p.handle) = LOWER(:query) THEN 0 ELSE 1 END,
+        p.createdAt DESC
+      LIMIT 1
+      """)
+  Optional<Project> searchProjectForAdmin(String query);
+
+  @Query(
+      """
+      SELECT p
+      FROM Project p
       WHERE
       (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.handle) LIKE LOWER(CONCAT('%', :query, '%')))
       AND EXISTS (

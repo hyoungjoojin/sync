@@ -38,4 +38,14 @@ public interface TeammateRepository extends JpaRepository<Teammate, Long> {
   Optional<Teammate> findByProjectIdAndUserHandle(Long projectId, String userHandle);
 
   void deleteByProjectIdAndUserHandle(Long projectId, String userHandle);
+
+  long countByProjectId(Long projectId);
+
+  @Query(
+      """
+      SELECT t FROM Teammate t
+      JOIN FETCH t.user
+      WHERE t.project.id IN :projectIds AND t.isOwner = true
+      """)
+  List<Teammate> findOwnersByProjectIds(Collection<Long> projectIds);
 }

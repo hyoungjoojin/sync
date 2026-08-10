@@ -53,6 +53,37 @@ paths:
                     :{\"handle\":\"john-doe\",\"name\":\"John Doe\",\"profileImageUrl\"\
                     :\"https://example.com/john.png\"},\"reviewedAt\":\"1970-01-01T00:00:00Z\"\
                     ,\"resolutionNote\":\"스팸으로 판단했습니다.\"}]}}"
+  /admin/projects:
+    get:
+      tags:
+      - project
+      summary: Search Admin Project
+      description: 검색어와 가장 일치하는 프로젝트 한 개를 조회합니다. 비공개 프로젝트를 포함하며 관리자용 상세 정보를 제공합니다.
+        (관리자 전용)
+      operationId: SearchAdminProject
+      parameters:
+      - name: query
+        in: query
+        description: "검색어 (프로젝트 이름, 핸들)"
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProjectSummary"
+              examples:
+                SearchAdminProject:
+                  value: "{\"id\":1,\"handle\":\"my-project\",\"name\":\"나의 프로젝트\"\
+                    ,\"description\":\"프로젝트 설명\",\"website\":\"https://example.com\"\
+                    ,\"isPublic\":true,\"joinPolicy\":\"INVITE\",\"followerCount\"\
+                    :42,\"teammateCount\":8,\"owner\":{\"handle\":\"john-doe\",\"\
+                    name\":\"John Doe\",\"profileImageUrl\":\"https://example.com/john.png\"\
+                    },\"createdAt\":\"2025-01-01T00:00:00Z\",\"iconUrl\":\"https://example.com/icon.png\"\
+                    }"
   /admin/promotions:
     get:
       tags:
@@ -161,6 +192,34 @@ paths:
                 AdminCreateTag:
                   value: "{\"id\":1,\"name\":\"java\",\"description\":\"\",\"postCount\"\
                     :0}"
+  /admin/users:
+    get:
+      tags:
+      - user
+      summary: Search Admin User
+      description: 검색어와 가장 일치하는 사용자 한 명을 조회합니다. 관리자용 상세 정보를 포함합니다. (관리자 전용)
+      operationId: SearchAdminUser
+      parameters:
+      - name: query
+        in: query
+        description: "검색어 (핸들, 이름, 이메일)"
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "200"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserSummary"
+              examples:
+                SearchAdminUser:
+                  value: "{\"id\":1,\"handle\":\"john-doe\",\"name\":\"John Doe\"\
+                    ,\"email\":\"john@example.com\",\"profileImageUrl\":\"https://example.com/john.png\"\
+                    ,\"role\":\"USER\",\"isOnboarded\":true,\"isEmailVerified\":true,\"\
+                    followerCount\":12,\"followingCount\":7,\"createdAt\":\"2025-01-01T00:00:00Z\"\
+                    ,\"deletedAt\":null}"
   /admin/post-reports/{reportId}:
     patch:
       tags:
@@ -184,6 +243,23 @@ paths:
               ReviewPostReport:
                 value: "{\"resolution\":\"HIDE_POST\",\"resolutionNote\":\"스팸으로 판단\
                   했습니다.\",\"hiddenReason\":\"부적절한 광고성 게시글입니다.\"}"
+      responses:
+        "204":
+          description: "204"
+  /admin/projects/{handle}:
+    delete:
+      tags:
+      - project
+      summary: Admin Delete Project
+      description: 프로젝트를 삭제합니다. 소유자가 아니어도 삭제할 수 있습니다. (관리자 전용)
+      operationId: AdminDeleteProject
+      parameters:
+      - name: handle
+        in: path
+        description: 삭제할 프로젝트 핸들
+        required: true
+        schema:
+          type: string
       responses:
         "204":
           description: "204"
@@ -246,6 +322,23 @@ paths:
       - name: name
         in: path
         description: 태그 이름
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "204"
+  /admin/users/{handle}:
+    delete:
+      tags:
+      - user
+      summary: Admin Delete User
+      description: 사용자를 탈퇴 처리합니다. 관리자 계정과 본인 계정은 삭제할 수 없습니다. (관리자 전용)
+      operationId: AdminDeleteUser
+      parameters:
+      - name: handle
+        in: path
+        description: 삭제할 사용자 핸들
         required: true
         schema:
           type: string
@@ -7080,6 +7173,62 @@ components:
               token:
                 type: string
                 description: 초대 토큰
+    AdminUserSummary:
+      title: AdminUserSummary
+      required:
+      - createdAt
+      - email
+      - followerCount
+      - followingCount
+      - id
+      - isEmailVerified
+      - isOnboarded
+      - name
+      - role
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: 가입 시각
+        deletedAt:
+          type: string
+          description: 탈퇴 시각 (탈퇴하지 않았다면 null)
+          nullable: true
+        role:
+          type: string
+          description: 플랫폼 역할
+          enum:
+          - ADMIN
+          - USER
+        name:
+          type: string
+          description: 유저 이름
+        handle:
+          type: string
+          description: 유저 핸들
+          nullable: true
+        id:
+          type: number
+          description: 유저 ID
+        followingCount:
+          type: number
+          description: 팔로잉 수
+        followerCount:
+          type: number
+          description: 팔로워 수
+        profileImageUrl:
+          type: string
+          description: 유저 프로필 이미지 URL
+          nullable: true
+        isEmailVerified:
+          type: boolean
+          description: 이메일 인증 여부
+        email:
+          type: string
+          description: 유저 이메일
+        isOnboarded:
+          type: boolean
+          description: 온보딩 완료 여부
     UpdateUserPreferencesRequest:
       title: UpdateUserPreferencesRequest
       type: object
@@ -7199,6 +7348,76 @@ components:
               id:
                 type: number
                 description: 가입 요청 ID
+    AdminProjectSummary:
+      title: AdminProjectSummary
+      required:
+      - createdAt
+      - followerCount
+      - handle
+      - id
+      - isPublic
+      - joinPolicy
+      - name
+      - teammateCount
+      type: object
+      properties:
+        owner:
+          required:
+          - handle
+          - name
+          type: object
+          properties:
+            name:
+              type: string
+              description: 유저 이름
+            handle:
+              type: string
+              description: 유저 핸들
+            profileImageUrl:
+              type: string
+              description: 유저 프로필 이미지 URL
+              nullable: true
+          description: 프로젝트 소유자
+        createdAt:
+          type: string
+          description: 생성 시각
+        website:
+          type: string
+          description: 프로젝트 웹사이트
+          nullable: true
+        teammateCount:
+          type: number
+          description: 팀원 수
+        name:
+          type: string
+          description: 프로젝트 이름
+        isPublic:
+          type: boolean
+          description: 공개 여부
+        description:
+          type: string
+          description: 프로젝트 설명
+          nullable: true
+        handle:
+          type: string
+          description: 프로젝트 핸들
+        iconUrl:
+          type: string
+          description: 프로젝트 아이콘 URL
+          nullable: true
+        id:
+          type: number
+          description: 프로젝트 ID
+        joinPolicy:
+          type: string
+          description: 프로젝트 참여 정책
+          enum:
+          - OPEN
+          - REQUEST
+          - INVITE
+        followerCount:
+          type: number
+          description: 팔로워 수
     UploadMediaRequest:
       title: UploadMediaRequest
       required:

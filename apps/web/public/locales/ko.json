@@ -1600,6 +1600,86 @@
             "tag-limit-exceeded": "태그는 최대 개수를 초과할 수 없습니다."
           }
         }
+      },
+      "users": {
+        "title": "사용자 관리",
+        "description": "사용자를 검색하고 관리할 수 있습니다",
+        "empty": "‘{query}’에 대한 검색 결과가 없습니다.",
+        "search": {
+          "placeholder": "핸들, 이름, 이메일로 검색",
+          "prompt": "검색어를 입력하면 사용자를 찾을 수 있습니다."
+        },
+        "table": {
+          "user": "사용자",
+          "email": "이메일",
+          "role": "역할",
+          "status": "상태",
+          "follower-count": "팔로워 수",
+          "createdAt": "가입일",
+          "actions": "작업"
+        },
+        "roles": {
+          "ADMIN": "관리자",
+          "USER": "일반"
+        },
+        "status": {
+          "deleted": "탈퇴함",
+          "not-onboarded": "온보딩 미완료",
+          "email-unverified": "이메일 미인증"
+        },
+        "actions": {
+          "delete": "삭제",
+          "cancel": "취소"
+        },
+        "delete-dialog": {
+          "title": "사용자 삭제",
+          "description": "‘{name}’ 사용자를 탈퇴 처리하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        },
+        "messages": {
+          "delete-success": "사용자를 삭제했습니다.",
+          "delete-error": "사용자 삭제에 실패했습니다.",
+          "not-found-error": "존재하지 않는 사용자입니다.",
+          "cannot-delete-error": "관리자 계정과 본인 계정은 삭제할 수 없습니다."
+        }
+      },
+      "projects": {
+        "title": "프로젝트 관리",
+        "description": "프로젝트를 검색하고 관리할 수 있습니다",
+        "empty": "‘{query}’에 대한 검색 결과가 없습니다.",
+        "search": {
+          "placeholder": "프로젝트 이름, 핸들로 검색",
+          "prompt": "검색어를 입력하면 프로젝트를 찾을 수 있습니다."
+        },
+        "table": {
+          "project": "프로젝트",
+          "owner": "소유자",
+          "visibility": "공개 설정",
+          "teammate-count": "팀원 수",
+          "createdAt": "생성일",
+          "actions": "작업"
+        },
+        "visibility": {
+          "public": "공개",
+          "private": "비공개"
+        },
+        "join-policies": {
+          "OPEN": "자유 가입",
+          "REQUEST": "가입 요청",
+          "INVITE": "초대 전용"
+        },
+        "actions": {
+          "delete": "삭제",
+          "cancel": "취소"
+        },
+        "delete-dialog": {
+          "title": "프로젝트 삭제",
+          "description": "‘{name}’ 프로젝트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        },
+        "messages": {
+          "delete-success": "프로젝트를 삭제했습니다.",
+          "delete-error": "프로젝트 삭제에 실패했습니다.",
+          "not-found-error": "존재하지 않는 프로젝트입니다."
+        }
       }
     },
     "legal": {
@@ -2110,7 +2190,9 @@
           "title": "관리자",
           "reports": "신고 관리",
           "promotions": "공지사항 관리",
-          "tags": "태그 관리"
+          "tags": "태그 관리",
+          "users": "사용자 관리",
+          "projects": "프로젝트 관리"
         }
       }
     },

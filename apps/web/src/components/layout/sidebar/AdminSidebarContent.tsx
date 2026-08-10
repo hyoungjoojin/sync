@@ -3,8 +3,10 @@
 import {
   ArrowLeftIcon,
   FlagIcon,
+  FoldersIcon,
   GiftIcon,
   TagIcon,
+  UsersIcon,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -39,6 +41,16 @@ const nav = [
     labelKey: 'admin.tags',
     href: ROUTES.ADMIN_TAGS(),
     icon: TagIcon,
+  },
+  {
+    labelKey: 'admin.users',
+    href: ROUTES.ADMIN_USERS(),
+    icon: UsersIcon,
+  },
+  {
+    labelKey: 'admin.projects',
+    href: ROUTES.ADMIN_PROJECTS(),
+    icon: FoldersIcon,
   },
 ] as const;
 

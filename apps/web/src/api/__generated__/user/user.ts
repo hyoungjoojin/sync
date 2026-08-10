@@ -27,6 +27,7 @@ import type {
 import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
 import type {
+  AdminUserSummary,
   GetConnectionsResponse,
   GetFollowersParams,
   GetFollowingParams,
@@ -34,6 +35,7 @@ import type {
   GetHandleAvailabilityResponse,
   GetUserRecommendationsParams,
   GetUserRecommendationsResponse,
+  SearchAdminUserParams,
   SearchUsersParams,
   SearchUsersResponse,
 } from '../types';
@@ -58,6 +60,289 @@ const withQueryKey = <T extends object, K>(
   return result;
 };
 
+export type searchAdminUserResponse200 = {
+  data: AdminUserSummary;
+  status: 200;
+};
+
+export type searchAdminUserResponseSuccess = searchAdminUserResponse200 & {
+  headers: Headers;
+};
+export type searchAdminUserResponse = searchAdminUserResponseSuccess;
+
+export const getSearchAdminUserUrl = (params: SearchAdminUserParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/users?${stringifiedParams}`
+    : `/admin/users`;
+};
+
+/**
+ * 검색어와 가장 일치하는 사용자 한 명을 조회합니다. 관리자용 상세 정보를 포함합니다. (관리자 전용)
+ * @summary Search Admin User
+ */
+export const searchAdminUser = async (
+  params: SearchAdminUserParams,
+  options?: RequestInit,
+): Promise<searchAdminUserResponse> => {
+  return api<searchAdminUserResponse>(getSearchAdminUserUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getSearchAdminUserQueryKey = (params?: SearchAdminUserParams) => {
+  return [`/admin/users`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchAdminUserQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchAdminUser>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminUserParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminUser>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchAdminUserQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchAdminUser>>> = ({
+    signal,
+  }) => searchAdminUser(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchAdminUser>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchAdminUserQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchAdminUser>>
+>;
+export type SearchAdminUserQueryError = ErrorType<unknown>;
+
+export function useSearchAdminUser<
+  TData = Awaited<ReturnType<typeof searchAdminUser>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminUserParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminUser>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchAdminUser>>,
+          TError,
+          Awaited<ReturnType<typeof searchAdminUser>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useSearchAdminUser<
+  TData = Awaited<ReturnType<typeof searchAdminUser>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminUserParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminUser>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchAdminUser>>,
+          TError,
+          Awaited<ReturnType<typeof searchAdminUser>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useSearchAdminUser<
+  TData = Awaited<ReturnType<typeof searchAdminUser>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminUserParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminUser>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Search Admin User
+ */
+
+export function useSearchAdminUser<
+  TData = Awaited<ReturnType<typeof searchAdminUser>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminUserParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminUser>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getSearchAdminUserQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type adminDeleteUserResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type adminDeleteUserResponseSuccess = adminDeleteUserResponse204 & {
+  headers: Headers;
+};
+export type adminDeleteUserResponse = adminDeleteUserResponseSuccess;
+
+export const getAdminDeleteUserUrl = (handle: string) => {
+  return `/admin/users/${handle}`;
+};
+
+/**
+ * 사용자를 탈퇴 처리합니다. 관리자 계정과 본인 계정은 삭제할 수 없습니다. (관리자 전용)
+ * @summary Admin Delete User
+ */
+export const adminDeleteUser = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<adminDeleteUserResponse> => {
+  return api<adminDeleteUserResponse>(getAdminDeleteUserUrl(handle), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminDeleteUserMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeleteUser>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminDeleteUser>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['adminDeleteUser'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminDeleteUser>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return adminDeleteUser(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminDeleteUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminDeleteUser>>
+>;
+
+export type AdminDeleteUserMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin Delete User
+ */
+export const useAdminDeleteUser = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminDeleteUser>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminDeleteUser>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(getAdminDeleteUserMutationOptions(options), queryClient);
+};
 export type promoteUserToAdminResponse204 = {
   data: void;
   status: 204;

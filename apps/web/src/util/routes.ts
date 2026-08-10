@@ -92,6 +92,8 @@ const ROUTES = {
   ADMIN_PROMOTIONS: () => '/admin/promotions',
   ADMIN_NEW_PROMOTION: () => '/admin/promotions/new',
   ADMIN_TAGS: () => '/admin/tags',
+  ADMIN_USERS: () => '/admin/users',
+  ADMIN_PROJECTS: () => '/admin/projects',
 };
 
 export default ROUTES;

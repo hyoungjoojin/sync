@@ -28,6 +28,7 @@ import { api } from '../../../lib/server';
 import type { ErrorType } from '../../../lib/server';
 import type {
   AddTeammateRequest,
+  AdminProjectSummary,
   CreateProjectInvitationRequest,
   CreateProjectRequest,
   CreateProjectResponse,
@@ -45,6 +46,7 @@ import type {
   GetProjectResponse,
   GetProjectTeammatesResponse,
   GetProjectsResponse,
+  SearchAdminProjectParams,
   SearchMyProjectsParams,
   SearchProjectsParams,
   UpdateProjectRequest,
@@ -71,6 +73,297 @@ const withQueryKey = <T extends object, K>(
   return result;
 };
 
+export type searchAdminProjectResponse200 = {
+  data: AdminProjectSummary;
+  status: 200;
+};
+
+export type searchAdminProjectResponseSuccess =
+  searchAdminProjectResponse200 & {
+    headers: Headers;
+  };
+export type searchAdminProjectResponse = searchAdminProjectResponseSuccess;
+
+export const getSearchAdminProjectUrl = (params: SearchAdminProjectParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/projects?${stringifiedParams}`
+    : `/admin/projects`;
+};
+
+/**
+ * 검색어와 가장 일치하는 프로젝트 한 개를 조회합니다. 비공개 프로젝트를 포함하며 관리자용 상세 정보를 제공합니다. (관리자 전용)
+ * @summary Search Admin Project
+ */
+export const searchAdminProject = async (
+  params: SearchAdminProjectParams,
+  options?: RequestInit,
+): Promise<searchAdminProjectResponse> => {
+  return api<searchAdminProjectResponse>(getSearchAdminProjectUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getSearchAdminProjectQueryKey = (
+  params?: SearchAdminProjectParams,
+) => {
+  return [`/admin/projects`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchAdminProjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchAdminProject>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminProjectParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getSearchAdminProjectQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof searchAdminProject>>
+  > = ({ signal }) => searchAdminProject(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchAdminProject>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchAdminProjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchAdminProject>>
+>;
+export type SearchAdminProjectQueryError = ErrorType<unknown>;
+
+export function useSearchAdminProject<
+  TData = Awaited<ReturnType<typeof searchAdminProject>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminProjectParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminProject>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchAdminProject>>,
+          TError,
+          Awaited<ReturnType<typeof searchAdminProject>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useSearchAdminProject<
+  TData = Awaited<ReturnType<typeof searchAdminProject>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminProjectParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminProject>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchAdminProject>>,
+          TError,
+          Awaited<ReturnType<typeof searchAdminProject>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useSearchAdminProject<
+  TData = Awaited<ReturnType<typeof searchAdminProject>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminProjectParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Search Admin Project
+ */
+
+export function useSearchAdminProject<
+  TData = Awaited<ReturnType<typeof searchAdminProject>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchAdminProjectParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof searchAdminProject>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getSearchAdminProjectQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export type adminDeleteProjectResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type adminDeleteProjectResponseSuccess =
+  adminDeleteProjectResponse204 & {
+    headers: Headers;
+  };
+export type adminDeleteProjectResponse = adminDeleteProjectResponseSuccess;
+
+export const getAdminDeleteProjectUrl = (handle: string) => {
+  return `/admin/projects/${handle}`;
+};
+
+/**
+ * 프로젝트를 삭제합니다. 소유자가 아니어도 삭제할 수 있습니다. (관리자 전용)
+ * @summary Admin Delete Project
+ */
+export const adminDeleteProject = async (
+  handle: string,
+  options?: RequestInit,
+): Promise<adminDeleteProjectResponse> => {
+  return api<adminDeleteProjectResponse>(getAdminDeleteProjectUrl(handle), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminDeleteProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeleteProject>>,
+    TError,
+    { handle: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof api>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminDeleteProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  const mutationKey = ['adminDeleteProject'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminDeleteProject>>,
+    { handle: string }
+  > = (props) => {
+    const { handle } = props ?? {};
+
+    return adminDeleteProject(handle, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminDeleteProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminDeleteProject>>
+>;
+
+export type AdminDeleteProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin Delete Project
+ */
+export const useAdminDeleteProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminDeleteProject>>,
+      TError,
+      { handle: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof api>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminDeleteProject>>,
+  TError,
+  { handle: string },
+  TContext
+> => {
+  return useMutation(
+    getAdminDeleteProjectMutationOptions(options),
+    queryClient,
+  );
+};
 export type getMyProjectInvitationsResponse200 = {
   data: GetMyProjectInvitationsResponse;
   status: 200;
