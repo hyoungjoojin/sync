@@ -3,4 +3,6 @@ export enum NodeType {
   Embed = 'embed',
   Table = 'table',
   File = 'file',
+  InlineMath = 'inlineMath',
+  BlockMath = 'blockMath',
 }

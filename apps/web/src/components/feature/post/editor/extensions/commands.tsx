@@ -2,10 +2,12 @@ import { computePosition, flip, shift } from '@floating-ui/react';
 import {
   BrowsersIcon,
   CodeIcon,
+  FunctionIcon,
   ImageIcon,
   ListBulletsIcon,
   ListChecksIcon,
   ListNumbersIcon,
+  MathOperationsIcon,
   PaperclipIcon,
   QuotesIcon,
   TableIcon,
@@ -35,6 +37,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 import { NodeType } from './nodes';
+import type { MathTarget } from './nodes/math';
 
 const MAX_COMMAND_QUERY_LENGTH = 12;
 
@@ -51,14 +54,28 @@ export type CommandName =
   | 'table'
   | 'image'
   | 'file'
-  | 'embed';
+  | 'embed'
+  | 'math'
+  | 'inline-math';
 
 export type CommandSearchTerms = Partial<Record<CommandName, string[]>>;
+
+/**
+ * 슬래시 메뉴만으로는 끝나지 않고 별도의 입력 창이 필요한 명령이 쓰는 통로다.
+ * 확장은 에디터 바깥의 React 상태를 모르므로 여는 일은 호출부에 맡긴다.
+ */
+export interface CommandActions {
+  openMathEditor?: (target: MathTarget) => void;
+}
 
 interface CommandsItemProps {
   name: CommandName;
   icon: React.ReactNode;
-  command: (props: { editor: Editor; range: Range }) => void;
+  command: (props: {
+    editor: Editor;
+    range: Range;
+    actions: CommandActions;
+  }) => void;
 }
 
 const commands: CommandsItemProps[] = [
@@ -183,7 +200,41 @@ const commands: CommandsItemProps[] = [
         .run();
     },
   },
+  {
+    name: 'math',
+    icon: <MathOperationsIcon />,
+    command: ({ editor, range, actions }) => {
+      openMathEditor(editor, range, actions, NodeType.BlockMath);
+    },
+  },
+  {
+    name: 'inline-math',
+    icon: <FunctionIcon />,
+    command: ({ editor, range, actions }) => {
+      openMathEditor(editor, range, actions, NodeType.InlineMath);
+    },
+  },
 ];
+
+/**
+ * 수식은 빈 채로 넣어봐야 화면에 아무것도 남지 않으므로, 노드를 먼저 만들지 않고
+ * 입력 창을 띄운 뒤 확정된 LaTeX 만 삽입한다.
+ */
+function openMathEditor(
+  editor: Editor,
+  range: Range,
+  actions: CommandActions,
+  type: MathTarget['type'],
+) {
+  editor.chain().focus().deleteRange(range).run();
+
+  actions.openMathEditor?.({
+    type,
+    pos: editor.state.selection.from,
+    latex: '',
+    isNew: true,
+  });
+}
 
 export const COMMAND_NAMES: CommandName[] = commands.map((item) => item.name);
 
@@ -219,6 +270,7 @@ function filterCommands(query: string, searchTerms: CommandSearchTerms) {
 interface CommandsExtensionOptions {
   suggestion: Partial<SuggestionOptions<CommandsItemProps>>;
   searchTerms: CommandSearchTerms;
+  actions: CommandActions;
 }
 
 export const CommandsExtension = Extension.create<CommandsExtensionOptions>({
@@ -226,11 +278,9 @@ export const CommandsExtension = Extension.create<CommandsExtensionOptions>({
   addOptions() {
     return {
       searchTerms: {},
+      actions: {},
       suggestion: {
         char: '/',
-        command({ editor, range, props }) {
-          props.command({ editor, range });
-        },
         startOfLine: false,
         allow: ({ editor }) => editor.isFocused,
         render: () => {
@@ -303,13 +353,15 @@ export const CommandsExtension = Extension.create<CommandsExtensionOptions>({
     };
   },
   addProseMirrorPlugins() {
-    const { searchTerms } = this.options;
+    const { searchTerms, actions } = this.options;
 
     return [
       Suggestion<CommandsItemProps>({
         editor: this.editor,
         ...this.options.suggestion,
         items: ({ query }) => filterCommands(query, searchTerms),
+        command: ({ editor, range, props }) =>
+          props.command({ editor, range, actions }),
       }),
     ];
   },

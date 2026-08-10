@@ -239,6 +239,42 @@
     margin: 2rem 0;
   }
 
+  /* 수식 (KaTeX) */
+  .tiptap-mathematics-render {
+    &[data-type='inline-math'] {
+      display: inline-block;
+      padding: 0 0.15rem;
+    }
+
+    &[data-type='block-math'] {
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      text-align: center;
+    }
+
+    /* 편집 중에는 눌러서 LaTeX 을 고칠 수 있다는 것을 드러낸다. */
+    &--editable {
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      transition: background-color 0.1s ease;
+
+      &:hover {
+        background-color: var(--accent);
+      }
+    }
+
+    &.block-math-error,
+    &.inline-math-error {
+      color: var(--destructive);
+      font-family: var(--font-mono, monospace);
+    }
+  }
+
+  .ProseMirror-selectednode.tiptap-mathematics-render {
+    background-color: var(--accent);
+  }
+
   /* Placeholder (at the top) */
   p.is-editor-empty:first-child::before {
     color: var(--muted-foreground);

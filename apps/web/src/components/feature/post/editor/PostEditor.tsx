@@ -34,6 +34,7 @@ import { PostSummary } from '../viewer/types';
 import { EditorBubbleMenu } from './components/EditorBubbleMenu';
 import { EditorTableControls } from './components/EditorTableControls';
 import { EditorTemplates } from './components/EditorTemplates';
+import { MathDialog } from './components/MathDialog';
 import { PostTypeSelector } from './components/PostTypeSelector';
 import { SeriesSelect, SeriesSelection } from './components/SeriesSelect';
 import { TagInput, TagValue } from './components/TagInput';
@@ -47,10 +48,12 @@ import {
   CommandsExtension,
 } from './extensions/commands';
 import { MediaDropPasteExtension } from './extensions/media-drop';
+import { NodeType } from './extensions/nodes';
 import { CodeBlockNode } from './extensions/nodes/code';
 import { EmbedNode } from './extensions/nodes/embed';
 import { FileNode } from './extensions/nodes/file';
 import { ImageNode } from './extensions/nodes/image';
+import { type MathTarget, createMathNode } from './extensions/nodes/math';
 import { TableNode } from './extensions/nodes/table';
 import { TaskItemNode, TaskListNode } from './extensions/nodes/tasks';
 import { SelectAllExtension } from './extensions/select-all';
@@ -177,6 +180,7 @@ export default function PostEditor({
     null,
   );
   const [tocItems, setTocItems] = useState<PostTocItem[]>([]);
+  const [mathTarget, setMathTarget] = useState<MathTarget | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -237,7 +241,10 @@ export default function PostEditor({
         placeholder: getContentPlaceholder(t, type),
       }),
       CharacterCount,
-      CommandsExtension.configure({ searchTerms: commandSearchTerms }),
+      CommandsExtension.configure({
+        searchTerms: commandSearchTerms,
+        actions: { openMathEditor: setMathTarget },
+      }),
       SelectAllExtension,
       CodeBlockNode,
       TaskListNode,
@@ -246,6 +253,7 @@ export default function PostEditor({
       FileNode.configure({ slug: slug ?? null }),
       EmbedNode,
       TableNode,
+      createMathNode(setMathTarget),
       MediaDropPasteExtension,
       TableOfContents.configure({
         onUpdate: (items) =>
@@ -308,6 +316,40 @@ export default function PostEditor({
       editor.view.dispatch(editor.state.tr);
     }
   }, [type, editor, t]);
+
+  const handleMathSubmit = (target: MathTarget, latex: string) => {
+    if (!editor) return;
+
+    const { pos } = target;
+
+    if (target.type === NodeType.BlockMath) {
+      if (target.isNew) {
+        editor.chain().focus().insertBlockMath({ latex, pos }).run();
+      } else {
+        editor.chain().focus().updateBlockMath({ latex, pos }).run();
+      }
+    } else if (target.isNew) {
+      editor.chain().focus().insertInlineMath({ latex, pos }).run();
+    } else {
+      editor.chain().focus().updateInlineMath({ latex, pos }).run();
+    }
+
+    setMathTarget(null);
+  };
+
+  const handleMathDelete = (target: MathTarget) => {
+    if (!editor) return;
+
+    const { pos } = target;
+
+    if (target.type === NodeType.BlockMath) {
+      editor.chain().focus().deleteBlockMath({ pos }).run();
+    } else {
+      editor.chain().focus().deleteInlineMath({ pos }).run();
+    }
+
+    setMathTarget(null);
+  };
 
   /**
    * Resolve the cover fields for submission. A gallery-picked cover is only
@@ -504,6 +546,12 @@ export default function PostEditor({
           {editor && <EditorTableControls editor={editor} />}
         </div>
         {editor && <EditorBubbleMenu editor={editor} />}
+        <MathDialog
+          target={mathTarget}
+          onSubmit={handleMathSubmit}
+          onDelete={handleMathDelete}
+          onClose={() => setMathTarget(null)}
+        />
         {isPlaceholderVisible && type === PostType.LONG && (
           <EditorTemplates
             locale={locale}

@@ -115,7 +115,12 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
         }
 
         // 서식을 적용할 텍스트가 없는 노드는 서식 메뉴를 띄우지 않는다.
-        if (editor.isActive(NodeType.Image) || editor.isActive(NodeType.File)) {
+        if (
+          editor.isActive(NodeType.Image) ||
+          editor.isActive(NodeType.File) ||
+          editor.isActive(NodeType.InlineMath) ||
+          editor.isActive(NodeType.BlockMath)
+        ) {
           return false;
         }
 

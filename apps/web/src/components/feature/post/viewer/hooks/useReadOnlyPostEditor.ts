@@ -9,6 +9,7 @@ import { ReadOnlyCodeBlockNode } from '../../editor/extensions/nodes/code';
 import { ReadOnlyEmbedNode } from '../../editor/extensions/nodes/embed';
 import { ReadOnlyFileNode } from '../../editor/extensions/nodes/file';
 import { ReadOnlyImageNode } from '../../editor/extensions/nodes/image';
+import { ReadOnlyMathNode } from '../../editor/extensions/nodes/math';
 import { ReadOnlyTableNode } from '../../editor/extensions/nodes/table';
 import {
   TaskItemNode,
@@ -52,6 +53,7 @@ export function useReadOnlyPostEditor(
       ReadOnlyFileNode.configure({ slug }),
       ReadOnlyEmbedNode,
       ReadOnlyTableNode,
+      ReadOnlyMathNode,
       TableOfContents.configure({
         onUpdate: (items) =>
           setToc(

@@ -100,6 +100,9 @@ function serializeBlock(
     case NodeType.Embed:
       return serializeEmbed(node);
 
+    case NodeType.BlockMath:
+      return serializeBlockMath(node);
+
     default: {
       if (typeof node.text === 'string' || node.type === 'hardBreak') {
         return escapeBlockStart(serializeInline([node], options));
@@ -290,6 +293,26 @@ function serializeTableCell(
     .trim();
 }
 
+/**
+ * 표준 마크다운에는 수식 문법이 없지만 `$$`/`$` 구분자가 사실상의 관행이고,
+ * 에디터의 입력 규칙도 같은 표기를 쓰므로 다시 붙여넣으면 그대로 살아난다.
+ */
+function serializeBlockMath(node: JSONContent): string {
+  const latex = mathLatex(node);
+
+  return latex.length === 0 ? '' : `$$\n${latex}\n$$`;
+}
+
+function serializeInlineMath(node: JSONContent): string {
+  const latex = mathLatex(node);
+
+  return latex.length === 0 ? '' : `$${latex}$`;
+}
+
+function mathLatex(node: JSONContent): string {
+  return typeof node.attrs?.latex === 'string' ? node.attrs.latex.trim() : '';
+}
+
 function serializeEmbed(node: JSONContent): string {
   const url = node.attrs?.url;
 
@@ -336,6 +359,12 @@ function serializeInline(
     if (node.type === NodeType.File) {
       flush();
       parts.push(serializeFile(node, options));
+      continue;
+    }
+
+    if (node.type === NodeType.InlineMath) {
+      flush();
+      parts.push(serializeInlineMath(node));
       continue;
     }
 
