@@ -17,7 +17,7 @@ export default async function FinalCtaSection() {
               'radial-gradient(circle at 50% 0%, var(--color-brand), transparent 60%)',
           }}
         />
-        <h2 className="mx-auto max-w-xl text-3xl font-medium tracking-tight md:text-4xl">
+        <h2 className="mx-auto max-w-3xl text-3xl font-medium tracking-tight text-balance md:text-4xl">
           {t('title')}
         </h2>
         <p className="mx-auto mt-4 max-w-md text-muted-foreground">

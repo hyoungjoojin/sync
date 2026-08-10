@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
+import { useReveal } from './Reveal';
 import { CheckIcon, MONO } from './primitives';
 
 const TYPE_MS = 32;
@@ -136,14 +137,12 @@ export default function EditorTypingPreview({
   script: EditorScriptStep[];
   commands: EditorCommand[];
 }) {
+  const { playing, reducedMotion } = useReveal();
   const [cursor, setCursor] = useState<Cursor>(START);
-  const [isVisible, setIsVisible] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  const rootRef = useRef<HTMLDivElement>(null);
   const codeRef = useRef<HTMLPreElement>(null);
 
-  const isPlaying = isVisible && !prefersReducedMotion;
+  const isPlaying = playing && !reducedMotion;
 
   useEffect(() => {
     const code = codeRef.current;
@@ -159,35 +158,9 @@ export default function EditorTypingPreview({
 
     code.scrollTo({
       left: 0,
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      behavior: reducedMotion ? 'auto' : 'smooth',
     });
   });
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setPrefersReducedMotion(query.matches);
-
-    sync();
-    query.addEventListener('change', sync);
-
-    return () => query.removeEventListener('change', sync);
-  }, []);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    if (root === null) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry?.isIntersecting ?? false),
-      { threshold: 0.3 },
-    );
-
-    observer.observe(root);
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -232,18 +205,12 @@ export default function EditorTypingPreview({
     return () => window.clearTimeout(timeout);
   }, [cursor, isPlaying, script]);
 
-  const settled = prefersReducedMotion
-    ? { ...START, step: script.length }
-    : cursor;
+  const settled = reducedMotion ? { ...START, step: script.length } : cursor;
 
   const visibleSteps = script.slice(0, settled.step + 1);
 
   return (
-    <div
-      ref={rootRef}
-      className="mt-4 flex min-h-0 flex-1 flex-col"
-      aria-hidden="true"
-    >
+    <div className="mt-4 flex min-h-0 flex-1 flex-col" aria-hidden="true">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm shadow-foreground/5 dark:shadow-black/30">
         <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-3 py-1.5">
           <span className="size-2 rounded-full bg-border" />
@@ -252,7 +219,7 @@ export default function EditorTypingPreview({
         </div>
 
         <div
-          className="min-h-40 flex-1 overflow-hidden px-3.5 py-3 transition-opacity duration-500 md:min-h-0"
+          className="min-h-40 flex-1 overflow-hidden px-3.5 py-3 transition-opacity duration-500 lg:min-h-0"
           style={{ opacity: settled.fading ? 0 : 1 }}
         >
           <div className="flex flex-col gap-2">

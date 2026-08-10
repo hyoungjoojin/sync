@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
+
+import { useReveal } from './Reveal';
 
 const DWELL_MS = 3400;
 
@@ -64,44 +66,13 @@ function exitOffset({ x, w, from }: Block) {
     : ((100 - x) / w) * 100 + CLEAR_MARGIN;
 }
 
-/** 블록이 좌우로 드나들며 같은 공간이 다른 모양으로 다시 짜인다. */
+/** 카드 4 — 블록이 좌우로 드나들며 같은 공간이 다른 모양으로 다시 짜인다. */
 export default function ProjectSpaceMorph() {
+  const { playing, reducedMotion } = useReveal();
   const [step, setStep] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  const isPlaying = isVisible && !prefersReducedMotion;
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setPrefersReducedMotion(media.matches);
-
-    sync();
-    media.addEventListener('change', sync);
-
-    return () => media.removeEventListener('change', sync);
-  }, []);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    if (root === null) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry?.isIntersecting ?? false),
-      { threshold: 0.3 },
-    );
-
-    observer.observe(root);
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isPlaying) {
+    if (!playing || reducedMotion) {
       return;
     }
 
@@ -111,16 +82,12 @@ export default function ProjectSpaceMorph() {
     );
 
     return () => window.clearInterval(cycle);
-  }, [isPlaying]);
+  }, [playing, reducedMotion]);
 
-  const settledStep = prefersReducedMotion ? 0 : step;
+  const settledStep = reducedMotion ? 0 : step;
 
   return (
-    <div
-      ref={rootRef}
-      aria-hidden="true"
-      className="mt-4 min-h-40 w-full flex-1 md:min-h-0"
-    >
+    <div aria-hidden="true" className="mt-4 min-h-40 w-full flex-1 lg:min-h-0">
       <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background">
         {LAYOUTS.map((blocks, layout) =>
           blocks.map((block, index) => {
@@ -141,7 +108,7 @@ export default function ProjectSpaceMorph() {
                   transform: isActive
                     ? 'translateX(0)'
                     : `translateX(${exitOffset(block)}%)`,
-                  transition: prefersReducedMotion
+                  transition: reducedMotion
                     ? undefined
                     : isActive
                       ? `transform ${ENTER_MS}ms ${ENTER_EASE} ${ENTER_DELAY_MS + index * STAGGER_MS}ms`

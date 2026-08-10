@@ -33,13 +33,13 @@ export default function BentoTile({
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card bg-gradient-to-b to-card to-60% p-5 shadow-sm shadow-foreground/5 dark:shadow-black/40',
+        'flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card bg-gradient-to-b to-card to-60% p-5 shadow-sm shadow-foreground/5 dark:shadow-black/40',
         BENTO_TONES[tone],
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="max-w-2xl text-base font-medium leading-snug md:text-lg">
+        <h3 className="max-w-2xl text-lg font-semibold leading-snug">
           {title}
         </h3>
         {badge !== undefined && (
@@ -54,7 +54,7 @@ export default function BentoTile({
         )}
       </div>
       {description !== undefined && (
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       )}
