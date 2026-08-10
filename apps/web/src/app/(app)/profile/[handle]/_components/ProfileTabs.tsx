@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 import { useGetProfileByHandle } from '@/api/__generated__/profile/profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +30,6 @@ const ALL_TABS = [
 
 export default function ProfileTabs({ handle }: ProfileTabsProps) {
   const t = useTranslations('pages.profile');
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -58,9 +57,11 @@ export default function ProfileTabs({ handle }: ProfileTabsProps) {
       params.set('tab', value);
     }
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    window.history.replaceState(
+      null,
+      '',
+      query ? `${pathname}?${query}` : pathname,
+    );
   };
 
   return (
