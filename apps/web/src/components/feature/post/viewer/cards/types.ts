@@ -48,8 +48,8 @@ export const POST_DETAIL_PADDING_X = 'px-0 sm:px-6';
 export type PostPreviewSurface = 'card' | 'flat';
 
 export const POST_PREVIEW_SURFACE: Record<PostPreviewSurface, string> = {
-  card: POST_CARD_SURFACE,
-  flat: `hover:bg-muted/40 rounded-none border-0 bg-transparent shadow-none transition-colors ${POST_CARD_TIGHT_ROWS}`,
+  card: `cursor-pointer ${POST_CARD_SURFACE}`,
+  flat: `cursor-pointer hover:bg-muted/40 rounded-none border-0 bg-transparent shadow-none transition-colors ${POST_CARD_TIGHT_ROWS}`,
 };
 
 /** 상세 화면 카드(`PostCard`)가 각 타입별 카드에 넘기는 공통 입력. */
