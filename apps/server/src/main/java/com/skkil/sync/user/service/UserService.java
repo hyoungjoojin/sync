@@ -36,7 +36,8 @@ public class UserService implements UserDetailsService {
         user.getFullName(),
         user.getEmail(),
         user.getHashedPassword(),
-        user.getRole());
+        user.getRole(),
+        user.getDeletedAt() == null);
   }
 
   public User getUserReference(Long userId) {

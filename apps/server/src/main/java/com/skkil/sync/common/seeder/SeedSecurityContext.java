@@ -29,7 +29,7 @@ final class SeedSecurityContext {
   static <T> T runAs(User user, Supplier<T> action) {
     AuthenticatedUser principal =
         new AuthenticatedUser(
-            user.getId(), user.getFullName(), user.getEmail(), null, user.getRole());
+            user.getId(), user.getFullName(), user.getEmail(), null, user.getRole(), true);
     Authentication authentication =
         UsernamePasswordAuthenticationToken.authenticated(
             principal, null, principal.getAuthorities());

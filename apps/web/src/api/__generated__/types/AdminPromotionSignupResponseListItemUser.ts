@@ -9,6 +9,8 @@
  * 신청자 정보
  */
 export type AdminPromotionSignupResponseListItemUser = {
+  /** 탈퇴한 사용자인지 여부 */
+  isDeleted: boolean;
   /** 유저 이름 */
   name: string;
   /** 유저 핸들 */

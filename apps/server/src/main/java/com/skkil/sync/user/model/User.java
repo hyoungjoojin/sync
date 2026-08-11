@@ -161,4 +161,16 @@ public class User extends BaseEntity {
   public void setPreferences(UserPreferences preferences) {
     this.preferences = preferences;
   }
+
+  public void delete() {
+    this.deletedAt = Instant.now();
+    this.email = "deleted-user-" + id + "@deleted.sync.local";
+    this.handle = "deleted-user-" + id;
+    this.fullName = "탈퇴한 사용자";
+    this.bio = "";
+    this.profession = "";
+    this.contacts = null;
+    this.profileImage = null;
+    this.hashedPassword = null;
+  }
 }

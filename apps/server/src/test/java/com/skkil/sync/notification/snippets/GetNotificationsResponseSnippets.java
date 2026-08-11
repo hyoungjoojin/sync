@@ -27,7 +27,7 @@ public class GetNotificationsResponseSnippets {
             NotificationType.NEW_COMMENT,
             NotificationStatus.UNREAD,
             Instant.parse("2026-01-01T00:00:00Z"),
-            new UserSummary("actor-handle", "Actor Name", "http://example.com/a.jpg"),
+            new UserSummary("actor-handle", "Actor Name", "http://example.com/a.jpg", false),
             NotificationEntityType.COMMENT,
             3L,
             new NewCommentPayload("actor-handle", "Actor Name", "Post Title", "post-slug"));
@@ -60,6 +60,10 @@ public class GetNotificationsResponseSnippets {
             fieldWithPath(".actor.profileImageUrl")
                 .type(JsonFieldType.STRING)
                 .description("Actor profile image URL")
+                .optional(),
+            fieldWithPath(".actor.isDeleted")
+                .type(JsonFieldType.BOOLEAN)
+                .description("Whether the actor is a deleted user")
                 .optional(),
             fieldWithPath(".entityType")
                 .type(JsonFieldType.STRING)

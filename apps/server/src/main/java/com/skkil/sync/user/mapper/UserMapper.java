@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
   @Mapping(target = "name", source = "user.fullName")
+  @Mapping(target = "isDeleted", expression = "java(user.getDeletedAt() != null)")
   UserSummary toUserSummary(User user, String profileImageUrl);
 }

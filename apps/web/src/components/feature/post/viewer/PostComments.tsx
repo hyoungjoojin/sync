@@ -76,6 +76,10 @@ function PostCommentItem({
   const t = useTranslations('pages.posts.comments');
   const tDelete = useTranslations('pages.posts.comments.delete');
   const author = comment.author;
+  const isAuthorDeleted = author?.isDeleted ?? false;
+  const authorName = isAuthorDeleted
+    ? t('deleted-author')
+    : (author?.name ?? '?');
   const { acceptComment, unacceptComment, isPending } =
     useCommentAcceptance(slug);
   const { toggleLike } = useCommentLike(slug);
@@ -88,16 +92,27 @@ function PostCommentItem({
 
   return (
     <div className="flex items-start gap-3 py-4">
-      <ProfileHoverCard
-        handle={author?.handle ?? ''}
-        name={author?.name ?? '?'}
-        imageUrl={author?.profileImageUrl ?? undefined}
-        size="sm"
-      />
+      {isAuthorDeleted ? (
+        <ProfileAvatar name={authorName} size="sm" />
+      ) : (
+        <ProfileHoverCard
+          handle={author?.handle ?? ''}
+          name={authorName}
+          imageUrl={author?.profileImageUrl ?? undefined}
+          size="sm"
+        />
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold">{author?.name}</span>
+          <span
+            className={cn(
+              'text-sm font-semibold',
+              isAuthorDeleted && 'text-muted-foreground italic',
+            )}
+          >
+            {authorName}
+          </span>
           {comment.isPostAuthor && (
             <Badge variant="secondary" className="text-[10px]">
               {t('author-badge')}

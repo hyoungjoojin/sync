@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import com.skkil.sync.auth.AuthenticatedUser;
 import com.skkil.sync.user.constant.Role;
 import com.skkil.sync.user.exception.UserNotFoundException;
 import com.skkil.sync.user.model.User;
@@ -45,5 +46,31 @@ class UserServiceTests {
 
     assertThatThrownBy(() -> userService.promoteToAdmin(handle))
         .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("[loadUserByUsername] 탈퇴하지 않은 사용자는 enabled 상태로 반환된다")
+  void loadUserByUsername_activeUser_returnsEnabledPrincipal() {
+    User user = User.builder().email("user@example.com").fullName("User").build();
+
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+
+    AuthenticatedUser principal = userService.loadUserByUsername("user@example.com");
+
+    assertThat(principal.isEnabled()).isTrue();
+  }
+
+  @Test
+  @DisplayName("[loadUserByUsername] 탈퇴한 사용자는 disabled 상태로 반환된다")
+  void loadUserByUsername_deletedUser_returnsDisabledPrincipal() {
+    User user = User.builder().email("user@example.com").fullName("User").build();
+    user.setId(1L);
+    user.delete();
+
+    when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+    AuthenticatedUser principal = userService.loadUserByUsername(user.getEmail());
+
+    assertThat(principal.isEnabled()).isFalse();
   }
 }

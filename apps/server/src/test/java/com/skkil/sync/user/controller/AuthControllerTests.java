@@ -65,7 +65,7 @@ class AuthControllerTests {
     LoginRequest request = new LoginRequest("user@example.com", "password123");
 
     AuthenticatedUser user =
-        new AuthenticatedUser(1L, "user", "user@example.com", "hashedPassword", Role.USER);
+        new AuthenticatedUser(1L, "user", "user@example.com", "hashedPassword", Role.USER, true);
     Authentication authentication =
         new UsernamePasswordAuthenticationToken(user, request.password(), user.getAuthorities());
 

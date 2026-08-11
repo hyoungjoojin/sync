@@ -18,7 +18,8 @@ public class WithAuthenticatedUserSecurityContextFactory
             annotation.name(),
             annotation.email(),
             annotation.password(),
-            annotation.role());
+            annotation.role(),
+            true);
 
     Authentication authentication =
         UsernamePasswordAuthenticationToken.authenticated(

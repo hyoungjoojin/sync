@@ -10,6 +10,11 @@
  */
 export type GetCollectionPostsResponsePostsNodesItemContentPostAuthor = {
   /**
+   * 탈퇴한 사용자인지 여부
+   * @nullable
+   */
+  isDeleted?: boolean | null;
+  /**
    * 유저 이름
    * @nullable
    */

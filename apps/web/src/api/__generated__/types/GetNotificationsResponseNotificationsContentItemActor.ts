@@ -7,6 +7,11 @@
 
 export type GetNotificationsResponseNotificationsContentItemActor = {
   /**
+   * Whether the actor is a deleted user
+   * @nullable
+   */
+  isDeleted?: boolean | null;
+  /**
    * Actor name
    * @nullable
    */

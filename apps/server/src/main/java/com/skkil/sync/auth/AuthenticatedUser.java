@@ -15,11 +15,16 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 @Builder
 public record AuthenticatedUser(
-    Long userId, String fullName, String email, @JsonIgnore String password, Role role)
+    Long userId,
+    String fullName,
+    String email,
+    @JsonIgnore String password,
+    Role role,
+    boolean enabled)
     implements UserDetails, OidcUser {
 
   public AuthenticatedUser(Long userId) {
-    this(userId, null, null, null, null);
+    this(userId, null, null, null, null, true);
   }
 
   @Override
@@ -70,5 +75,10 @@ public record AuthenticatedUser(
 
   public boolean isAdmin() {
     return role == Role.ADMIN;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return enabled;
   }
 }

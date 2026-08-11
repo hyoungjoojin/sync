@@ -73,6 +73,7 @@ public class OAuth2AccountLinkingService {
         .email(user.getEmail())
         .password(null)
         .role(user.getRole())
+        .enabled(user.getDeletedAt() == null)
         .build();
   }
 

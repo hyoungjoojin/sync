@@ -54,7 +54,8 @@ public class AuthServiceTests {
   void authenticate_validUser_success() {
     LoginRequest request = new LoginRequest("user@example.com", "password123");
     AuthenticatedUser authenticatedUser =
-        new AuthenticatedUser(1L, "Test User", "user@example.com", "hashedPassword", Role.USER);
+        new AuthenticatedUser(
+            1L, "Test User", "user@example.com", "hashedPassword", Role.USER, true);
 
     when(userService.loadUserByUsername("user@example.com")).thenReturn(authenticatedUser);
     Authentication mockAuth = mock(Authentication.class);
@@ -87,7 +88,7 @@ public class AuthServiceTests {
   void authenticate_oAuthUserWithNoPassword_throwIllegalArgumentException() {
     LoginRequest request = new LoginRequest("oauth@example.com", "password123");
     AuthenticatedUser authenticatedUser =
-        new AuthenticatedUser(1L, "OAuth User", "oauth@example.com", null, Role.USER);
+        new AuthenticatedUser(1L, "OAuth User", "oauth@example.com", null, Role.USER, true);
 
     when(userService.loadUserByUsername("oauth@example.com")).thenReturn(authenticatedUser);
 

@@ -1,5 +1,6 @@
 package com.skkil.sync.user.service;
 
+import com.skkil.sync.auth.session.SessionInvalidationService;
 import com.skkil.sync.user.constant.Role;
 import com.skkil.sync.user.dto.summary.AdminUserSummary;
 import com.skkil.sync.user.exception.UserCannotBeDeletedException;
@@ -21,9 +22,15 @@ public class AdminUserService {
 
   private final AdminUserAssembler adminUserAssembler;
 
-  public AdminUserService(UserRepository userRepository, AdminUserAssembler adminUserAssembler) {
+  private final SessionInvalidationService sessionInvalidationService;
+
+  public AdminUserService(
+      UserRepository userRepository,
+      AdminUserAssembler adminUserAssembler,
+      SessionInvalidationService sessionInvalidationService) {
     this.userRepository = userRepository;
     this.adminUserAssembler = adminUserAssembler;
+    this.sessionInvalidationService = sessionInvalidationService;
   }
 
   @Transactional(readOnly = true)
@@ -53,7 +60,11 @@ public class AdminUserService {
       throw new UserCannotBeDeletedException("User is already deleted.");
     }
 
-    userRepository.delete(user);
+    String email = user.getEmail();
+    user.delete();
+    userRepository.save(user);
+    sessionInvalidationService.invalidateAllSessions(email);
+
     log.warn("관리자가 사용자를 삭제했습니다. id={}, handle={}", user.getId(), handle);
   }
 }

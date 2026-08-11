@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import FaqAccordion, { type FaqItem } from './FaqAccordion';
 
-const FAQ_KEYS = ['free', 'solo', 'migration', 'private'] as const;
+const FAQ_KEYS = ['solo', 'migration', 'private'] as const;
 
 /** 4. FAQ — 가입을 막는 의심을 걷어낸다. */
 export default async function FaqSection() {

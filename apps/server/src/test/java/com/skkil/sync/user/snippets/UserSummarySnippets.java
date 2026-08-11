@@ -14,6 +14,7 @@ public class UserSummarySnippets {
         .handle("john-doe")
         .name("John Doe")
         .profileImageUrl("https://example.com/john.png")
+        .isDeleted(false)
         .build();
   }
 
@@ -24,6 +25,9 @@ public class UserSummarySnippets {
         fieldWithPath(prefix + "profileImageUrl")
             .type(JsonFieldType.STRING)
             .description("유저 프로필 이미지 URL")
-            .optional());
+            .optional(),
+        fieldWithPath(prefix + "isDeleted")
+            .type(JsonFieldType.BOOLEAN)
+            .description("탈퇴한 사용자인지 여부"));
   }
 }
