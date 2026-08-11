@@ -558,7 +558,7 @@ export default function PostEditor({
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                editor?.commands.focus();
+                editor?.chain().focus('start').run();
               }
             }}
           />
