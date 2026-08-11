@@ -33,7 +33,7 @@ export function PostTableOfContentsList({
                 <a
                   href={`#${item.id}`}
                   className={cn(
-                    'block truncate rounded-md py-1.5 pr-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground',
+                    'block truncate rounded-md py-1.5 pr-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground active:bg-accent',
                     item.isActive && 'bg-accent font-medium text-foreground',
                   )}
                   style={{ paddingLeft: `${(item.level - 1) * 12 + 8}px` }}
