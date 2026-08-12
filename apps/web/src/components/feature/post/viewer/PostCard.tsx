@@ -6,7 +6,7 @@ import { useGetPostBySlug } from '@/api/__generated__/post/post';
 import { Skeleton } from '@/components/ui/skeleton';
 import ROUTES from '@/util/routes';
 
-import { PostType } from '../types/post';
+import { PostStatus, PostType } from '../types/post';
 import { LongPostCard } from './cards/LongPostCard';
 import { LongPostPreviewCard } from './cards/LongPostPreviewCard';
 import { QuestionPostCard } from './cards/QuestionPostCard';
@@ -28,6 +28,12 @@ import {
 import { normalizePostContent } from './utils/normalizePostContent';
 
 function resolvePostPath(summary: PostSummary) {
+  if (summary.status === PostStatus.DRAFT && summary.isAuthor) {
+    return summary.project?.handle
+      ? ROUTES.PROJECT_POST_EDIT(summary.project.handle, summary.slug)
+      : ROUTES.POST_EDIT(summary.slug);
+  }
+
   return summary.project?.handle
     ? ROUTES.PROJECT_POST(summary.project.handle, summary.slug)
     : ROUTES.POST(summary.slug);
