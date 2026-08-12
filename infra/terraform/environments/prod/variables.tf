@@ -199,3 +199,10 @@ variable "agent_rsa_public_key" {
     error_message = "agent_rsa_public_key must be set."
   }
 }
+
+variable "agent_chatgpt_redirect_uri" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "ChatGPT MCP connector OAuth callback URL. Not currently bound to any Spring property — no chatgpt vendor exists in AgentAuthorizationServerConfig yet, so this is inert until that implementation lands."
+}

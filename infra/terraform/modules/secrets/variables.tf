@@ -131,6 +131,13 @@ variable "agent_rsa_public_key" {
   description = "X.509 PEM public key matching agent_rsa_private_key (app.agent.rsa-public-key)."
 }
 
+variable "agent_chatgpt_redirect_uri" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "ChatGPT MCP connector OAuth callback URL. Not currently bound to any Spring property (no chatgpt vendor exists in AgentAuthorizationServerConfig yet) — stored ahead of that implementation landing."
+}
+
 variable "captcha_site_key" {
   type        = string
   sensitive   = true

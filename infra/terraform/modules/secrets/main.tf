@@ -52,6 +52,7 @@ resource "aws_secretsmanager_secret_version" "server_app" {
     ADMIN_PASSWORD                                  = var.admin_password
     APP_AGENT_RSA_PRIVATE_KEY                       = var.agent_rsa_private_key
     APP_AGENT_RSA_PUBLIC_KEY                        = var.agent_rsa_public_key
+    APP_AGENT_CHATGPT_REDIRECT_URI                  = var.agent_chatgpt_redirect_uri
   })
 }
 

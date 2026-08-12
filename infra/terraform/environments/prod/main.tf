@@ -133,6 +133,7 @@ module "secrets" {
   admin_password          = var.admin_password
   openai_api_key          = var.openai_api_key
 
-  agent_rsa_private_key = var.agent_rsa_private_key
-  agent_rsa_public_key  = var.agent_rsa_public_key
+  agent_rsa_private_key      = var.agent_rsa_private_key
+  agent_rsa_public_key       = var.agent_rsa_public_key
+  agent_chatgpt_redirect_uri = var.agent_chatgpt_redirect_uri
 }
