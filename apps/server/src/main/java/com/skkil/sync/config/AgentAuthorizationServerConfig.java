@@ -498,7 +498,7 @@ public class AgentAuthorizationServerConfig {
                   .build())
           .tokenSettings(
               TokenSettings.builder()
-                  .accessTokenTimeToLive(Duration.ofHours(1))
+                  .accessTokenTimeToLive(Duration.ofHours(24))
                   .refreshTokenTimeToLive(Duration.ofDays(30))
                   .reuseRefreshTokens(false)
                   .build())

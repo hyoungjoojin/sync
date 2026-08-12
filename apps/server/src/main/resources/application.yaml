@@ -26,6 +26,7 @@ spring:
     store-type: jdbc
     jdbc:
       initialize-schema: always
+      cleanup-cron: "0 0 * * * *"
 
   jackson:
     mapper:
