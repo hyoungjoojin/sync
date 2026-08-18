@@ -24,15 +24,16 @@ export default function ProjectTags() {
 
   return (
     <section className="space-y-4">
-      {isAdmin && (
-        <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold">{t('label')}</h1>
+        {isAdmin && (
           <Button variant="outline" size="sm" asChild>
             <Link href={ROUTES.PROJECT_TAGS_MANAGE(handle)}>
               {t('manage-link')}
             </Link>
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <TagList
         tags={tags}

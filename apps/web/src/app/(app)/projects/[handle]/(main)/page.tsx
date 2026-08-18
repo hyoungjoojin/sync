@@ -34,6 +34,7 @@ export default async function ProjectDashboardPage({
       main={<ProjectDashboard handle={handle} />}
       side={<ProjectInfoSidebar handle={handle} />}
       reverseSideOnMobile
+      stretchMain
     />
   );
 }

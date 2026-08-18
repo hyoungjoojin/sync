@@ -590,11 +590,21 @@
         },
         "dashboard": {
           "feed": {
-            "heading": "피드"
+            "heading": "홈"
           },
           "pinned": {
+            "heading": "고정된 게시물",
             "badge": "고정",
             "meta": "{author} · {minutes}분"
+          },
+          "top-posts": {
+            "heading": "이번 주 인기 게시물",
+            "meta": "{author} · 좋아요 {likes} · 댓글 {comments}",
+            "empty": "아직 이번 주에 인기 있는 게시물이 없어요."
+          },
+          "unanswered-questions": {
+            "heading": "답변이 필요한 질문",
+            "empty": "답변을 기다리는 질문이 없어요."
           }
         },
         "sidebar": {
@@ -613,11 +623,24 @@
             "stats": {
               "followers": "팔로워",
               "members": "멤버"
+            },
+            "type": {
+              "community": "커뮤니티",
+              "showcase": "쇼케이스",
+              "team": "팀"
+            },
+            "staff": {
+              "heading": "운영진",
+              "owner": "이장",
+              "admin": "반장"
             }
           },
           "contributors": {
             "heading": "멤버",
             "invite": "초대"
+          },
+          "rules": {
+            "heading": "규칙"
           }
         },
         "settings": {
@@ -656,6 +679,20 @@
               },
               "messages": {
                 "success": "프로젝트 이름이 변경되었습니다."
+              }
+            },
+            "rules": {
+              "heading": "규칙",
+              "description": "이 스페이스의 멤버가 지켜야 할 규칙입니다.",
+              "label": "규칙",
+              "save": "저장",
+              "errors": {
+                "invalid": "규칙은 2000자 이하로 입력해주세요.",
+                "network": "서버에 연결할 수 없습니다. 나중에 다시 시도하세요.",
+                "unknown": "규칙을 변경하지 못했습니다."
+              },
+              "messages": {
+                "success": "규칙이 변경되었습니다."
               }
             },
             "handle": {
