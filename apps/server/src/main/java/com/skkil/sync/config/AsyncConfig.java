@@ -2,7 +2,6 @@ package com.skkil.sync.config;
 
 import java.util.Arrays;
 import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -60,12 +59,13 @@ public class AsyncConfig implements AsyncConfigurer {
 
   private void logRejectedTask(Runnable task, ThreadPoolExecutor executor) {
     log.error(
-        "Async task rejected, pool exhausted (active={}, poolSize={}, queueSize={}): {}",
+        "Async task rejected, pool exhausted (active={}, poolSize={}, queueSize={}), falling"
+            + " back to caller-runs: {}",
         executor.getActiveCount(),
         executor.getPoolSize(),
         executor.getQueue().size(),
         task);
-    throw new RejectedExecutionException("Async task rejected: " + task);
+    new ThreadPoolExecutor.CallerRunsPolicy().rejectedExecution(task, executor);
   }
 
   @Override
