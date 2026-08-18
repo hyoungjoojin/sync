@@ -14,7 +14,7 @@ import {
   useSearchAdminProject,
 } from '@/api/__generated__/project/project';
 import type { AdminProjectSummary } from '@/api/__generated__/types/AdminProjectSummary';
-import { ProfileAvatar } from '@/components/feature/profile/ProfileAvatar';
+import { ProjectAvatar } from '@/components/feature/project/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -140,10 +140,10 @@ function ProjectResultCard({ project, onDelete }: ProjectResultCardProps) {
     <div className="flex flex-col gap-4 rounded-lg border p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <ProfileAvatar
+          <ProjectAvatar
             name={project.name}
             seed={project.handle}
-            imageUrl={project.iconUrl}
+            iconUrl={project.iconUrl}
           />
           <div className="flex flex-col">
             <Link

@@ -156,7 +156,12 @@ function ProjectSwitcher({ handle }: SectionProps) {
               className="rounded-lg border border-sidebar-border"
               data-state={isProjectMenuOpen ? 'open' : 'closed'}
             >
-              <ProjectAvatar name={projectName} iconUrl={projectIconUrl} />
+              <ProjectAvatar
+                name={projectName}
+                seed={handle}
+                iconUrl={projectIconUrl}
+                size="lg"
+              />
               <span className="truncate font-medium">{projectName}</span>
               <CaretDownIcon
                 className={`ml-auto transition-transform ${
@@ -172,8 +177,8 @@ function ProjectSwitcher({ handle }: SectionProps) {
                 <Link href={ROUTES.PROJECT(project.handle)}>
                   <ProjectAvatar
                     name={project.name}
+                    seed={project.handle}
                     iconUrl={project.iconUrl}
-                    size="sm"
                   />
                   <span className="truncate">{project.name}</span>
                 </Link>

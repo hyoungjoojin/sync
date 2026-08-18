@@ -25,7 +25,7 @@ function ProfileAvatar({
     <Avatar size={size} {...props}>
       <AvatarImage src={imageUrl || undefined} alt={name} />
       <AvatarFallback className="bg-transparent">
-        <GeneratedAvatar seed={seed} className="size-full" />
+        <GeneratedAvatar seed={seed} className="size-full!" />
       </AvatarFallback>
     </Avatar>
   );
