@@ -140,7 +140,11 @@ function ProjectResultCard({ project, onDelete }: ProjectResultCardProps) {
     <div className="flex flex-col gap-4 rounded-lg border p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <ProfileAvatar name={project.name} imageUrl={project.iconUrl} />
+          <ProfileAvatar
+            name={project.name}
+            seed={project.handle}
+            imageUrl={project.iconUrl}
+          />
           <div className="flex flex-col">
             <Link
               href={ROUTES.PROJECT(project.handle)}
