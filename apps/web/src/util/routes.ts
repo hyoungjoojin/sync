@@ -1,6 +1,7 @@
 const ROUTES = {
   HOME: () => '/',
   ABOUT: () => '/about',
+  PRICING: () => '/pricing',
   TERMS: () => '/terms',
   PRIVACY: () => '/privacy',
   EXPLORE_TRENDING: () => '/explore/trending',

@@ -595,7 +595,8 @@
           "pinned": {
             "heading": "고정된 게시물",
             "badge": "고정",
-            "meta": "{author} · {minutes}분"
+            "meta": "{author} · {minutes}분",
+            "empty": "아직 고정된 게시물이 없어요."
           },
           "top-posts": {
             "heading": "이번 주 인기 게시물",
@@ -609,8 +610,10 @@
         },
         "sidebar": {
           "about": {
-            "heading": "소개",
             "description-empty": "설명이 없습니다.",
+            "show-more": "더 보기",
+            "show-less": "접기",
+            "created": "{date} 생성됨",
             "visibility": {
               "public": "공개",
               "private": "비공개"
@@ -620,24 +623,30 @@
               "request": "승인제",
               "invite": "초대 전용"
             },
+            "visibility-tooltip": {
+              "public": {
+                "open": "누구나 볼 수 있고, 누구나 자유롭게 가입할 수 있는 공개 프로젝트예요.",
+                "request": "누구나 볼 수 있지만, 가입하려면 운영진의 승인이 필요해요.",
+                "invite": "누구나 볼 수 있지만, 초대를 받아야만 가입할 수 있어요."
+              },
+              "private": {
+                "open": "초대받은 팀원만 볼 수 있는 비공개 프로젝트예요.",
+                "request": "초대받은 팀원만 볼 수 있고, 가입하려면 운영진의 승인이 필요해요.",
+                "invite": "초대받은 팀원만 볼 수 있고, 가입할 수 있는 비공개 프로젝트예요."
+              }
+            },
             "stats": {
               "followers": "팔로워",
               "members": "멤버"
             },
-            "type": {
-              "community": "커뮤니티",
-              "showcase": "쇼케이스",
-              "team": "팀"
-            },
             "staff": {
-              "heading": "운영진",
-              "owner": "이장",
-              "admin": "반장"
+              "heading": "운영진"
             }
           },
           "contributors": {
             "heading": "멤버",
-            "invite": "초대"
+            "invite": "초대",
+            "view-all": "전체보기"
           },
           "rules": {
             "heading": "규칙"
@@ -1064,7 +1073,12 @@
       "nav": {
         "login": "로그인",
         "register": "가입하기",
-        "app": "앱으로 이동"
+        "app": "앱으로 이동",
+        "links": {
+          "features": "기능",
+          "pricing": "가격",
+          "faq": "자주 묻는 질문"
+        }
       },
       "hero": {
         "rotatingWords": [
@@ -1238,6 +1252,76 @@
           "cookies": "쿠키 정책"
         }
       }
+    },
+    "pricing": {
+      "metaTitle": "가격",
+      "heading": "우리 팀에 맞는 플랜을 선택하세요",
+      "sub": "기본 기능은 무료로 시작하고, 필요할 때 언제든 늘리세요.",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "description": "혼자서도, 여러 명이 모인 공개 프로젝트에서도",
+          "priceLabel": "₩0",
+          "priceCaption": "평생 무료",
+          "action": "무료로 시작하기"
+        },
+        "team": {
+          "badge": "추천",
+          "name": "Team",
+          "description": "외부에 보이지 않는 비공개 프로젝트",
+          "priceLabel": "₩1,000",
+          "priceUnit": "인당 · 월",
+          "priceCaption": "첫 5명은 무료",
+          "action": "무료로 시작하기",
+          "inherit": "Free의 모든 기능 포함"
+        },
+        "enterprise": {
+          "badge": "준비 중",
+          "name": "Enterprise",
+          "description": "더 큰 조직을 위한 맞춤 플랜",
+          "priceLabel": "문의 후 안내",
+          "action": "문의하기",
+          "note": "엔터프라이즈 플랜은 아직 준비 중이에요.",
+          "inherit": "Team의 모든 기능 포함"
+        }
+      },
+      "features": {
+        "free": {
+          "publicUnlimited": {
+            "label": "공개 프로젝트 인원 수 제한 없음",
+            "tooltip": "커뮤니티·쇼케이스 프로젝트는 인원 수와 관계없이 무료로 이용할 수 있어요."
+          },
+          "privateFree": {
+            "label": "비공개 프로젝트 최대 5명까지 무료",
+            "tooltip": "외부에 보이지 않는 비공개 프로젝트를 5명까지 무료로 만들고 운영할 수 있어요."
+          },
+          "unlimitedPosts": {
+            "label": "게시글 개수 제한 없음",
+            "tooltip": "짧은 기록부터 긴 글까지, 개수 제한 없이 자유롭게 작성할 수 있어요."
+          }
+        },
+        "team": {
+          "invisible": {
+            "label": "외부에 보이지 않는 완전한 비공개 공간",
+            "tooltip": "비공개 프로젝트는 검색, 추천, 태그 목록 어디에도 노출되지 않아요."
+          },
+          "inviteOnly": {
+            "label": "초대한 팀원만 참여 가능",
+            "tooltip": "관리자가 직접 초대한 사람만 프로젝트에 참여할 수 있어요."
+          },
+          "cancelAnytime": {
+            "label": "언제든 직접 해지 가능",
+            "tooltip": "서비스 내 설정 화면에서 스스로 구독을 해지할 수 있어요."
+          }
+        },
+        "enterprise": {
+          "comingSoon": {
+            "label": "전담 지원 및 맞춤 계약 (준비 중)",
+            "tooltip": "조직 규모에 맞는 전담 지원과 맞춤 계약 조건은 아직 준비 중이에요."
+          }
+        }
+      },
+      "note": "표시된 금액은 부가세가 포함된 금액이며, 매월 자동으로 결제돼요. 자세한 내용은 이용약관을 확인해 주세요."
     },
     "onboarding": {
       "metaTitle": "온보딩",
