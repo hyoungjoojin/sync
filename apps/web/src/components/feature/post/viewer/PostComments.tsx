@@ -1,13 +1,8 @@
 'use client';
 
-import {
-  CheckCircleIcon,
-  HeartIcon,
-  PaperPlaneRightIcon,
-  TrashIcon,
-} from '@phosphor-icons/react';
+import { CheckCircleIcon, HeartIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useGetPostCommentsInfinite } from '@/api/__generated__/comment/comment';
@@ -33,7 +28,6 @@ import { Card } from '@/components/ui/card';
 import { RelativeTime } from '@/components/ui/relative-time';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useSession } from '@/lib/auth/client';
 import SyncError, { ErrorCode } from '@/lib/error';
@@ -41,7 +35,11 @@ import { cn } from '@/lib/utils';
 
 import { COMMENT_PAGE_SIZE } from '../constants';
 import { PostType } from '../types/post';
-import { COMMENT_COMPOSER_ID } from './utils/commentComposer';
+import { CommentBody } from './components/CommentBody';
+import {
+  CommentComposer,
+  type CommentComposerHandle,
+} from './components/CommentComposer';
 
 interface PostCommentsProps {
   className?: string;
@@ -130,13 +128,13 @@ function PostCommentItem({
           </span>
         </div>
 
-        <p className="text-sm break-words whitespace-pre-wrap">
-          {comment.isDeleted ? (
+        {comment.isDeleted ? (
+          <p className="text-sm break-words whitespace-pre-wrap">
             <span className="text-muted-foreground italic">{t('deleted')}</span>
-          ) : (
-            comment.content
-          )}
-        </p>
+          </p>
+        ) : (
+          <CommentBody content={comment.content} />
+        )}
 
         {!comment.isDeleted && (
           <div className="flex items-center gap-1">
@@ -270,7 +268,7 @@ export default function PostComments({
         },
       },
     );
-  const [draft, setDraft] = useState('');
+  const composerRef = useRef<CommentComposerHandle>(null);
 
   const { mutate: createComment, isPending: isSubmitting } =
     useCreateComment(postId);
@@ -283,20 +281,15 @@ export default function PostComments({
     );
   }, [data]);
 
-  function handleSubmit() {
+  function handleSubmit(content: string) {
     if (!requireAuth({ intent: 'comment' })) {
-      return;
-    }
-
-    const content = draft.trim();
-    if (!content) {
       return;
     }
 
     createComment(
       { slug, data: { content } },
       {
-        onSuccess: () => setDraft(''),
+        onSuccess: () => composerRef.current?.clear(),
         onError: (error) => {
           if (error instanceof SyncError) {
             switch (error.code) {
@@ -334,25 +327,12 @@ export default function PostComments({
               size="sm"
             />
 
-            <div className="flex flex-1 flex-col gap-2">
-              <Textarea
-                id={COMMENT_COMPOSER_ID}
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder={t('composer.placeholder')}
-                className="min-h-16"
+            <div className="min-w-0 flex-1">
+              <CommentComposer
+                ref={composerRef}
+                onSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
               />
-
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  disabled={!draft.trim() || isSubmitting}
-                  onClick={handleSubmit}
-                >
-                  <PaperPlaneRightIcon />
-                  {t('composer.submit')}
-                </Button>
-              </div>
             </div>
           </div>
 

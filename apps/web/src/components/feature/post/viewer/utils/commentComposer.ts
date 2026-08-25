@@ -12,5 +12,8 @@ export function focusCommentComposer() {
   }
 
   composer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  composer.focus({ preventScroll: true });
+
+  const editable =
+    composer.querySelector<HTMLElement>('[contenteditable="true"]') ?? composer;
+  editable.focus({ preventScroll: true });
 }
