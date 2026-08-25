@@ -181,8 +181,7 @@ class PostQueryControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("slug").description("게시글 slug")),
-                GetPostsResponseSnippets.getPostsResponseFields(
-                    "이 글이 참조하는 게시글 목록 (작성자가 지정한 순서, 열람 불가한 참조는 제외)")));
+                GetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -402,7 +401,7 @@ class PostQueryControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
-                GetPostsResponseSnippets.getPostsResponseFields("프로젝트에 고정된 게시글 목록")));
+                GetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -428,7 +427,7 @@ class PostQueryControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
-                GetPostsResponseSnippets.getPostsResponseFields("최근 인기 게시글 목록")));
+                GetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test
@@ -454,7 +453,7 @@ class PostQueryControllerTests {
                 null,
                 Function.identity(),
                 pathParameters(parameterWithName("handle").description("프로젝트 핸들")),
-                GetPostsResponseSnippets.getPostsResponseFields("답변이 필요한 질문 목록")));
+                GetPostsResponseSnippets.getPostsResponseFields()));
   }
 
   @Test

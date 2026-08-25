@@ -79,6 +79,7 @@ public class PostRecommendationQueryRepository {
             .where(
                 condition
                     .and(visibilityCondition)
+                    .and(PostConditions.general())
                     .and(scopeCondition(context.scope()))
                     .and(postTypeCondition(context.postType()))
                     .and(channelCondition))
