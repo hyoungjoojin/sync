@@ -46,7 +46,6 @@ export default function ProjectTags() {
           <TagListItem
             name={tag.name}
             description={tag.description}
-            noDescriptionLabel={t('no-description')}
             postCountLabel={t('post-count', { count: tag.postCount })}
             href={ROUTES.PROJECT_TAG(handle, String(tag.id))}
           />

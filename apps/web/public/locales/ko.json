@@ -102,7 +102,6 @@
           "error": "태그를 불러오는 중 오류가 발생했습니다."
         },
         "post-count": "게시물 {count}개",
-        "no-description": "설명이 없습니다.",
         "follow": "팔로우",
         "unfollow": "팔로잉"
       },
@@ -495,7 +494,6 @@
             "error": "태그를 불러오는 중 오류가 발생했습니다."
           },
           "post-count": "게시물 {count}개",
-          "no-description": "설명이 없습니다.",
           "manage-link": "태그 관리",
           "manage": {
             "back": "태그로 돌아가기",
@@ -2159,7 +2157,6 @@
     },
     "tag": {
       "detail": {
-        "description-empty": "설명이 없습니다.",
         "meta": "게시물 {postCount}개 · 팔로워 {followerCount}명",
         "follow": {
           "follow": "팔로우",
